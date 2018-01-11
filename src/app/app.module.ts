@@ -9,6 +9,7 @@ import { AppComponent } from './app.component';
 import {HomeComponent} from './home';
 import {WalletComponent} from './_wallet';
 import {AuthenticationService} from './_services';
+import {HttpClientModule} from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -20,7 +21,8 @@ import {AuthenticationService} from './_services';
     BrowserModule,
       routing,
       NgbModule.forRoot(),
-      ReactiveFormsModule
+      ReactiveFormsModule,
+      HttpClientModule
   ],
   providers: [
       AuthenticationService
