@@ -1,5 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import { routing } from './app.routing';
 
 
@@ -15,7 +16,8 @@ import {WalletComponent} from './_wallet';
   ],
   imports: [
     BrowserModule,
-      routing
+      routing,
+      NgbModule.forRoot()
   ],
   providers: [],
   bootstrap: [AppComponent]
