@@ -19,11 +19,17 @@ export class AuthenticationService {
     logout(): void {
         this.auth = false;
     }
-    createUser(username: string, password: string): void {
+    createUser(username: string, password: string, email: string): boolean {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user) {
+            return false;
+        }
         const newUser = {
             name: username,
-            hash: password
+            hash: password,
+            email: email
         };
         localStorage.setItem('user', JSON.stringify(newUser));
+        return true;
     }
 }

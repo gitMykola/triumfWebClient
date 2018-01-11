@@ -1,13 +1,55 @@
 <div class="container t-home">
     <h1 class="text-center">{{title}}</h1>
     <div class="col-sm-12 text-center">
-        <button class="btn btn-primary col-sm-4">Create New Wallet</button>
-        <button class="btn btn-primary col-sm-4">Open Wallet</button>
+        <button class="btn btn-primary col-sm-4" (click)="formVisible = true;logi = false;">Create New Wallet</button>
+        <button class="btn btn-primary col-sm-4" (click)="formVisible = true;logi = true;">Open Wallet</button>
     </div>
     <div class="col-sm-6 offset-3 text-center">
         <div class="col-sm-12">
-            <input type="radio" name="currency" value="ETH">
-            <label>Ethereum</label>
+            <input #currency id="currency" type="radio" name="currency" value="ETH"/>
+            <label for="currency">Ethereum</label>
         </div>
     </div>
+    <form [formGroup]="loginForm" class="form-horisontal t-form" *ngIf="formVisible">
+        <div class="form-group">
+            <label for="name" class="col-md-4 control-label">Name</label>
+            <div class="col-md-6">
+                <input id="name" type="text" name="name" formControlName="tname"
+                       autofocus="autofocus" class="form-control">
+            </div>
+        </div>
+        <div class="form-group" *ngIf="!logi">
+            <label for="email" class="col-md-4 control-label">E-Mail Address</label>
+            <div class="col-md-6">
+                <input id="email" type="email" name="email" formControlName="temail"
+                       class="form-control">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="password" class="col-md-4 control-label">Password</label>
+            <div class="col-md-6">
+                <input id="password" type="password" name="password" formControlName="tpassword"
+                       class="form-control">
+            </div>
+        </div>
+        <div class="form-group" *ngIf="!logi">
+            <label for="cpassword" class="col-md-4 control-label">Confirm Password</label>
+            <div class="col-md-6">
+                <input id="cpassword" type="password" name="cpassword" formControlName="tcpassword"
+                       class="form-control">
+            </div>
+        </div>
+        <div class="form-group text-center">
+            <div class="btn btn-primary col-sm-3"
+                    (click)="login( )" *ngIf="logi">Login
+            </div>
+            <div class="btn btn-primary col-sm-3"
+                    (click)="create()"
+                 *ngIf="!logi">Create
+            </div>
+        </div>
+        <div class="form-group text-center">
+            <h5>{{error}}</h5>
+        </div>
+    </form>
 </div>
