@@ -10,6 +10,6 @@ export class HomeComponent implements OnInit {
     constructor() {
     }
     ngOnInit() {
-        this.title = 'Home';
+        this.title = 'TriumfCoin';
     }
 }
