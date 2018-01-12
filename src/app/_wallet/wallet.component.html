@@ -1,13 +1,15 @@
-<div class="container t-wallet">
+<div class="container t-wallet" xmlns="">
     <h1 class="text-center">{{title}}</h1>
+    <ul class="nav nav-tabs">
+        <li class="active"><h4>Ethereum</h4></li>
+        <li class=""><h4>Bitcoin</h4></li>
+        <li class=""><h4>Litecoin</h4></li>
+        <li class=""><h4>Bitcoin Gold</h4></li>
+        <li class=""><h4>Bitcoin Cash</h4></li>
+    </ul>
     <div class="btn-group col-sm-12">
-        <a [routerLink]="['/']" class="btn btn-primary">Home</a>
         <button class="btn btn-default" (click)="formVisible = true">Create Account</button>
-        <button class="btn btn-default" (click)="getBalance(user.pkf.keyFile.address)">Balance</button>
-    </div>
-    <div class="">
-        <h5>Ethereum address: {{user.pkf.keyFile.address}}</h5>
-        <h6>{{account.balance}}</h6>
+        <a [routerLink]="['/']" class="btn btn-primary">Exit</a>
     </div>
     <form [formGroup]="walletForm" class="form-horisontal t-form" *ngIf="formVisible">
         <div class="form-group">
@@ -33,4 +35,32 @@
             <h5>{{error}}</h5>
         </div>
     </form>
+
+
+            <div id="eth" class="">
+                <h5>Ethereum address: 0x{{user.pkf.keyFile.address}}</h5>
+                <h6 id="balance">{{account.balance}}</h6>
+                <div id="txs" class="col-sm-12" *ngIf="account.txs">
+                    <ul id="txsIn" class="col-sm-6">
+                        <li *ngFor="let tx of account.txs.in">
+                            <p>From: {{tx.from}}</p>
+                            <p>value: {{tx.value}}</p>
+                            <p>hash: {{tx.hash}}</p>
+                        </li>
+                    </ul>
+                    <ul id="txsOut" class="col-sm-6">
+                        <li *ngFor="let tx of account.txs.out">
+                            <p>From: {{tx.from}}</p>
+                            <p>value: {{tx.value}}</p>
+                            <p>hash: {{tx.hash}}</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="btn-group col-sm-12">
+                <button class="btn btn-default" (click)="getBalance(user.pkf.keyFile.address)">Balance</button>
+                <button class="btn btn-default" (click)="getTransctions('0x' + user.pkf.keyFile.address)">Transactions List</button>
+                <button class="btn btn-default" (click)="sendRawTransction(user.pkf.keyFile.address)">Send Money</button>
+            </div>
 </div>
+<script type="text/javascript" src="../../scripts.js"></script>

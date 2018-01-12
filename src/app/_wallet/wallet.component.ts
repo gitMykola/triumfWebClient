@@ -79,4 +79,17 @@ export class WalletComponent implements OnInit {
                 this.account.balance = response ? JSON.stringify(response) : 0.00;
             });
     }
+    getTransctions(address: string) {
+        this.http.get('http://194.71.227.15/api/v4.0/ETH/getTransactionsList/' + address,
+            {
+                headers: new HttpHeaders()
+                    .set('Content-Type', 'application/json')
+            })
+            .subscribe(response => {console.dir(response);
+                this.account.txs = response; // response ? JSON.stringify(response) : '';
+            });
+    }
+    scripts() {
+      //  document.querySelectorAll('.nav-tabs LI').on()
+    }
 }

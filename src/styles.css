@@ -1,1 +1,24 @@
 /* You can add global styles to this file, and also import other style files */
+h1,h2,h3,h4,h5,h6,label{
+    padding: 10px 5px 0px 5px!important;
+}
+.btn {
+    margin: 5px 0;
+    cursor: pointer;
+}
+.btn-group {
+    padding:0 !important;
+}
+.nav-tabs LI{
+    color: darkgray;
+    cursor: pointer;
+}
+.nav-tabs LI:hover{
+    color: #000000;
+}
+.nav-tabs .active {
+    background: lightgray;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    color: #000;
+}
