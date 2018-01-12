@@ -59,7 +59,9 @@ export class WalletComponent implements OnInit {
         const self = this;
             if (this.walletForm.getRawValue().tpassphrase !== this.walletForm.getRawValue().tcpassphrase) {
                 this.error = 'Confirmation passphrase error.';
-            } else {
+            } else if (this.walletForm.getRawValue().tpassphrase.length < 8) {
+                this.error = 'Passphrase should be more then 7 symbols!';
+        } else {
                 const body = {
                     pass: btoa(self.walletForm.getRawValue().tpassphrase)
                 };
@@ -71,6 +73,7 @@ export class WalletComponent implements OnInit {
                     })
                     .subscribe(response => {
                        if (response) {
+                           self.account = {pkf: null};
                            self.account.pkf = response;
                            self.accounts.push({
                                address: self.account.pkf.keyFile.address,

@@ -34,7 +34,7 @@
             </div>
         </div>
         <div class="form-group text-center">
-            <h5>{{error}}</h5>
+            <h5 class="error">{{error}}</h5>
         </div>
     </form>
     <form [formGroup]="accountForm" class="form-horisontal t-form" *ngIf="accFormVisible">
@@ -58,7 +58,7 @@
             </div>
         </div>
         <div class="form-group text-center">
-            <h5>{{errorAcc}}</h5>
+            <h5 class="error">{{errorAcc}}</h5>
         </div>
     </form>
     <ul id="accountsList" *ngIf="accounts">
