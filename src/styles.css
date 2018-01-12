@@ -22,3 +22,33 @@ h1,h2,h3,h4,h5,h6,label{
     border-top-right-radius: 5px;
     color: #000;
 }
+#eth DIV{
+    padding:0;
+}
+#txs UL{
+    list-style: none;
+    padding:0;
+    max-height: 300px;
+    overflow-y: scroll;
+}
+#txs UL LI p{
+    font-size: 20px;
+    margin: 0;
+    padding: 1px;
+}
+#txs UL LI .t-address, #txs UL LI .t-hash{
+    overflow-x: scroll;
+    font-size: 12px;
+}
+#accountsList{
+    list-style: none;
+}
+#accountsList LI{
+    cursor: pointer;
+}
+#accountsList LI:hover{
+    color: darkgray;
+}
+#accountsList LI .active{
+    background: lightgray;
+}

@@ -11,13 +11,20 @@ import {Router} from '@angular/router';
 export class WalletComponent implements OnInit {
     title = '';
     formVisible: boolean;
+    accFormVisible: boolean;
     passphrase: string;
     cpassphrase: string;
     walletForm: FormGroup;
+    accountForm: FormGroup;
     error: string;
+    errorAcc: string;
     user: any;
+    accAddress: string;
+    accPkey: string;
     auth: boolean;
     account: any;
+    accounts: any;
+    currentAccount: any;
     constructor(
         private authService: AuthenticationService,
         private fb: FormBuilder,
@@ -31,19 +38,25 @@ export class WalletComponent implements OnInit {
             tpassphrase: [this.passphrase, [Validators.required]],
             tcpassphrase: [this.cpassphrase, [Validators.required]]
         });
+        this.accountForm = this.fb.group({
+            taddress: [this.accAddress, [Validators.required]],
+            tpkey: [this.accPkey, [Validators.required]]
+        });
         this.user = JSON.parse(localStorage.getItem('user'));
         this.auth = this.authService.auth;
         if (!this.auth) {
             this.router.navigate(['/']);
         }
-        this.account = {};
+        const acc = localStorage.getItem('accounts');
+        console.dir(acc);
+         this.accounts = acc ? acc.split(']____[').map(e => {
+             return JSON.parse(e);
+         }) : [];
+        const last = this.accounts.length ? localStorage.getItem('lastAccount') : null;
+        this.currentAccount = last ? this.accounts[last] : null;
     }
     createAccount() {
         const self = this;
-        const user = JSON.parse(localStorage.getItem('user'));
-        if (user.pkf) {
-            self.error = 'Account exist into localStorage.';
-        } else {
             if (this.walletForm.getRawValue().tpassphrase !== this.walletForm.getRawValue().tcpassphrase) {
                 this.error = 'Confirmation passphrase error.';
             } else {
@@ -58,35 +71,74 @@ export class WalletComponent implements OnInit {
                     })
                     .subscribe(response => {
                        if (response) {
-                           user.pkf = response;
-                           localStorage.setItem('user', JSON.stringify(user));
-                           self.user = user;
-                           self.error = 'Account created succesfull.';
+                           self.account.pkf = response;
+                           self.accounts.push({
+                               address: self.account.pkf.keyFile.address,
+                               currencySymbol: 'ETH',
+                               privateKey: self.account.pkf.privateKey,
+                               keyFile: self.account.pkf.keyFile
+                           });
+                           self.currentAccount = self.account;
+                           localStorage.setItem('accounts', self.accounts.map(e => {
+                               return JSON.stringify(e);
+                           }).join(']____['));
+                           localStorage.setItem('last', self.currentAccount.address);
+                           self.error = 'Account' + self.currentAccount.address + ' created succesfull.';
                        } else {
                            self.error = 'Request server error.';
                        }
                     });
-            }
         }
     }
-    getBalance(address: string) {
-        this.http.get('http://194.71.227.15/api/v4.0/ETH/getBalance/' + address,
+    addAccount() {
+        const self = this;
+        self.account = {
+            address: self.accountForm.getRawValue().taddress,
+            currencySymbol: 'ETH',
+            privateKey: self.accountForm.getRawValue().tpkey,
+            keyFile: {}
+        };
+        let exist = 0;
+        for (let i = 0; i < self.accounts.length; i++) {
+            if (self.account.address === self.accounts[i].address) {
+                self.errorAcc = 'Account ' + self.account.address + ' exist!';
+                exist = 1;
+            }
+        }
+        if (!exist) {
+            console.dir(self.account);
+            self.accounts.push(self.account);
+            self.currentAccount = self.account;
+            localStorage.setItem('accounts', self.accounts.map(e => {
+                return JSON.stringify(e);
+            }).join(']____['));
+            localStorage.setItem('last', self.currentAccount.address);
+            self.errorAcc = 'Account ' + self.currentAccount.address + ' added succesfull.';
+        }
+    }
+    selectAccount(acc: object) {
+        this.currentAccount = acc;
+    }
+    getBalance() {
+        const self = this;
+        self.http.get('http://194.71.227.15/api/v4.0/ETH/getBalance/' + self.currentAccount.address,
             {
                 headers: new HttpHeaders()
                     .set('Content-Type', 'application/json')
             })
             .subscribe(response => {console.dir(response);
-                this.account.balance = response ? JSON.stringify(response) : 0.00;
+                self.currentAccount.bal = response ? response : 0.00;
             });
     }
-    getTransctions(address: string) {
-        this.http.get('http://194.71.227.15/api/v4.0/ETH/getTransactionsList/' + address,
+    getTransctions() {
+        const self = this;
+        self.http.get('http://194.71.227.15/api/v4.0/ETH/getTransactionsList/' + self.currentAccount.address,
             {
                 headers: new HttpHeaders()
                     .set('Content-Type', 'application/json')
             })
             .subscribe(response => {console.dir(response);
-                this.account.txs = response; // response ? JSON.stringify(response) : '';
+                self.currentAccount.txs = response ? response : null;
             });
     }
     scripts() {

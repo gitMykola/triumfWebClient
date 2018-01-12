@@ -8,7 +8,9 @@
         <li class=""><h4>Bitcoin Cash</h4></li>
     </ul>
     <div class="btn-group col-sm-12">
-        <button class="btn btn-default" (click)="formVisible = true">Create Account</button>
+        <button class="btn btn-default" (click)="test()">Test</button>
+        <button class="btn btn-default" (click)="formVisible = !formVisible">Create Account</button>
+        <button class="btn btn-default" (click)="accFormVisible = !accFormVisible">Add Existing Account</button>
         <a [routerLink]="['/']" class="btn btn-primary">Exit</a>
     </div>
     <form [formGroup]="walletForm" class="form-horisontal t-form" *ngIf="formVisible">
@@ -35,32 +37,63 @@
             <h5>{{error}}</h5>
         </div>
     </form>
-
-
-            <div id="eth" class="">
-                <h5>Ethereum address: 0x{{user.pkf.keyFile.address}}</h5>
-                <h6 id="balance">{{account.balance}}</h6>
-                <div id="txs" class="col-sm-12" *ngIf="account.txs">
-                    <ul id="txsIn" class="col-sm-6">
-                        <li *ngFor="let tx of account.txs.in">
-                            <p>From: {{tx.from}}</p>
-                            <p>value: {{tx.value}}</p>
-                            <p>hash: {{tx.hash}}</p>
-                        </li>
-                    </ul>
-                    <ul id="txsOut" class="col-sm-6">
-                        <li *ngFor="let tx of account.txs.out">
-                            <p>From: {{tx.from}}</p>
-                            <p>value: {{tx.value}}</p>
-                            <p>hash: {{tx.hash}}</p>
-                        </li>
-                    </ul>
+    <form [formGroup]="accountForm" class="form-horisontal t-form" *ngIf="accFormVisible">
+        <div class="form-group">
+            <label for="accAddress" class="col-md-4 control-label">Address</label>
+            <div class="col-md-6">
+                <input id="accAddress" type="text" name="accAddress" formControlName="taddress"
+                       autofocus="autofocus" class="form-control">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="accPkey" class="col-md-4 control-label">Private Key</label>
+            <div class="col-md-6">
+                <input id="accPkey" type="text" name="accPkey" formControlName="tpkey"
+                       autofocus="autofocus" class="form-control">
+            </div>
+        </div>
+        <div class="form-group text-center">
+            <div class="btn btn-primary col-sm-4"
+                 (click)="addAccount()">Add
+            </div>
+        </div>
+        <div class="form-group text-center">
+            <h5>{{errorAcc}}</h5>
+        </div>
+    </form>
+    <ul id="accountsList" *ngIf="accounts">
+        <li *ngFor="let acc of accounts" class="" (click)="selectAccount(acc)">{{acc.address}}</li>
+    </ul>
+             <div id="eth" class="">
+                <h5 *ngIf="currentAccount">Ethereum address: {{currentAccount.address}}</h5>
+                <h6 id="balance" *ngIf="currentAccount && currentAccount.bal">Balance: {{currentAccount.bal.balance}} ether</h6>
+                <div id="txs" class="col-sm-12" *ngIf="currentAccount && currentAccount.txs">
+                    <div id="txsIn" class="col-sm-6">
+                        <h5>Income transactions:</h5>
+                        <ul>
+                            <li *ngFor="let tx of currentAccount.txs.in">
+                                <p class="t-address">from: {{tx.from}}</p>
+                                <p class="t-hash">hash: {{tx.hash}}</p>
+                                <p class="t-ammount">ammount: {{tx.value}}</p>
+                            </li>
+                        </ul>
+                    </div>
+                    <div id="txsOut" class="col-sm-6">
+                        <h5>Outcome transactions:</h5>
+                        <ul>
+                            <li *ngFor="let tx of currentAccount.txs.out">
+                                <p class="t-address">from: {{tx.from}}</p>
+                                <p class="t-hash">hash: {{tx.hash}}</p>
+                                <p class="t-ammount">ammount: {{tx.value}}</p>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
             <div class="btn-group col-sm-12">
-                <button class="btn btn-default" (click)="getBalance(user.pkf.keyFile.address)">Balance</button>
-                <button class="btn btn-default" (click)="getTransctions('0x' + user.pkf.keyFile.address)">Transactions List</button>
-                <button class="btn btn-default" (click)="sendRawTransction(user.pkf.keyFile.address)">Send Money</button>
+                <button class="btn btn-default" (click)="getBalance()">Balance</button>
+                <button class="btn btn-default" (click)="getTransctions()">Transactions List</button>
+                <button class="btn btn-default" (click)="sendRawTransction()">Send Money</button>
             </div>
 </div>
 <script type="text/javascript" src="../../scripts.js"></script>
