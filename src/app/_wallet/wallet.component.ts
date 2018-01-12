@@ -3,6 +3,10 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {AuthenticationService} from '../_services';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {Router} from '@angular/router';
+import * as ethjs from '../../../node_modules/ethjs-account';
+import * as keythe from '../../../node_modules/keythereum';
+import * as crypt from '../../../node_modules/crypto-browserify';
+import * as jsonfs from '../../../node_modules/jsonfile';
 
 @Component({
     selector: 'app-t-wallet',
@@ -44,25 +48,78 @@ export class WalletComponent implements OnInit {
         });
         this.user = JSON.parse(localStorage.getItem('user'));
         this.auth = this.authService.auth;
-        if (!this.auth) {
+        /*if (!this.auth) {
             this.router.navigate(['/']);
-        }
+        }*/
         const acc = localStorage.getItem('accounts');
-        console.dir(acc);
+        // console.dir(acc);
          this.accounts = acc ? acc.split(']____[').map(e => {
              return JSON.parse(e);
          }) : [];
         const last = this.accounts.length ? localStorage.getItem('lastAccount') : null;
         this.currentAccount = last ? this.accounts[last] : null;
     }
+    generate(next) {
+        const params = { keyBytes: 32, ivBytes: 16 };
+        const dk = keythe.create(params);
+        console.dir(dk);
+        const password = 'somepaSsword4For12'; // crypt.randomFillSync(password).toString('hex');
+        const kdf = 'pbkdf2';
+        const options = {
+            kdf: 'pbkdf2',
+            cipher: 'aes-128-ctr',
+            kdfparams: {
+                c: 262144,
+                dklen: 32,
+                prf: 'hmac-sha256'
+            }
+        };
+        const keyFile = keythe.dump(password, dk.privateKey, dk.salt, dk.iv, options);
+        console.dir(keyFile);
+        keythe.exportToFile(keyFile);
+        const blob = new Blob([JSON.stringify(keyFile)], {type: 'text/json'});
+        const e = document.createEvent('MouseEvent');
+        const a = document.createElement('a');
+        const cd = new Date();
+        const month = ((cd.getMonth() + 1).toString().length === 1) ?
+            '0' + (cd.getMonth() + 1).toString() : (cd.getMonth() + 1).toString();
+        const days = (cd.getDay().toString().length === 1) ?
+            '0' + cd.getDay().toString() : cd.getDay().toString();
+        const hours = (cd.getHours().toString().length === 1) ?
+            '0' + cd.getHours().toString() : cd.getHours().toString();
+        const mins = (cd.getMinutes().toString().length === 1) ?
+            '0' + cd.getMinutes().toString() : cd.getMinutes().toString();
+        const seconds = (cd.getSeconds().toString().length === 1) ?
+            '0' + cd.getSeconds().toString() : cd.getSeconds().toString();
+        const mseconds = (cd.getMilliseconds().toString().length === 1) ?
+            '00' + cd.getMilliseconds().toString() :
+            ((cd.getMilliseconds().toString().length === 2) ? '0' + cd.getMilliseconds().toString()
+                : cd.getMilliseconds().toString());
+        const filename = 'UTC--' + cd.getFullYear() + '-'
+        + month + '- ' + days + 'T' + hours + ':' + mins + ':' + seconds + '.' + mseconds +
+            'Z--' + keyFile.address;
+        a.download = filename;
+        a.href = window.URL.createObjectURL(blob);
+        a.dataset.downloadurl = ['text/json', a.download, a.href].join(':');
+        e.initMouseEvent('click', true, false, window,
+            0, 0, 0, 0, 0, false, false, false, false, 0, null);
+        a.dispatchEvent(e);
+        next('0x' + keyFile.address);
+    }
     createAccount() {
         const self = this;
             if (this.walletForm.getRawValue().tpassphrase !== this.walletForm.getRawValue().tcpassphrase) {
                 this.error = 'Confirmation passphrase error.';
             } else if (this.walletForm.getRawValue().tpassphrase.length < 8) {
-                this.error = 'Passphrase should be more then 7 symbols!';
+                this.error = 'Passphrase should be at least 8 characters!';
         } else {
-                const body = {
+                self.generate( address => {
+                    self.currentAccount = {
+                        address: address
+                    };
+                    self.error = 'Account ' + address + ' generated successful.';
+                });
+                /*const body = {
                     pass: btoa(self.walletForm.getRawValue().tpassphrase)
                 };
                 this.http.post('http://194.71.227.15/api/v4.0/ETH/createETHAccountWithPassword',
@@ -90,7 +147,7 @@ export class WalletComponent implements OnInit {
                        } else {
                            self.error = 'Request server error.';
                        }
-                    });
+                    });*/
         }
     }
     addAccount() {

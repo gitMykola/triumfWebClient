@@ -4,7 +4,7 @@ import { WalletComponent } from './_wallet';
 
 const appRoutes: Routes = [
     { path: 'wallet', component: WalletComponent },
-    { path: '', component: HomeComponent},
+    { path: '', component: WalletComponent},
 
     // otherwise redirect to home
     { path: '**', redirectTo: '' }
