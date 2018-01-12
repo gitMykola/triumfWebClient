@@ -1,14 +1,14 @@
 <div class="container t-home">
     <h1 class="text-center">{{title}}</h1>
     <div class="col-sm-12 text-center">
-        <button class="btn btn-primary col-sm-4" (click)="formVisible = true;logi = false;">Create New Wallet</button>
-        <button class="btn btn-primary col-sm-4" (click)="formVisible = true;logi = true;">Open Wallet</button>
+        <button class="btn btn-primary col-sm-4" (click)="formVisible = !formVisible;logi = false;">Create New Wallet</button>
+        <button class="btn btn-primary col-sm-4" (click)="formVisible = !formVisible;logi = true;">Open Wallet</button>
     </div>
     <div class="col-sm-6 offset-3 text-center">
-        <div class="col-sm-12">
+        <!--<div class="col-sm-12">
             <input #currency id="currency" type="radio" name="currency" value="ETH"/>
             <label for="currency">Ethereum</label>
-        </div>
+        </div>-->
     </div>
     <form [formGroup]="loginForm" class="form-horisontal t-form" *ngIf="formVisible">
         <div class="form-group">
