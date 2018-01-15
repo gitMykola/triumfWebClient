@@ -75,10 +75,19 @@
                 </div>
             </div>
             <div class="form-group col-md-6">
-                <label for="txValue" class="col-md-12 control-label">Ammount in wei</label>
+                <label for="txValue" class="col-md-12 control-label">Ammount in ether</label>
                 <div class="col-md-12">
                     <input id="txValue" type="number" name="txValue" formControlName="ttxValue"
                            autofocus="autofocus" class="form-control">
+                </div>
+            </div>
+        </div>
+        <div class="row col-md-12">
+            <div class="form-group col-md-6">
+                <label for="txGasLimit" class="col-md-12 control-label">Gas limit</label>
+                <div class="col-md-12">
+                    <input id="txGasLimit" type="number" name="txGasLimit" formControlName="ttxGasLimit"
+                           autofocus="autofocus" class="form-control" value="21000">
                 </div>
             </div>
         </div>

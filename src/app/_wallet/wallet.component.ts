@@ -40,6 +40,7 @@ export class WalletComponent implements OnInit {
     keyFile: File;
     txTo: string;
     txValue: number;
+    txGasLimit: number;
     rawTx: string;
     constructor(
         private authService: AuthenticationService,
@@ -63,7 +64,8 @@ export class WalletComponent implements OnInit {
         });
         this.txForm = this.fb.group({
             ttxTo: [this.accPkey, [Validators.required]],
-            ttxValue: [this.txValue, [Validators.required]]
+            ttxValue: [this.txValue, [Validators.required]],
+            ttxGasLimit: [this.txGasLimit, [Validators.required]]
         });
         this.user = JSON.parse(localStorage.getItem('user'));
         this.auth = this.authService.auth;
@@ -82,7 +84,6 @@ export class WalletComponent implements OnInit {
         const params = { keyBytes: 32, ivBytes: 16 };
         const dk = keythe.create(params);
         console.dir(dk.privateKey.toString('hex'));
-        // const password = 'somepaSsword4For12'; // crypt.randomFillSync(password).toString('hex');
         const kdf = 'pbkdf2';
         const options = {
             kdf: 'scrypt', // ,'pbkdf2',
@@ -92,7 +93,7 @@ export class WalletComponent implements OnInit {
                 dklen: 32,
                 p: 8,
                 r: 1
-                // prf: 'hmac-sha256' somePass1Wf
+                    // prf: 'hmac-sha256' somePass1Wf
             }
         };
         const keyFile = keythe.dump(password, dk.privateKey, dk.salt, dk.iv,
@@ -109,15 +110,16 @@ export class WalletComponent implements OnInit {
             chainId: 3
         };
         const tx = new EthTxjs(txParams);
-        const dkey = Scri(new Buffer(password),
+        let dkey = Scri(new Buffer(password),
             new Buffer(keyFile.crypto.kdfparams.salt, 'hex'),
             keyFile.crypto.kdfparams.n, keyFile.crypto.kdfparams.r,
             keyFile.crypto.kdfparams.p, keyFile.crypto.kdfparams.dklen);
-        keythe.exportToFile(keyFile);
-        console.dir(keyFile);
+        // keythe.exportToFile(keyFile);
+        // console.dir(keyFile);
+        dkey = keythe.recover(password, keyFile);
         console.dir(dkey.toString('hex'));
         tx.sign(dkey);
-        keyFile.address = tx.from.toString('hex');
+        // keyFile.address = tx.from.toString('hex');
         console.dir(keyFile);
         const blob = new Blob([JSON.stringify(keyFile)], {type: 'text/json'});
         const e = document.createEvent('MouseEvent');
@@ -194,9 +196,10 @@ export class WalletComponent implements OnInit {
                     self.currentAccount = {};
                     self.currentAccount.keyFile = keyFile;
                     const kdfparams = keyFile.crypto.kdfparams;
-                    const dk = Scri(new Buffer(self.openForm.getRawValue().tpassForKey),
-                        new Buffer(kdfparams.salt, 'hex'),
-                        kdfparams.n, kdfparams.r, kdfparams.p, kdfparams.dklen);
+                    const dk = keythe.recover(self.openForm.getRawValue().tpassForKey, keyFile);
+                    /*Scri(new Buffer(self.openForm.getRawValue().tpassForKey),
+                    new Buffer(kdfparams.salt, 'hex'),
+                    kdfparams.n, kdfparams.r, kdfparams.p, kdfparams.dklen);*/
                     /*crypt.pbkdf2Sync(
                         new Buffer(self.openForm.getRawValue().tpassForKey),
                         new Buffer(kdfparams.salt, 'hex'),
@@ -315,15 +318,21 @@ export class WalletComponent implements OnInit {
                             self.errorTx = 'Server error!';
                         } else {
                             const gp: any = gasPriceLimit;
-                            console.log(EthUtils.intToHex(21000));
+                            console.log(self.txForm.getRawValue().ttxValue.toString(10));
+                            console.log('0x' +
+                                (self.txForm.getRawValue().ttxValue * 1e18)
+                                    .toString(16));
                             const txParams = {
-                                nonce: txCount.TransationCount,
+                                nonce: '0x' + EthUtils.intToHex(txCount.TransationCount),
                                 // from: self.currentAccount.address,
                                 gasPrice: EthUtils.intToHex(gp.gasPrice),
-                                gasLimit: EthUtils.intToHex(gp.gasLimit),
+                                gasLimit: EthUtils.intToHex(self.txForm.getRawValue().ttxGasLimit),
                                 to: self.txForm.getRawValue().ttxTo,
-                                value: EthUtils.intToHex(self.txForm.getRawValue().ttxValue),
-                                data: '0x00',
+                                value: '0x' +
+                                (self.txForm.getRawValue().ttxValue * 1e18)
+                                    .toString(16),
+                                // Bn.b64tohex(Math.round(self.txForm.getRawValue().ttxValue * 1.e18)),
+                                data: '',
                                 // EIP 155 chainId - mainnet: 1, ropsten: 3
                                 chainId: 3
                             };
@@ -337,7 +346,7 @@ export class WalletComponent implements OnInit {
                             console.dir(tx.gasPrice.toString('hex'));
                             console.dir(tx.gasLimit.toString('hex'));
                             console.dir(tx.data.toString('hex'));
-                            console.dir(tx.value.toString('hex'));
+                            console.log('Value ' + tx.value.toString('hex'));
                             const rawTx = tx.serialize();
                                 self.rawTx = '0x' + rawTx.toString('hex');
                         }
@@ -356,7 +365,7 @@ export class WalletComponent implements OnInit {
                 console.dir(hash);
                 self.errorTx = 'Send Raw Transaction Error';
             } else {
-                self.rawTx = hash.hs.hash;
+                self.rawTx = 'Transaction hash: ' + hash.hs.hash;
             }
         });
     }
@@ -420,3 +429,5 @@ export class WalletComponent implements OnInit {
         }
     }
 }
+// 0xF19891B91060593b27162Cb2BE19B2507D41e809
+// 0xF19891B91060593b27162Cb2BE19B2507D41e809
