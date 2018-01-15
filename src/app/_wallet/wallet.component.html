@@ -9,9 +9,9 @@
     </ul>
     <div class="btn-group col-sm-12">
         <!--<button class="btn btn-default" (click)="scripts()">Test</button>-->
-        <button class="btn btn-default" (click)="formVisible = !formVisible">Create Account</button>
-        <button class="btn btn-default" (click)="accFormVisible = !accFormVisible">Unlock Account</button>
-        <button class="btn btn-default" (click)="txFormVisible = !txFormVisible"
+        <button class="btn btn-default" (click)="formVisible = !formVisible; accFormVisible = txFormVisible = 0">Create Account</button>
+        <button class="btn btn-default" (click)="accFormVisible = !accFormVisible; formVisible = txFormVisible = 0;">Unlock Account</button>
+        <button class="btn btn-default" (click)="txFormVisible = !txFormVisible; accFormVisible = 0;"
         *ngIf="currentAccount">Send Money</button>
         <a [routerLink]="['/']" class="btn btn-primary">Exit</a>
     </div>
@@ -48,7 +48,7 @@
                        autofocus="autofocus" class="form-control">
             </div>
         </div>
-        <div class="form-group col-md-6">
+        <div class="form-group col-md-6" *ngIf="openForm.getRawValue().tpassForKey">
             <label for="keyFile" class="col-md-12 control-label">Select KeyFile to sign transaction</label>
             <div class="col-md-12">
                 <input #kfile id="keyFile" type="file" name="keyFile" formControlName="tkeyFile"
@@ -87,7 +87,7 @@
                 <label for="txGasLimit" class="col-md-12 control-label">Gas limit</label>
                 <div class="col-md-12">
                     <input id="txGasLimit" type="number" name="txGasLimit" formControlName="ttxGasLimit"
-                           autofocus="autofocus" class="form-control" value="21000">
+                           autofocus="autofocus" class="form-control" [value]="txGasL">
                 </div>
             </div>
         </div>
@@ -112,7 +112,7 @@
              <div id="eth" class="">
                 <h5 *ngIf="currentAccount">Ethereum address: {{currentAccount.address}}</h5>
                 <h6 id="balance" *ngIf="currentAccount && currentAccount.bal">Balance: {{currentAccount.bal.balance}} ether</h6>
-                <div id="txs" class="col-sm-12" *ngIf="currentAccount && currentAccount.txs">
+                <div id="txs" class="col-sm-12 row" *ngIf="currentAccount && currentAccount.txs">
                     <div id="txsIn" class="col-sm-6">
                         <h5>Income transactions:</h5>
                         <ul>
@@ -127,7 +127,7 @@
                         <h5>Outcome transactions:</h5>
                         <ul>
                             <li *ngFor="let tx of currentAccount.txs.out">
-                                <p class="t-address">from: {{tx.from}}</p>
+                                <p class="t-address">to: {{tx.to}}</p>
                                 <p class="t-hash">hash: {{tx.hash}}</p>
                                 <p class="t-ammount">ammount: {{tx.value}}</p>
                             </li>

@@ -41,6 +41,7 @@ export class WalletComponent implements OnInit {
     txTo: string;
     txValue: number;
     txGasLimit: number;
+    txGasL: number;
     rawTx: string;
     constructor(
         private authService: AuthenticationService,
@@ -99,28 +100,8 @@ export class WalletComponent implements OnInit {
         const keyFile = keythe.dump(password, dk.privateKey, dk.salt, dk.iv,
             options);
         console.dir(keyFile);
-        const txParams = {
-            nonce: '0x00',
-            gasPrice: EthUtils.intToHex(1000),
-            gasLimit: EthUtils.intToHex(21000),
-            to: '0xb81d25710e306d8f245d8b8bcaf1c91479c2eb86',
-            value: '0x00', // EthUtils.intToHex(self.txForm.getRawValue().ttxValue),
-            data: '0x00',
-            // EIP 155 chainId - mainnet: 1, ropsten: 3
-            chainId: 3
-        };
-        const tx = new EthTxjs(txParams);
-        let dkey = Scri(new Buffer(password),
-            new Buffer(keyFile.crypto.kdfparams.salt, 'hex'),
-            keyFile.crypto.kdfparams.n, keyFile.crypto.kdfparams.r,
-            keyFile.crypto.kdfparams.p, keyFile.crypto.kdfparams.dklen);
-        // keythe.exportToFile(keyFile);
-        // console.dir(keyFile);
-        dkey = keythe.recover(password, keyFile);
+        const dkey = keythe.recover(password, keyFile);
         console.dir(dkey.toString('hex'));
-        tx.sign(dkey);
-        // keyFile.address = tx.from.toString('hex');
-        console.dir(keyFile);
         const blob = new Blob([JSON.stringify(keyFile)], {type: 'text/json'});
         const e = document.createEvent('MouseEvent');
         const a = document.createElement('a');
@@ -197,18 +178,7 @@ export class WalletComponent implements OnInit {
                     self.currentAccount.keyFile = keyFile;
                     const kdfparams = keyFile.crypto.kdfparams;
                     const dk = keythe.recover(self.openForm.getRawValue().tpassForKey, keyFile);
-                    /*Scri(new Buffer(self.openForm.getRawValue().tpassForKey),
-                    new Buffer(kdfparams.salt, 'hex'),
-                    kdfparams.n, kdfparams.r, kdfparams.p, kdfparams.dklen);*/
-                    /*crypt.pbkdf2Sync(
-                        new Buffer(self.openForm.getRawValue().tpassForKey),
-                        new Buffer(kdfparams.salt, 'hex'),
-                        kdfparams.c,
-                        kdfparams.dklen,
-                        'sha256'
-                    );*/
                     console.dir(dk.toString('hex'));
-                    // self.accPkey = '0x' + dk.toString('hex');
                     self.accPkey = dk;
                     self.currentAccount.address = '0x' + keyFile.address;
                     /*keythe.recover(self.accountForm.getRawValue().tpassphrase,
@@ -240,6 +210,7 @@ export class WalletComponent implements OnInit {
                     localStorage.setItem('last', self.currentAccount.address);
                     self.errorAcc = 'Account ' + self.currentAccount.address + ' added succesfull.';
                 }*/
+                self.getApi({method: 'getPriceLimit'}, gp => self.txGasL = gp.gasLimit || 21000);
             }
         } catch (error) {
             self.errorAcc = 'Open Acount Error!';
@@ -323,8 +294,7 @@ export class WalletComponent implements OnInit {
                                 (self.txForm.getRawValue().ttxValue * 1e18)
                                     .toString(16));
                             const txParams = {
-                                nonce: '0x' + EthUtils.intToHex(txCount.TransationCount),
-                                // from: self.currentAccount.address,
+                                nonce: '0x' + Number(txCount.TransationCount).toString(16),
                                 gasPrice: EthUtils.intToHex(gp.gasPrice),
                                 gasLimit: EthUtils.intToHex(self.txForm.getRawValue().ttxGasLimit),
                                 to: self.txForm.getRawValue().ttxTo,
@@ -341,6 +311,7 @@ export class WalletComponent implements OnInit {
                             // EthSigner.sign(txParams, self.accPkey, false);
                             // const rawTx = EthSigner.sign(txParams, self.accPkey, false); // tx.serialize();
                             tx.sign(self.accPkey);
+                            console.dir(tx.nonce.toString('hex'));
                             console.dir(tx.from.toString('hex'));
                             console.dir(tx.to.toString('hex'));
                             console.dir(tx.gasPrice.toString('hex'));
