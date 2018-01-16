@@ -42,6 +42,7 @@ export class WalletComponent implements OnInit {
     txValue: number;
     txGasLimit: number;
     txGasL: number;
+    sendB: any;
     rawTx: string;
     constructor(
         private authService: AuthenticationService,
@@ -66,7 +67,8 @@ export class WalletComponent implements OnInit {
         this.txForm = this.fb.group({
             ttxTo: [this.accPkey, [Validators.required]],
             ttxValue: [this.txValue, [Validators.required]],
-            ttxGasLimit: [this.txGasLimit, [Validators.required]]
+            ttxGasLimit: [this.txGasLimit, [Validators.required]],
+            tsendB: [this.sendB]
         });
         this.user = JSON.parse(localStorage.getItem('user'));
         this.auth = this.authService.auth;
@@ -160,6 +162,8 @@ export class WalletComponent implements OnInit {
     }
     openAccount(files) {
         const self = this;
+        self.errorAcc = 'Key File reading ...';
+        console.log('Key File reading ...');
         self.currentAccount = {};
         self.currentAccount.address = 'Wait ...';
         self.accFormVisible = false;
@@ -216,6 +220,7 @@ export class WalletComponent implements OnInit {
             self.errorAcc = 'Open Acount Error!';
             console.dir(error);
         }
+        self.errorAcc = '';
     }
     selectAccount(acc: object) {
         this.currentAccount = acc;
@@ -268,6 +273,8 @@ export class WalletComponent implements OnInit {
     }
     createTx() {
         const self = this;
+        self.rawTx = '';
+        console.dir(self.txForm.getRawValue().ttxGasLimit);
         if (!self.txForm.getRawValue().ttxTo
         || self.txForm.getRawValue().ttxTo.length !== 42) {
             self.errorTx = 'Wrong receiver address!';
@@ -296,7 +303,7 @@ export class WalletComponent implements OnInit {
                             const txParams = {
                                 nonce: '0x' + Number(txCount.TransationCount).toString(16),
                                 gasPrice: EthUtils.intToHex(gp.gasPrice),
-                                gasLimit: EthUtils.intToHex(self.txForm.getRawValue().ttxGasLimit),
+                                gasLimit: EthUtils.intToHex(self.txForm.getRawValue().ttxGasLimit || self.txGasL),
                                 to: self.txForm.getRawValue().ttxTo,
                                 value: '0x' +
                                 (self.txForm.getRawValue().ttxValue * 1e18)
@@ -328,16 +335,21 @@ export class WalletComponent implements OnInit {
     }
     sendRaw() {
         const self = this;
+        const raw = self.rawTx;
+        self.errorTx = '';
+        self.rawTx = '';
         self.getApi({
             method: 'sendRawTransaction',
-            hex: self.rawTx
-        }, hash => {
-            if (!hash || hash.hs.err) {
-                console.dir(hash);
-                self.errorTx = 'Send Raw Transaction Error';
+            hex: raw
+        }, hash => { // console.log();
+            if (!hash.response || hash.err) {
+                self.rawTx = raw;
+                // console.dir(hash);
+                self.errorTx = 'Send Raw Transaction Error. Check Balance, GasLimit or net connection.';
             } else {
-                self.rawTx = 'Transaction hash: ' + hash.hs.hash;
+                self.rawTx = 'Transaction broadcasted successfully. Hash: ' + hash.response.hs.hash;
             }
+
         });
     }
     getApi(opts: any, next: any) {
@@ -379,8 +391,12 @@ export class WalletComponent implements OnInit {
                     self.http.get(opts.url + 'ETH/sendRawTransaction/' +
                         opts.hex,
                         opts)
-                        .subscribe(response => {console.dir(response);
-                            next(response ? response : null);
+                        .subscribe(response => { // console.dir(response);
+                            next({response: response ? response : null, err: null});
+                        }, err => {
+                            if (err.error && err.error.hs && err.error.hs.err) {
+                                next({response: null, err: err.error.hs.err});
+                            }
                         });
                     break;
                 }
