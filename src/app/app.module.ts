@@ -6,16 +6,19 @@ import { routing } from './app.routing';
 import { ReactiveFormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
+import { StartComponent } from './start';
 import {HomeComponent} from './home';
 import {WalletComponent} from './_wallet';
 import {AuthenticationService} from './_services';
 import {HttpClientModule} from '@angular/common/http';
+import {TranslatorService} from './translator';
 
 @NgModule({
   declarations: [
     AppComponent,
       HomeComponent,
-      WalletComponent
+      WalletComponent,
+      StartComponent
   ],
   imports: [
     BrowserModule,
@@ -25,7 +28,8 @@ import {HttpClientModule} from '@angular/common/http';
       HttpClientModule
   ],
   providers: [
-      AuthenticationService
+      AuthenticationService,
+      TranslatorService
   ],
   bootstrap: [AppComponent]
 })

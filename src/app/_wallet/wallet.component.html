@@ -48,7 +48,7 @@
                        autofocus="autofocus" class="form-control">
             </div>
         </div>
-        <div class="form-group col-md-6" *ngIf="openForm.getRawValue().tpassForKey">
+        <div class="form-group col-md-6" *ngIf="openForm.getRawValue().tpassForKey && openForm.getRawValue().tpassForKey.length > 7">
             <label for="keyFile" class="col-md-12 control-label">Select KeyFile to sign transaction</label>
             <div class="col-md-12">
                 <input #kfile id="keyFile" type="file" name="keyFile" formControlName="tkeyFile"
