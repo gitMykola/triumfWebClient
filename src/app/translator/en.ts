@@ -23,11 +23,15 @@ export const EN = {
         bad_key: 'Bad private key.',
         bad_key_file: 'Bad key file.',
         bad_network: 'Unnoun network.',
-        wrong_account_params_object_field: 'Wrong account params object field.'
+        wrong_account_params_object_field: 'Wrong account params object field.',
+        eth_account_open_error: 'Ethereum account open error.'
     },
     info: {
-        account_open_successfully: 'Account open successfully.',
-        account_already_open: 'Account already open.'
+        account_opened_successfully: 'Account open successfully.',
+        account_already_open: 'Account already open.',
+        account_closed: 'Account closed.',
+        account_already_closed: 'Account already closed.',
+        account_created_successfully: 'Account created successfully.'
     },
     currencies: {
         eth_name: 'Ethereum',

@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { Account } from '../lib/account';
 import { config } from '../config';
 import {TranslatorService} from '../translator';
+import * as Keythe from '../../../node_modules/keythereum';
+import * as EthTxjs from '../../../node_modules/ethereumjs-tx';
 
 @Injectable()
 export class AccountsService {
@@ -28,10 +30,10 @@ export class AccountsService {
     infoInit() {
         this.infoMessage = this.errorMessage = null;
     }
-    isOpen(address: string): boolean {
+    isOpen(address: string, network: string): boolean {
         this.infoInit();
         const acc = this.accounts.
-        filter(el => { return el.address = address; });
+        filter(el => { return el.address === address && el.network === network; });
         if (!acc.length) {
             this.error(this.trans.translate('err.account_not_exists') + ' ' + address);
             return false;
@@ -39,32 +41,74 @@ export class AccountsService {
             this.info(this.trans.translate('info.account_open') + ' ' + address);
             return true;
         } else {
-            this.error('Account ' + address + ' closed');
+            this.error(this.trans.translate('info.account_closed') + ' ' + address);
             return false;
         }
     }
-    getAccountBalance(address: string): string {
+    getAccountBalance(address: string, callback: any) {
         this.infoInit();
         return '0.00';
     }
-    getAccountTransactions(address: string): object {
+    getAccountTransactions(address: string, callback: any) {
         this.infoInit();
         return [];
     }
-    createTx(params: object): string {
+    createTx(params: any, callback: any) {
         this.infoInit();
         return '';
     }
-    sendTx(hex: string): string {
+    sendTx(hex: string, callback: any) {
         this.infoInit();
         return '';
+    }
+    createAccount(params: any, next: any) {
+        params.passphrase = params.passphrase || null;
+        params.symbol = params.symbol || null;
+        params.network = params.network || null;
+        this.infoInit();
+        if (!this._verifyAccountParams(params)) {
+            next({err: this.errorMessage});
+        } else {
+            switch (params.symbol) {
+                case 'ETH':
+                    this._createETHAccount(params, response => {
+                       if (response.err) {
+                           this.error(this.trans.translate('err.create_account_error'));
+                           next({err: this.errorMessage});
+                       } else {
+                           this.info(this.trans.translate('info.account_created_successfully') + ' ' +
+                           response.account.address);
+                       }
+                    });
+                    break;
+                case 'BTC':
+                    this._createBTCAccount(params, response => {
+                        if (response.err) {
+                            this.error(this.trans.translate('err.create_account_error'));
+                            next({err: this.errorMessage});
+                        } else {
+                            this.info(this.trans.translate('info.account_created_successfully') + ' ' +
+                                response.account.address);
+                        }
+                    });
+                    break;
+                default:
+                    next({err: 'Error'});
+                    break;
+            }
+        }
     }
     openAccount(params: any, next: any) {
+        params.symbol = params.symbol || null;
+        params.keyFile = params.keyFile || null;
+        params.passphrase = params.passphrase || null;
+        params.network = params.network || null;
+        // params.address = params.address || null;
         this.infoInit();
          if (!this._verifyAccountParams(params)) {
              next({err: this.errorMessage});
          } else {
-                if (this.isOpen(params.address)) {
+                if (params.address && this.isOpen(params.address, params.network)) {
                     this.info(this.trans.translate('info.account_already_open'));
                     next({account:
                             {
@@ -79,10 +123,9 @@ export class AccountsService {
                             this._openETHAccount(params, response => {
                                 if (response.err) {
                                     this.error(this.trans.translate('err.open_account_error'));
-                                    next({err: response.err + ' '
-                                        + this.errorMessage});
+                                    next({err: this.errorMessage});
                                 } else {
-                                    this.info(this.trans.translate('info.account_open_successfully') +
+                                    this.info(this.trans.translate('info.account_opened_successfully') +
                                     ' ' + response.account.address);
                                     next({account: response.account});
                                 }
@@ -102,14 +145,31 @@ export class AccountsService {
                             });
                             break;
                         default: {
-                            return false;
+                            next({err: 'Error'});
+                            break;
                         }
                     }
                 }
         }
     }
-    closeAcount(address: string): boolean {
-        return true;
+    closeAcount(address: string, network: string): boolean {
+        const acc = this.accounts.
+        filter(el => { return el.address === address && el.network === network; });
+        if (!acc.length) {
+            this.error(this.trans.translate('err.account_not_exists') + ' ' + address);
+            return false;
+        } else if (acc[0].key !== null) {
+            this.accounts.forEach(el => {
+                if (el.address === address && el.network === network) {
+                    el.key = null;
+                }
+            });
+            this.info(this.trans.translate('info.account_closed') + ' ' + address);
+            return true;
+        } else {
+            this.info(this.trans.translate('info.account_already_closed') + ' ' + address);
+            return false;
+        }
     }
     _verifyAccountParams(params: any): boolean {
         if (typeof params !== 'object'){
@@ -185,6 +245,64 @@ export class AccountsService {
             }
         }*/
     }
-    _openETHAccount(params: any, callback: any) {}
+    _openETHAccount(params: any, callback: any) {
+        try {
+            const pKey = Keythe.recover(params.passphrase, params.keyFile);
+            if (pKey) {
+                const account = new Account();
+                account.address = '0x' + params.keyFile.address;
+                account.key = pKey;
+                account.network = params.network;
+                account.symbol = this._config.currencies.ETH.symbol;
+                this.accounts.push(account);
+                callback(account);
+            } else {
+                this.error(this.trans.translate('err.eth_account_open_error'));
+                callback({err: this.errorMessage});
+            }
+        } catch (err) {
+            this.error(err.message);
+            callback({err: this.errorMessage});
+        }
+    }
     _openBTCAccount(params: any, callback: any) {}
+    _createETHAccount(params: any, callback: any) {
+        try {
+            const opts = { keyBytes: 32, ivBytes: 16 },
+                dk = Keythe.create(opts),
+                options = {
+                        kdf: 'scrypt', // ,'pbkdf2',
+                        cipher: 'aes-128-ctr',
+                        kdfparams: {
+                            n: 262144,
+                            dklen: 32,
+                            p: 8,
+                            r: 1
+                            // prf: 'hmac-sha256' somePass1Wf
+                        }
+                    },
+                keyFile = Keythe.dump(
+                    params.passphrase,
+                    dk.privateKey,
+                    dk.salt,
+                    dk.iv,
+                    options);
+            if (keyFile) {
+                const account = new Account();
+                account.address = '0x' + params.keyFile.address;
+                account.key = dk.toString('hex');
+                account.network = params.network;
+                account.symbol = this._config.currencies.ETH.symbol;
+                this.accounts.push(account);
+                callback(account);
+            } else {
+                this.error(this.trans.translate('err.eth_account_create_error'));
+                callback({err: this.errorMessage});
+            }
+        } catch (err) {
+            this.error(err.message);
+            callback({err: this.errorMessage});
+        }
+    }
+    _createBTCAccount(params: any, callback: any) {}
 }
