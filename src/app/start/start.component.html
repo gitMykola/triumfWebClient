@@ -1,10 +1,18 @@
 <div class="container t-wallet" xmlns="">
     <h1 class="text-center">Start</h1>
-    <ul class="nav nav-tabs">
-        <li class="active"><h4>{{trans.translate('currencies.eth_name')}}</h4></li>
-        <li class=""><h4>{{trans.translate('currencies.btc_name')}}</h4></li>
-        <li class=""><h4>{{trans.translate('currencies.ltc_name')}}</h4></li>
-        <li class=""><h4>{{trans.translate('currencies.btg_name')}}</h4></li>
-        <li class=""><h4>{{trans.translate('currencies.bch_name')}}</h4></li>
-    </ul>
+    <ngb-tabset [justify]="just" (tabChange)="sc($event)">
+        <ngb-tab id="eth" title="{{trans.translate('currencies.eth_name')}}">
+            <ng-template ngbTabContent>
+                <h4>{{trans.translate('currencies.eth_symbol')}}</h4>
+                <app-t-eth></app-t-eth>
+            </ng-template>
+        </ngb-tab>
+        <ngb-tab id="btc" title="{{trans.translate('currencies.btc_name')}}">
+            <ng-template ngbTabContent>
+                <h4>{{trans.translate('currencies.btc_symbol')}}</h4>
+                <app-t-home></app-t-home>
+            </ng-template>
+        </ngb-tab>
+    </ngb-tabset>
+    <h1>{{selectedCurrency}}</h1>
 </div>

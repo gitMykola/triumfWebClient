@@ -12,20 +12,26 @@ import {WalletComponent} from './_wallet';
 import {AuthenticationService} from './_services';
 import {HttpClientModule} from '@angular/common/http';
 import {TranslatorService} from './translator';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {MatTabsModule} from '@angular/material';
+import {EthComponent} from './eth';
 
 @NgModule({
   declarations: [
     AppComponent,
       HomeComponent,
       WalletComponent,
-      StartComponent
+      StartComponent,
+      EthComponent
   ],
   imports: [
     BrowserModule,
       routing,
       NgbModule.forRoot(),
       ReactiveFormsModule,
-      HttpClientModule
+      HttpClientModule,
+      BrowserAnimationsModule,
+      MatTabsModule
   ],
   providers: [
       AuthenticationService,
