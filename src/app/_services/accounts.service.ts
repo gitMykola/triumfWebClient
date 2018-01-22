@@ -8,12 +8,13 @@ import * as EthTxjs from '../../../node_modules/ethereumjs-tx';
 @Injectable()
 export class AccountsService {
     private _config: any;
-    public accounts: Account[];
+    public accounts: any;
     public infoMessage: string;
     public errorMessage: string;
 
     constructor(public trans: TranslatorService) {
         this._config = config();
+        this.accounts = [];
     }
     info(msg: string) {
         this.infoMessage = msg;
@@ -29,6 +30,15 @@ export class AccountsService {
     }
     infoInit() {
         this.infoMessage = this.errorMessage = null;
+    }
+    getAccounts(): any {
+        return this.accounts.map(el => {
+            return {
+                address: el.address,
+                network: el.network,
+                symbol: el.symbol
+            };
+        });
     }
     isOpen(address: string, network: string): boolean {
         this.infoInit();

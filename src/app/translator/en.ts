@@ -4,12 +4,21 @@ export const EN = {
         yes: 'Yes',
         no: 'No',
         confirm: 'Confirm',
-        cancel: 'Cancel'
+        cancel: 'Cancel',
+        add_account: 'Add Account',
+        open_account: 'Open Account',
+        new_account: 'New Account'
     },
     app: {
         title_1: 'Triumf ',
         title_2: 'Coin',
         discription: 'Crypto currency application',
+        network: 'Network'
+    },
+    tips: {
+        add_account: ['Application generate new private key of chosen network, then transform this one to key file and upload to you.',
+        ' Any data of this process will not stored on server side.'],
+        open_account: ['']
     },
     err: {
         serverConnectionError: 'Server connection error.',
@@ -31,18 +40,19 @@ export const EN = {
         account_already_open: 'Account already open.',
         account_closed: 'Account closed.',
         account_already_closed: 'Account already closed.',
-        account_created_successfully: 'Account created successfully.'
+        account_created_successfully: 'Account created successfully.',
+        open_create_account: 'Are You going to create new or unlock existen account?'
     },
     currencies: {
-        eth_name: 'Ethereum',
-        eth_symbol: 'ETH',
-        btc_name: 'Bitcoin',
-        btc_symbol: 'BTC',
-        ltc_name: 'Litecoin',
-        ltc_symbol: 'LTC',
-        btg_name: 'Bitcoin Gold',
-        btg_symbol: 'BTG',
-        bch_name: 'Bitcoin Cash',
-        bch_symbol: 'BCH'
+        ETH_name: 'Ethereum',
+        ETH_symbol: 'ETH',
+        BTC_name: 'Bitcoin',
+        BTC_symbol: 'BTC',
+        LTC_name: 'Litecoin',
+        LTC_symbol: 'LTC',
+        BTG_name: 'Bitcoin Gold',
+        BTG_symbol: 'BTG',
+        BCH_name: 'Bitcoin Cash',
+        BCH_symbol: 'BCH'
     }
 };

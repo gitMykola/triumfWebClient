@@ -4,28 +4,55 @@ export const RU = {
         yes: 'Да',
         no: 'Нет',
         confirm: 'Подтвердить',
-        cancel: 'Отменить'
+        cancel: 'Отменить',
+        add_account: 'Добавить аккаунт',
+        open_account: 'Открыть аккаунт',
+        new_account: 'Новый Аккаунт'
     },
     app: {
         title_1: 'Триумф ',
         title_2: 'Коин',
         discription: 'Приложение для работы с криптовалютами',
+        network: 'Сеть'
+    },
+    tips: {
+        add_account: ['Приложение генерирует новый закрытый ключ выбранной сети,',
+            ' затем преобразует этот файл в ключевой файл и загружает к нему.',
+            ' Любые данные этого процесса не будут храниться на стороне сервера.'],
     },
     err: {
         serverConnectionError: 'Ошибка соединения с сервером.',
         localStorageError: 'Ошибка доступа к локальному хранилищу.',
-        localStorageReadWriteError: 'Ошибка чтения/записи в локальном хранилище.'
+        localStorageReadWriteError: 'Ошибка чтения/записи в локальном хранилище.',
+        wrong_account_params_object: 'Wrong account parameters object.',
+        account_not_exists: 'Account not exists.',
+        wrong_address: 'Wrong address.',
+        wrong_passphrase: 'Wrong passphrase.',
+        wrong_symbol: 'Wrong currency symbol.',
+        bad_key: 'Bad private key.',
+        bad_key_file: 'Bad key file.',
+        bad_network: 'Unnoun network.',
+        wrong_account_params_object_field: 'Wrong account params object field.',
+        eth_account_open_error: 'Ethereum account open error.'
+    },
+    info: {
+        account_opened_successfully: 'Account open successfully.',
+        account_already_open: 'Account already open.',
+        account_closed: 'Account closed.',
+        account_already_closed: 'Account already closed.',
+        account_created_successfully: 'Account created successfully.',
+        open_create_account: 'Вы собираетесь создать новый или открыть существующий аккаунт?'
     },
     currencies: {
-        eth_name: 'Эфир',
-        eth_symbol: 'ETH',
-        btc_name: 'Биткоин',
-        btc_symbol: 'BTC',
-        ltc_name: 'Лайткоин',
-        ltc_symbol: 'LTC',
-        btg_name: 'Биткоин Голд',
-        btg_symbol: 'BTG',
-        bch_name: 'Биткоин Кэш',
-        bch_symbol: 'BCH'
+        ETH_name: 'Эфир',
+        ETH_symbol: 'ETH',
+        BTC_name: 'Биткоин',
+        BTC_symbol: 'BTC',
+        LTC_name: 'Лайткоин',
+        LTC_symbol: 'LTC',
+        BTG_name: 'Биткоин Голд',
+        BTG_symbol: 'BTG',
+        BCH_name: 'Биткоин Кэш',
+        BCH_symbol: 'BCH'
     }
 };

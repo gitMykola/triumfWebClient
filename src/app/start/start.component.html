@@ -1,18 +1,71 @@
+<ul class="select-lang row">
+    <li class="lang-item" *ngFor="let lang of langs"
+        (click)="trans.set(lang.symbol)">{{lang.name}}</li>
+</ul>
 <div class="container t-wallet" xmlns="">
-    <h1 class="text-center">Start</h1>
     <ngb-tabset [justify]="just" (tabChange)="sc($event)">
-        <ngb-tab id="eth" title="{{trans.translate('currencies.eth_name')}}">
+        <ngb-tab *ngFor="let currency of currencies"
+                id="{{currency.symbol}}" title="{{trans.translate('currencies.' + currency.symbol + '_name')}}">
             <ng-template ngbTabContent>
-                <h4>{{trans.translate('currencies.eth_symbol')}}</h4>
-                <app-t-eth></app-t-eth>
-            </ng-template>
-        </ngb-tab>
-        <ngb-tab id="btc" title="{{trans.translate('currencies.btc_name')}}">
-            <ng-template ngbTabContent>
-                <h4>{{trans.translate('currencies.btc_symbol')}}</h4>
-                <app-t-home></app-t-home>
+                <label class="">{{trans.translate('app.network')}}
+                    <select (click)="selectNetwork($event.target.value, currency.symbol)">
+                        <option *ngIf="networks[currency.symbol]"
+                                selected label={{networks[currency.symbol]}} hidden></option>
+                        <option *ngFor="let net of currency.networks"
+                            label={{net}} value={{net}}></option>
+                    </select>
+                </label>
+                <button class="btn"
+                        (click)="addAccount(currency.symbol, networks[currency.symbol])">{{trans.translate('buttons.add_account')}}
+                </button>
+                <ngb-accordion>
+                    <ngb-panel *ngFor="let acc of getAccounts(currency.symbol, networks[currency.symbol])">
+                        <ng-template ngbPanelTitle>
+                            <p>Address: {{acc.address}}
+                            </p>
+                            <span *ngIf="aService.isOpen(acc.address,acc.network)">
+                                    OPEN
+                                </span>
+                        </ng-template>
+                        <ng-template *ngIf="acc.symbol === 'ETH'" ngbPanelContent>
+                            <span class="btn" *ngIf="!acc.address.length" (click)="generateAccount(acc)">
+                                    GENERATE
+                                </span>
+                            <div>Transactions</div>
+                        </ng-template>
+                    </ngb-panel>
+                </ngb-accordion>
             </ng-template>
         </ngb-tab>
     </ngb-tabset>
-    <h1>{{selectedCurrency}}</h1>
+    <h5 class="selected-currency">{{selectedCurrency}}</h5>
+    <div class="t-add-account" *ngIf="addForm.enable">
+        <div class="col-sm-6 offset-sm-3">
+            <div id="step1" class="col-sm-12" *ngIf="addForm.step === 1">
+                <h4 class="info col-sm-12">{{trans.translate('info.open_create_account')}}</h4>
+                <label>{{trans.translate('buttons.new_account')}}
+                <input type="radio"
+                       (change)="addForm.new = !addForm.new" [checked]="addForm.new"/>
+                </label>
+                <label>{{trans.translate('buttons.open_account')}}
+                <input type="radio"
+                       (change)="addForm.new = !addForm.new" [checked]="!addForm.new"/>
+                </label>
+            </div>
+            <div id="step2" class="col-sm-12" *ngIf="addForm.step === 2">
+
+            </div>
+            <div id="step3" class="col-sm-12" *ngIf="addForm.step === 3">
+
+            </div>
+            <div class="row">
+                <button (click)="addForm.step = addForm.step > 1 ? addForm.step - 1 : 1"
+                class="btn col-2 offset-2" [disabled]="!(addForm.step > 1)">Back</button>
+                <button (click)="addForm.step = addForm.step < 3 ? addForm.step + 1 : 3"
+                class="btn col-2 offset-4" [disabled]="!(addForm.step < 3)">Next</button>
+            </div>
+            <div class="turnoff" (click)="initAddForm()">X</div>
+        </div>
+    </div>
 </div>
+

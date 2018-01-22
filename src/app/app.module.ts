@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import { routing } from './app.routing';
 
-import { ReactiveFormsModule } from '@angular/forms';
+import {NgControl, ReactiveFormsModule} from '@angular/forms';
 
 import { AppComponent } from './app.component';
 import { StartComponent } from './start';
@@ -14,15 +14,14 @@ import {HttpClientModule} from '@angular/common/http';
 import {TranslatorService} from './translator';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {MatTabsModule} from '@angular/material';
-import {EthComponent} from './eth';
+import {AccountsService} from './_services/accounts.service';
 
 @NgModule({
   declarations: [
     AppComponent,
       HomeComponent,
       WalletComponent,
-      StartComponent,
-      EthComponent
+      StartComponent
   ],
   imports: [
     BrowserModule,
@@ -35,7 +34,8 @@ import {EthComponent} from './eth';
   ],
   providers: [
       AuthenticationService,
-      TranslatorService
+      TranslatorService,
+      AccountsService
   ],
   bootstrap: [AppComponent]
 })

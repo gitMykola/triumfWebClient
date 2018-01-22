@@ -55,3 +55,76 @@ h1,h2,h3,h4,h5,h6,label{
 .error {
     color: red;
 }
+.select-lang {
+    list-style: none;
+    display: block;
+    position: absolute;
+    top: 0;
+    right: 0;
+    cursor: pointer;
+    margin: 0!important;
+    padding: 0;
+}
+.select-lang .lang-item {
+    margin: 0;
+    padding: 3px 10px;
+    transition: background 0.3s;
+}
+.select-lang .lang-item:hover {
+    background: #999;
+}
+.t-wallet {
+    margin-top: 55px;
+}
+.t-wallet select{
+    border: none;
+    border-radius: 5px;
+    margin: 2px;
+    padding: 2px 10px;
+    background: #eeeeee;
+    transition: background 0.3s;
+    cursor: pointer;
+}
+.t-wallet select:hover {
+    background: #dddddd;
+}
+.t-wallet .btn {
+    padding: 2px 5px;
+}
+.selected-currency {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    border: none;
+    color: #ccc;
+    border-radius: 50%;
+    padding: 10px!important;
+
+}
+.t-add-account {
+    display:block;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    min-height: 100%;
+    padding:50px 5px 5px 5px;
+    transition: background 0.5s;
+    background: #333;
+    background: rgba(0,0,0,0.8);
+}
+.t-add-account > DIV {
+    background: lightgray;
+}
+.t-add-account > DIV BUTTON {
+
+}
+.t-add-account .turnoff {
+    position:fixed;
+    top:10px;
+    right: 20px;
+    color: lightgray;
+    cursor: pointer;
+    font-size: x-large;
+    font-weight: bold;
+}
