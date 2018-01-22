@@ -83,7 +83,7 @@ export class WalletComponent implements OnInit {
         const last = this.accounts.length ? localStorage.getItem('lastAccount') : null;
         this.currentAccount = last ? this.accounts[last] : null;
     }
-    generate(password, next) {
+    generate(password, next)    {
         const params = { keyBytes: 32, ivBytes: 16 };
         const dk = keythe.create(params);
         console.dir(dk.privateKey.toString('hex'));

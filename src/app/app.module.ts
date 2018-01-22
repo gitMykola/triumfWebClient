@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import { routing } from './app.routing';
 
-import {NgControl, ReactiveFormsModule} from '@angular/forms';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 
 import { AppComponent } from './app.component';
 import { StartComponent } from './start';
@@ -12,9 +12,8 @@ import {WalletComponent} from './_wallet';
 import {AuthenticationService} from './_services';
 import {HttpClientModule} from '@angular/common/http';
 import {TranslatorService} from './translator';
-import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {MatTabsModule} from '@angular/material';
 import {AccountsService} from './_services/accounts.service';
+import {CommonModule} from '@angular/common';
 
 @NgModule({
   declarations: [
@@ -29,9 +28,13 @@ import {AccountsService} from './_services/accounts.service';
       NgbModule.forRoot(),
       ReactiveFormsModule,
       HttpClientModule,
-      BrowserAnimationsModule,
-      MatTabsModule
+      CommonModule
   ],
+    exports: [
+        AppComponent,
+        FormsModule,
+        ReactiveFormsModule
+    ],
   providers: [
       AuthenticationService,
       TranslatorService,

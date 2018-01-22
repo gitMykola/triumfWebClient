@@ -88,6 +88,7 @@ export class AccountsService {
                        } else {
                            this.info(this.trans.translate('info.account_created_successfully') + ' ' +
                            response.account.address);
+                           next(response);
                        }
                     });
                     break;
@@ -99,6 +100,7 @@ export class AccountsService {
                         } else {
                             this.info(this.trans.translate('info.account_created_successfully') + ' ' +
                                 response.account.address);
+                            next(response);
                         }
                     });
                     break;

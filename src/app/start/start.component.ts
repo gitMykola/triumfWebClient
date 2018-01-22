@@ -1,14 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import {TranslatorService} from '../translator';
-import {MatTab} from '@angular/material';
-import {NgbTabChangeEvent} from '@ng-bootstrap/ng-bootstrap';
-import {AccountsService} from '../_services/accounts.service';
 import { config } from '../config';
-import {NgControl} from '@angular/forms';
+import { FormBuilder, FormGroup, Validators} from '@angular/forms';
+import {TranslatorService} from '../translator';
+import {AccountsService} from '../_services/accounts.service';
+import {NgbTabChangeEvent} from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
     selector: 'app-t-start',
-    templateUrl: './start.component.html',
+    templateUrl: './start.component.html'
 })
 export class StartComponent implements OnInit {
     currencies: any;
@@ -19,10 +18,13 @@ export class StartComponent implements OnInit {
     eth: any;
     networks: {};
     accounts: any;
-    addForm: any;
+    aForm: any;
+    wait: boolean;
+    public addForm: FormGroup;
     constructor(
         public trans: TranslatorService,
-        public aService: AccountsService) {
+        public aService: AccountsService,
+        private fBuilder: FormBuilder) {
         this.currencies = config().currencies;
         this.langs = config().app.lang;
     }
@@ -38,7 +40,16 @@ export class StartComponent implements OnInit {
         this.currencies.forEach(e => {
             this.networks[e.symbol] = e.networks[0];
         });
-        this.initAddForm();
+        this.addForm = this.fBuilder.group({
+            new: false,
+            passphrase: ['', [Validators.required, Validators.minLength(8),
+                Validators.maxLength(256)]],
+            cpass: ['', [Validators.required, Validators.minLength(8),
+                Validators.maxLength(256)]],
+            keyfile: ['', [Validators.required]],
+        });
+        this.initAForm();
+        this.wait = false;
     }
     sc($event: NgbTabChangeEvent) {
         this.selectedCurrency = $event.nextId;
@@ -57,7 +68,7 @@ export class StartComponent implements OnInit {
         }
     }
     addAccount(accSymbol: string, network: string) {
-        this.addForm.enable = true;
+        this.aForm.enable = true;
         // console.log(accSymbol);
         // console.dir(this.getAccounts(accSymbol, network));
     }
@@ -70,12 +81,88 @@ export class StartComponent implements OnInit {
     generateAccount(currency: string, network: string) {
         console.dir('');
     }
-    initAddForm() {
-        this.addForm = {};
-        this.addForm.step = 1;
-        this.addForm.new = false;
-        this.addForm.enable = false;
-        this.addForm.passphrase = '';
-    }
+    initAForm() {
+    const self = this;
+    self.aForm = {};
+    self.aForm.step = 1;
+    self.aForm.enable = false;
+    self.aForm.next = true;
+    self.aForm.validation = function(): boolean {
+        console.log('Next' + self.aForm.step);
+        switch (self.aForm.step) {
+            case 1:
+                self.aForm.error = null;
+                self.aForm.next = true;
+                return true;
+            case 2:
+                console.log('1' + self.aForm.next);
+                if (self.addForm.get('passphrase').status === 'INVALID') {
+                    self.aForm.error = self.trans.translate('err.passphrase_length');
+                    self.aForm.next = false;
+                    console.log('2' + self.aForm.next);
+                    return false;
+                } else if (self.addForm.get('new').value
+                    && self.addForm.get('passphrase').value !== self.addForm.get('cpass').value) {
+                    self.aForm.error = self.trans.translate('err.passphrase_cpass');
+                    self.aForm.next = false;
+                    console.log('3' + self.aForm.next);
+                    return false;
+                } else {
+                    self.aForm.error = null;
+                    self.aForm.next = true;
+                    console.log('4' + self.aForm.next);
+                    return true;
+                }
+            case 3:
+                console.log('5' + self.aForm.next);
+                if (!self.addForm.get('new').value &&
+                    self.addForm.get('keyfile').status !== 'INVALID') {
+                    console.dir(self.addForm.get('keyfile'));
+                }
+            default:
+                return false;
+        }
+    };
+    self.aForm.makeStep = function(e) {
+        if (e.name === 'next') {
+            self.aForm.step = self.aForm.step < 4 ? self.aForm.step + 1 : 4;
+        } else {
+            self.aForm.step = self.aForm.step > 1 ? self.aForm.step - 1 : 1;
+        }
+        self.aForm.validation();
+         // 20400074498630 4-e
+        console.log(self.aForm.step);
+        console.log(self.addForm.get('passphrase').value);
+        console.log(self.addForm.get('cpass').value);
+        console.log(self.addForm.get('new').value);
+        console.dir(self.addForm.get('keyfile'));
+        console.dir(self.aForm.next);
+        if (self.addForm.get('new').value && self.aForm.step === 3) {
+            self.wait = true;
+            const params = {
+                passphrase: self.addForm.get('passphrase').value,
+                symbol: self.selectedCurrency,
+                network: self.networks[self.selectedCurrency]
+            };
+            self.aService.createAccount(params, response => {
+                self.wait = false;
+                console.dir(response);
+            });
+        }
+    };
+    self.aForm.generate = function(files) {
+        const params = {
+            passphrase: self.addForm.get('passphrase').value,
+            symbol: self.selectedCurrency,
+            network: self.networks[self.selectedCurrency],
+            keyFile: files.target.files[0]
+        };
+        self.aService.openAccount(params, account => {
+            console.dir(account);
+        });
+        };
+    self.aForm.close = function() {
+        self.initAForm();
+    };
 }
-
+}

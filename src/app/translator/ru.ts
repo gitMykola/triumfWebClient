@@ -9,6 +9,10 @@ export const RU = {
         open_account: 'Открыть аккаунт',
         new_account: 'Новый Аккаунт'
     },
+    labels: {
+        passphrase: 'Секретная фраза',
+        cpass: 'Подтверждение секретной фразы'
+    },
     app: {
         title_1: 'Триумф ',
         title_2: 'Коин',
@@ -33,7 +37,9 @@ export const RU = {
         bad_key_file: 'Bad key file.',
         bad_network: 'Unnoun network.',
         wrong_account_params_object_field: 'Wrong account params object field.',
-        eth_account_open_error: 'Ethereum account open error.'
+        eth_account_open_error: 'Ethereum account open error.',
+        passphrase_cpass: 'Секретная фраза должна совпадать с подтверждением.',
+        passphrase_length: 'Сектретная фраза должна быть не меньше 8 символов и не более 256.'
     },
     info: {
         account_opened_successfully: 'Account open successfully.',
@@ -41,7 +47,9 @@ export const RU = {
         account_closed: 'Account closed.',
         account_already_closed: 'Account already closed.',
         account_created_successfully: 'Account created successfully.',
-        open_create_account: 'Вы собираетесь создать новый или открыть существующий аккаунт?'
+        open_create_account: 'Вы собираетесь создать новый или открыть существующий аккаунт?',
+        input_passphrase_open_account: 'Пожалуйста введите секретную фразу для разблоктрования аккаунта.',
+        input_passphrase_new_account: 'Пожалуйста введите секретную фразу для нового аккаунта.'
     },
     currencies: {
         ETH_name: 'Эфир',

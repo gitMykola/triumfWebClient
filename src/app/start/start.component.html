@@ -5,14 +5,14 @@
 <div class="container t-wallet" xmlns="">
     <ngb-tabset [justify]="just" (tabChange)="sc($event)">
         <ngb-tab *ngFor="let currency of currencies"
-                id="{{currency.symbol}}" title="{{trans.translate('currencies.' + currency.symbol + '_name')}}">
+                 id="{{currency.symbol}}" title="{{trans.translate('currencies.' + currency.symbol + '_name')}}">
             <ng-template ngbTabContent>
                 <label class="">{{trans.translate('app.network')}}
                     <select (click)="selectNetwork($event.target.value, currency.symbol)">
                         <option *ngIf="networks[currency.symbol]"
                                 selected label={{networks[currency.symbol]}} hidden></option>
                         <option *ngFor="let net of currency.networks"
-                            label={{net}} value={{net}}></option>
+                                label={{net}} value={{net}}></option>
                     </select>
                 </label>
                 <button class="btn"
@@ -39,33 +39,49 @@
         </ngb-tab>
     </ngb-tabset>
     <h5 class="selected-currency">{{selectedCurrency}}</h5>
-    <div class="t-add-account" *ngIf="addForm.enable">
-        <div class="col-sm-6 offset-sm-3">
-            <div id="step1" class="col-sm-12" *ngIf="addForm.step === 1">
+    <form [formGroup]="addForm" class="t-add-account" *ngIf="aForm.enable">
+        <div  class="col-sm-6 offset-sm-3">
+            <div id="step1" class="col-sm-12" *ngIf="aForm.step === 1">
                 <h4 class="info col-sm-12">{{trans.translate('info.open_create_account')}}</h4>
                 <label>{{trans.translate('buttons.new_account')}}
-                <input type="radio"
-                       (change)="addForm.new = !addForm.new" [checked]="addForm.new"/>
+                    <input type="checkbox" formControlName="new" value="false"
+                    />
                 </label>
-                <label>{{trans.translate('buttons.open_account')}}
-                <input type="radio"
-                       (change)="addForm.new = !addForm.new" [checked]="!addForm.new"/>
+                <!--<label>{{trans.translate('buttons.open_account')}}
+                    <input type="radio"
+                           />
+                </label>-->
+            </div>
+            <div id="step2" class="col-sm-12" *ngIf="aForm.step === 2">
+                <h4 class="info col-sm-12" *ngIf="!addForm.get('new').value">
+                    {{trans.translate('info.input_passphrase_open_account')}}</h4>
+                <h4 class="info col-sm-12" *ngIf="addForm.get('new').value">
+                    {{trans.translate('info.input_passphrase_new_account')}}</h4>
+                <label>{{trans.translate('labels.passphrase')}}
+                    <input type="password" name="passphrase" formControlName="passphrase"
+                           (input)="aForm.validation()"/>
+                </label>
+                <label *ngIf="addForm.get('new').value">{{trans.translate('labels.cpass')}}
+                    <input type="password" name="cpass" formControlName="cpass"
+                           (input)="aForm.validation()"/>
                 </label>
             </div>
-            <div id="step2" class="col-sm-12" *ngIf="addForm.step === 2">
-
-            </div>
-            <div id="step3" class="col-sm-12" *ngIf="addForm.step === 3">
-
+            <div id="step3" class="col-sm-12" *ngIf="aForm.step === 3">
+                <label *ngIf="!addForm.get('new').value">{{trans.translate('labels.cpass')}}
+                    <input type="file" name="cpass" formControlName="keyfile"
+                           (change)="aForm.generate($event)"/>
+                </label>
             </div>
             <div class="row">
-                <button (click)="addForm.step = addForm.step > 1 ? addForm.step - 1 : 1"
-                class="btn col-2 offset-2" [disabled]="!(addForm.step > 1)">Back</button>
-                <button (click)="addForm.step = addForm.step < 3 ? addForm.step + 1 : 3"
-                class="btn col-2 offset-4" [disabled]="!(addForm.step < 3)">Next</button>
+                <button name="back" (click)="aForm.makeStep($event.target)"
+                        class="btn col-2 offset-2" [disabled]="!(aForm.step > 1)">Back</button>
+                <button name="next" (click)="aForm.makeStep($event.target)"
+                        class="btn col-2 offset-4" [disabled]="!aForm.next">Next</button>
             </div>
-            <div class="turnoff" (click)="initAddForm()">X</div>
+            <div name="error" class="error" *ngIf="aForm.error">{{aForm.error}}</div>
+            <div class="turnoff" (click)="aForm.close()">X</div>
         </div>
-    </div>
+    </form>
 </div>
+
 

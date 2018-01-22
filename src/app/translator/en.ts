@@ -9,6 +9,10 @@ export const EN = {
         open_account: 'Open Account',
         new_account: 'New Account'
     },
+    labels: {
+        passphrase: 'Passphrase',
+        cpass: 'Confirm passphrase'
+    },
     app: {
         title_1: 'Triumf ',
         title_2: 'Coin',
@@ -33,7 +37,9 @@ export const EN = {
         bad_key_file: 'Bad key file.',
         bad_network: 'Unnoun network.',
         wrong_account_params_object_field: 'Wrong account params object field.',
-        eth_account_open_error: 'Ethereum account open error.'
+        eth_account_open_error: 'Ethereum account open error.',
+        passphrase_cpass: 'Passphrase not equal confirmed passphrase.',
+        passphrase_length: 'Passphrase should be at least 8 characters and less then 256 characters.'
     },
     info: {
         account_opened_successfully: 'Account open successfully.',
@@ -41,7 +47,9 @@ export const EN = {
         account_closed: 'Account closed.',
         account_already_closed: 'Account already closed.',
         account_created_successfully: 'Account created successfully.',
-        open_create_account: 'Are You going to create new or unlock existen account?'
+        open_create_account: 'Are You going to create new or unlock existen account?',
+        input_passphrase_open_account: 'Please input your exist account passphrase.',
+        input_passphrase_new_account: 'Please input passphrase to generate new account. '
     },
     currencies: {
         ETH_name: 'Ethereum',
