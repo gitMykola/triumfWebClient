@@ -17,6 +17,18 @@ export function config () { return {
         {
           symbol: 'BTC',
           networks: ['testnet', 'livenet']
+        },
+        {
+            symbol: 'LTC',
+            networks: ['testnet', 'livenet']
+        },
+        {
+            symbol: 'BTG',
+            networks: ['testnet', 'livenet']
+        },
+        {
+            symbol: 'BCH',
+            networks: ['testnet', 'livenet']
         }
     ],
     symbols: ['ETH', 'BTC', 'LTC', 'BTG', 'BCH'],

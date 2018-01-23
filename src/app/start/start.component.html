@@ -20,17 +20,11 @@
                 </button>
                 <ngb-accordion>
                     <ngb-panel *ngFor="let acc of getAccounts(currency.symbol, networks[currency.symbol])">
-                        <ng-template ngbPanelTitle>
+                        <ng-template *ngIf="acc.symbol === currency.symbol" ngbPanelTitle>
                             <p>Address: {{acc.address}}
                             </p>
-                            <span *ngIf="aService.isOpen(acc.address,acc.network)">
-                                    OPEN
-                                </span>
                         </ng-template>
-                        <ng-template *ngIf="acc.symbol === 'ETH'" ngbPanelContent>
-                            <span class="btn" *ngIf="!acc.address.length" (click)="generateAccount(acc)">
-                                    GENERATE
-                                </span>
+                        <ng-template *ngIf="acc.symbol === currency.symbol" ngbPanelContent>
                             <div>Transactions</div>
                         </ng-template>
                     </ngb-panel>
@@ -41,6 +35,9 @@
     <h5 class="selected-currency">{{selectedCurrency}}</h5>
     <form [formGroup]="addForm" class="t-add-account" *ngIf="aForm.enable">
         <div  class="col-sm-6 offset-sm-3">
+            <h3 *ngIf="wait">
+                {{trans.translate('info.please_wait')}}
+            </h3>
             <div id="step1" class="col-sm-12" *ngIf="aForm.step === 1">
                 <h4 class="info col-sm-12">{{trans.translate('info.open_create_account')}}</h4>
                 <label>{{trans.translate('buttons.new_account')}}
@@ -52,7 +49,7 @@
                            />
                 </label>-->
             </div>
-            <div id="step2" class="col-sm-12" *ngIf="aForm.step === 2">
+            <div id="step2" class="col-sm-12" *ngIf="aForm.step === 2 && !wait">
                 <h4 class="info col-sm-12" *ngIf="!addForm.get('new').value">
                     {{trans.translate('info.input_passphrase_open_account')}}</h4>
                 <h4 class="info col-sm-12" *ngIf="addForm.get('new').value">
@@ -66,10 +63,11 @@
                            (input)="aForm.validation()"/>
                 </label>
             </div>
-            <div id="step3" class="col-sm-12" *ngIf="aForm.step === 3">
-                <label *ngIf="!addForm.get('new').value">{{trans.translate('labels.cpass')}}
+            <div id="step3" class="col-sm-12" *ngIf="aForm.step === 3 && !wait">
+                <label *ngIf="!addForm.get('new').value && !wait">
+                    {{trans.translate('labels.key_file')}}
                     <input type="file" name="cpass" formControlName="keyfile"
-                           (change)="aForm.generate($event)"/>
+                           (change)="aForm.open($event)"/>
                 </label>
             </div>
             <div class="row">

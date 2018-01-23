@@ -251,8 +251,8 @@ export class WalletComponent implements OnInit {
         const cd = new Date();
         const month = ((cd.getMonth() + 1).toString().length === 1) ?
             '0' + (cd.getMonth() + 1).toString() : (cd.getMonth() + 1).toString();
-        const days = (cd.getDay().toString().length === 1) ?
-            '0' + cd.getDay().toString() : cd.getDay().toString();
+        const days = (cd.getDate().toString().length === 1) ?
+            '0' + cd.getDate().toString() : cd.getDate().toString();
         const hours = (cd.getHours().toString().length === 1) ?
             '0' + cd.getHours().toString() : cd.getHours().toString();
         const mins = (cd.getMinutes().toString().length === 1) ?

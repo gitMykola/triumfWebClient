@@ -11,7 +11,8 @@ export const EN = {
     },
     labels: {
         passphrase: 'Passphrase',
-        cpass: 'Confirm passphrase'
+        cpass: 'Confirm passphrase',
+        key_file: 'Key file'
     },
     app: {
         title_1: 'Triumf ',
@@ -49,7 +50,8 @@ export const EN = {
         account_created_successfully: 'Account created successfully.',
         open_create_account: 'Are You going to create new or unlock existen account?',
         input_passphrase_open_account: 'Please input your exist account passphrase.',
-        input_passphrase_new_account: 'Please input passphrase to generate new account. '
+        input_passphrase_new_account: 'Please input passphrase to generate new account.',
+        please_wait: 'Please wait...'
     },
     currencies: {
         ETH_name: 'Ethereum',

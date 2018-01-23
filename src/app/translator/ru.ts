@@ -11,7 +11,8 @@ export const RU = {
     },
     labels: {
         passphrase: 'Секретная фраза',
-        cpass: 'Подтверждение секретной фразы'
+        cpass: 'Подтверждение секретной фразы',
+        key_file: 'Ключ - файл'
     },
     app: {
         title_1: 'Триумф ',
@@ -48,8 +49,9 @@ export const RU = {
         account_already_closed: 'Account already closed.',
         account_created_successfully: 'Account created successfully.',
         open_create_account: 'Вы собираетесь создать новый или открыть существующий аккаунт?',
-        input_passphrase_open_account: 'Пожалуйста введите секретную фразу для разблоктрования аккаунта.',
-        input_passphrase_new_account: 'Пожалуйста введите секретную фразу для нового аккаунта.'
+        input_passphrase_open_account: 'Пожалуйста введите секретную фразу для разблокирования аккаунта.',
+        input_passphrase_new_account: 'Пожалуйста введите секретную фразу для нового аккаунта.',
+        please_wait: 'Пожалуйста подождите...'
     },
     currencies: {
         ETH_name: 'Эфир',

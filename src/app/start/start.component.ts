@@ -35,7 +35,8 @@ export class StartComponent implements OnInit {
         this.accounts = this.aService.getAccounts();
         this.networks = {
             ETH: '',
-            BTC: ''
+            BTC: '',
+            LTC: ''
         };
         this.currencies.forEach(e => {
             this.networks[e.symbol] = e.networks[0];
@@ -125,7 +126,7 @@ export class StartComponent implements OnInit {
     };
     self.aForm.makeStep = function(e) {
         if (e.name === 'next') {
-            self.aForm.step = self.aForm.step < 4 ? self.aForm.step + 1 : 4;
+            self.aForm.step = self.aForm.step < 3 ? self.aForm.step + 1 : 3;
         } else {
             self.aForm.step = self.aForm.step > 1 ? self.aForm.step - 1 : 1;
         }
@@ -137,32 +138,49 @@ export class StartComponent implements OnInit {
         console.log(self.addForm.get('new').value);
         console.dir(self.addForm.get('keyfile'));
         console.dir(self.aForm.next);
-        if (self.addForm.get('new').value && self.aForm.step === 3) {
-            self.wait = true;
-            const params = {
-                passphrase: self.addForm.get('passphrase').value,
-                symbol: self.selectedCurrency,
-                network: self.networks[self.selectedCurrency]
-            };
-            self.aService.createAccount(params, response => {
-                self.wait = false;
-                console.dir(response);
-            });
+        if (self.aForm.step === 3) {
+            self.aForm.next = false;
+            if (self.addForm.get('new').value) {
+                console.log('Generate Account');
+                self.aForm.createAccount();
+            }
         }
     };
-    self.aForm.generate = function(files) {
+    self.aForm.open = function(files) {
+        self.wait = true;
         const params = {
             passphrase: self.addForm.get('passphrase').value,
             symbol: self.selectedCurrency,
             network: self.networks[self.selectedCurrency],
             keyFile: files.target.files[0]
         };
+        console.log('Open Account');
+        console.dir(params);
         self.aService.openAccount(params, account => {
+            self.wait = false;
             console.dir(account);
+            console.log('Account response');
+            self.aForm.close();
         });
         };
+    self.aForm.createAccount = function() {
+        self.wait = true;
+        const params = {
+            passphrase: self.addForm.get('passphrase').value,
+            symbol: self.selectedCurrency,
+            network: self.networks[self.selectedCurrency]
+        };
+        console.log('Generate');
+        console.dir(params);
+        self.aService.createAccount(params, response => {
+            self.wait = false;
+            console.dir(response);
+            self.aForm.close();
+        });
+    };
     self.aForm.close = function() {
         self.initAForm();
+        self.addForm.reset();
     };
 }
 }
