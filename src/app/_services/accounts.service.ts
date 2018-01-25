@@ -59,9 +59,32 @@ export class AccountsService {
             return false;
         }
     }
-    getAccountBalance(address: string, callback: any) {
+    getAccountBalance(params: any, next: any) {
+        const opts: any = {};
+        opts.address = params.address || null;
+        opts.symbol = params.symbol || null;
+        opts.network = params.network || null;
         this.infoInit();
-        return '0.00';
+        if (!this._verifyAccountParams(opts)) {
+            next({err: this.errorMessage});
+        } else {
+            opts.method = 'getBalance';
+            this._getApi(opts, bs => {
+                if (!bs) {
+                    this.error(this.trans.translate('err.server_connection_error'));
+                    next({err: this.errorMessage});
+                } else {
+                    this.accounts.forEach(el => {
+                        if (el.address === opts.address
+                            && el.network === opts.network
+                            && el.symbol === opts.symbol) {
+                            el.balance = bs.balance ? bs.balance : '';
+                        }
+                    });
+                    next(bs);
+                }
+            });
+        }
     }
     getAccountTransactions(params: any, next: any) {
         const opts: any = {};
@@ -379,6 +402,7 @@ export class AccountsService {
                             account.network = params.network;
                             account.symbol = params.symbol;
                             account.transactions = [];
+                            account.balance = '';
                             this.accounts.push(account);
                             callback(account);
                         } else {
@@ -435,6 +459,7 @@ export class AccountsService {
                 account.network = params.network;
                 account.symbol = params.symbol;
                 account.transactions = [];
+                account.balance = '';
                 this.accounts.push(account);
                 callback(account);
             } else {

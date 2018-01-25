@@ -15,6 +15,40 @@ import {TranslatorService} from './translator';
 import {AccountsService} from './_services/accounts.service';
 import {CommonModule} from '@angular/common';
 import {TxComponent} from './lib/Tx/tx.component';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {
+    MatAutocompleteModule,
+    MatButtonModule,
+    MatButtonToggleModule,
+    MatCardModule,
+    MatCheckboxModule,
+    MatChipsModule,
+    MatDatepickerModule,
+    MatDialogModule,
+    MatExpansionModule,
+    MatGridListModule,
+    MatIconModule,
+    MatInputModule,
+    MatListModule,
+    MatMenuModule,
+    MatNativeDateModule,
+    MatPaginatorModule,
+    MatProgressBarModule,
+    MatProgressSpinnerModule,
+    MatRadioModule,
+    MatRippleModule,
+    MatSelectModule,
+    MatSidenavModule,
+    MatSliderModule,
+    MatSlideToggleModule,
+    MatSnackBarModule,
+    MatSortModule,
+    MatTableModule,
+    MatTabsModule,
+    MatToolbarModule,
+    MatTooltipModule,
+    MatStepperModule,
+} from '@angular/material';
 
 @NgModule({
   declarations: [
@@ -26,17 +60,30 @@ import {TxComponent} from './lib/Tx/tx.component';
   ],
   imports: [
     BrowserModule,
+      BrowserAnimationsModule,
+      FormsModule,
+      MatNativeDateModule,
       routing,
       NgbModule.forRoot(),
       ReactiveFormsModule,
       HttpClientModule,
-      CommonModule
+      CommonModule,
+      MatTableModule,
+      MatTabsModule,
+      MatToolbarModule,
+      MatTooltipModule,
   ],
     exports: [
         AppComponent,
         FormsModule,
         ReactiveFormsModule,
-        TxComponent
+        TxComponent,
+        MatTableModule,
+        MatTabsModule,
+        MatToolbarModule,
+        MatTooltipModule,
+        BrowserAnimationsModule,
+        BrowserModule
     ],
   providers: [
       AuthenticationService,

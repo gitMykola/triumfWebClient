@@ -20,7 +20,13 @@ export const EN = {
         ammount: 'Ammount',
         fee: 'Fee',
         balance: 'Balance',
-        hash: 'Hash'
+        hash: 'Hash',
+        send_money: 'Send money',
+        refresh: 'Refresh',
+        send: 'Send',
+        send_email: 'Send email',
+        advanced: 'Advanced',
+        gas: 'Gas',
     },
     app: {
         title_1: 'Triumf ',
@@ -61,7 +67,9 @@ export const EN = {
         open_create_account: 'Are You going to create new or unlock existen account?',
         input_passphrase_open_account: 'Please input your exist account passphrase.',
         input_passphrase_new_account: 'Please input passphrase to generate new account.',
-        please_wait: 'Please wait...'
+        please_wait: 'Please wait...',
+        fill_transaction_data: 'Please fill transaction data.',
+        raw_transaction: 'Raw Transaction'
     },
     currencies: {
         ETH_name: 'Ethereum',

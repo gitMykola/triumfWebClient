@@ -1,55 +1,59 @@
-<div class="container t-home">
-    <h1 class="text-center">{{title}}</h1>
-    <div class="col-sm-12 text-center">
-        <button class="btn btn-primary col-sm-4" (click)="formVisible = !formVisible;logi = false;">Create New Wallet</button>
-        <button class="btn btn-primary col-sm-4" (click)="formVisible = !formVisible;logi = true;">Open Wallet</button>
+<div ngbDropdown>
+    <button class="btn btn-secondary" id="dropdownMenuButton" ngbDropdownToggle>
+        Dropdown button
+    </button>
+    <div ngbDropdownMenu aria-labelledby="dropdownMenuButton">
+        <p class="dropdown-item" >Action</p>
+        <p class="dropdown-item" href="#">Another action</p>
     </div>
-    <div class="col-sm-6 offset-3 text-center">
-        <!--<div class="col-sm-12">
-            <input #currency id="currency" type="radio" name="currency" value="ETH"/>
-            <label for="currency">Ethereum</label>
-        </div>-->
-    </div>
-    <form [formGroup]="loginForm" class="form-horisontal t-form" *ngIf="formVisible">
-        <div class="form-group">
-            <label for="name" class="col-md-4 control-label">Name</label>
-            <div class="col-md-6">
-                <input id="name" type="text" name="name" formControlName="tname"
-                       autofocus="autofocus" class="form-control">
+</div>
+<div class="container">
+    <mat-tab-group class="demo-tab-group">
+        <mat-tab label="Tab 1">
+            <div class="demo-tab-content">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla venenatis ante augue.
+                Phasellus volutpat neque ac dui mattis vulputate. Etiam consequat aliquam cursus.
+                In sodales pretium ultrices. Maecenas lectus est, sollicitudin consectetur felis nec,
+                feugiat ultricies mi. Aliquam erat volutpat. Nam placerat, tortor in ultrices porttitor,
+                orci enim rutrum enim, vel tempor sapien arcu a tellus.
             </div>
-        </div>
-        <div class="form-group" *ngIf="!logi">
-            <label for="email" class="col-md-4 control-label">E-Mail Address</label>
-            <div class="col-md-6">
-                <input id="email" type="email" name="email" formControlName="temail"
-                       class="form-control">
+        </mat-tab>
+        <mat-tab label="Tab 2">
+            <ng-template mat-tab-label>
+                ⭐
+            </ng-template>
+            <div class="demo-tab-content">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla venenatis ante augue.
+                Phasellus volutpat neque ac dui mattis vulputate. Etiam consequat aliquam cursus.
+                In sodales pretium ultrices. Maecenas lectus est, sollicitudin consectetur felis nec,
+                feugiat ultricies mi. Aliquam erat volutpat. Nam placerat, tortor in ultrices porttitor,
+                orci enim rutrum enim, vel tempor sapien arcu a tellus.
             </div>
-        </div>
-        <div class="form-group">
-            <label for="password" class="col-md-4 control-label">Password</label>
-            <div class="col-md-6">
-                <input id="password" type="password" name="password" formControlName="tpassword"
-                       class="form-control">
+        </mat-tab>
+        <mat-tab label="Tab 3" disabled>
+            No content
+        </mat-tab>
+        <mat-tab label="Tab 4">
+            <div class="demo-tab-content">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla venenatis ante augue.
+                Phasellus volutpat neque ac dui mattis vulputate. Etiam consequat aliquam cursus.
+                In sodales pretium ultrices. Maecenas lectus est, sollicitudin consectetur felis nec,
+                feugiat ultricies mi. Aliquam erat volutpat. Nam placerat, tortor in ultrices porttitor,
+                orci enim rutrum enim, vel tempor sapien arcu a tellus.
+                <br />
+                <br />
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla venenatis ante augue.
+                Phasellus volutpat neque ac dui mattis vulputate. Etiam consequat aliquam cursus.
+                In sodales pretium ultrices. Maecenas lectus est, sollicitudin consectetur felis nec,
+                feugiat ultricies mi. Aliquam erat volutpat. Nam placerat, tortor in ultrices porttitor,
+                orci enim rutrum enim, vel tempor sapien arcu a tellus.
             </div>
-        </div>
-        <div class="form-group" *ngIf="!logi">
-            <label for="cpassword" class="col-md-4 control-label">Confirm Password</label>
-            <div class="col-md-6">
-                <input id="cpassword" type="password" name="cpassword" formControlName="tcpassword"
-                       class="form-control">
-            </div>
-        </div>
-        <div class="form-group text-center">
-            <div class="btn btn-primary col-sm-3"
-                    (click)="login( )" *ngIf="logi">Login
-            </div>
-            <div class="btn btn-primary col-sm-3"
-                    (click)="create()"
-                 *ngIf="!logi">Create
-            </div>
-        </div>
-        <div class="form-group text-center">
-            <h5>{{error}}</h5>
-        </div>
-    </form>
+        </mat-tab>
+        <mat-tab label="Tab 5">
+            No content
+        </mat-tab>
+        <mat-tab label="Tab 6">
+            No content
+        </mat-tab>
+    </mat-tab-group>
 </div>

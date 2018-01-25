@@ -54,6 +54,13 @@ export class StartComponent implements OnInit {
             cpass: ['', [Validators.required, Validators.minLength(8),
                 Validators.maxLength(256)]],
             keyfile: ['', [Validators.required]],
+            advanced: false,
+            ammount: ['', [Validators.required, Validators.min(0),
+                Validators.max(1e18)]],
+            gas: ['', [Validators.required, Validators.min(0),
+                Validators.max(1e18)]],
+            receiver: ['', [Validators.required, Validators.minLength(8),
+                Validators.maxLength(256)]],
         });
         this.initAForm();
         this.wait = false;
@@ -75,11 +82,15 @@ export class StartComponent implements OnInit {
                 .filter(el => el.symbol === symbol && el.network === network);
         }
     }
-    getTxs(e: any, account: any) {
-        e.preventDefault();
+    getTxs(account: any) {
+        // e.preventDefault();
         this.aService.getAccountTransactions(account, txs => {
             console.dir(txs);
             console.dir(account);
+            this.aService.getAccountBalance(account, bs => {
+                console.log('Balance');
+                console.dir(bs);
+            });
         });
     }
     addAccount(accSymbol: string, network: string) {
@@ -98,10 +109,16 @@ export class StartComponent implements OnInit {
     }
     initAForm() {
     const self = this;
+    self.wait = false;
     self.aForm = {};
     self.aForm.step = 1;
     self.aForm.enable = false;
+    self.aForm.back = false;
     self.aForm.next = true;
+    self.aForm.advanced = false;
+    self.aForm.sender = null;
+    self.aForm.rawTx = '';
+    self.aForm.txHash = '';
     self.aForm.validation = function(): boolean {
         console.log('Next' + self.aForm.step);
         switch (self.aForm.step) {
@@ -140,7 +157,7 @@ export class StartComponent implements OnInit {
     };
     self.aForm.makeStep = function(e) {
         if (e.name === 'next') {
-            self.aForm.step = self.aForm.step < 3 ? self.aForm.step + 1 : 3;
+            self.aForm.step = self.aForm.step < 6 ? self.aForm.step + 1 : 6;
         } else {
             self.aForm.step = self.aForm.step > 1 ? self.aForm.step - 1 : 1;
         }
@@ -198,6 +215,12 @@ export class StartComponent implements OnInit {
         self.initAForm();
         self.addForm.reset();
     };
+    self.aForm.openSend = function(account: any) {
+        self.initAForm();
+        self.aForm.step = 4;
+        self.aForm.enable = true;
+        self.aForm.sender = account;
+        };
 }
     toDateString(date: Date): string {
         const days = (date.getDate().toString().length < 2) ? '0' + date.getDate()

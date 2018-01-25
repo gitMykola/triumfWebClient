@@ -20,7 +20,13 @@ export const RU = {
         ammount: 'Сумма',
         fee: 'Комиссия',
         balance: 'Баланс',
-        hash: 'Хэш'
+        hash: 'Хэш',
+        send_money: 'Отправить деньги',
+        refresh: 'Обновить',
+        send: 'Отправить',
+        send_email: 'Отправить email',
+        advanced: 'Расширенный',
+        gas: 'Газ'
     },
     app: {
         title_1: 'Триумф ',
@@ -61,7 +67,9 @@ export const RU = {
         open_create_account: 'Вы собираетесь создать новый или открыть существующий аккаунт?',
         input_passphrase_open_account: 'Пожалуйста введите секретную фразу для разблокирования аккаунта.',
         input_passphrase_new_account: 'Пожалуйста введите секретную фразу для нового аккаунта.',
-        please_wait: 'Пожалуйста подождите...'
+        please_wait: 'Пожалуйста подождите...',
+        fill_transaction_data: 'Пожалуйста запоните данные для транзакции.',
+        raw_transaction: 'Подготовленная транзакция.'
     },
     currencies: {
         ETH_name: 'Эфир',

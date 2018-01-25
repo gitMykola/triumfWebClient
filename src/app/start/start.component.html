@@ -1,7 +1,13 @@
-<ul class="select-lang row">
-    <li class="lang-item" *ngFor="let lang of langs"
-        (click)="trans.set(lang.symbol)">{{lang.name}}</li>
-</ul>
+<div class="select-lang" ngbDropdown>
+    <p class="btn dropdown-toggle"
+       id="dropdownMenuButton" ngbDropdownToggle>
+    </p>
+
+    <div ngbDropdownMenu aria-labelledby="dropdownMenuButton">
+        <p class="dropdown-item" *ngFor="let lang of langs" (click)="trans.set(lang.symbol)">
+            {{lang.name}}</p>
+    </div>
+</div>
 <div class="container t-wallet">
     <div id="t-tabset-header">
         <ul id="t-tabset" class="t-tabset">
@@ -29,21 +35,41 @@
             <ngb-accordion>
                 <ngb-panel *ngFor="let acc of accounts[curr.symbol]">
                     <ng-template *ngIf="acc.symbol === curr.symbol" ngbPanelTitle>
-                        <p (click)="getTxs($event, acc)">Address: {{acc.address}}
+                        <div class="row" (click)="getTxs(acc)">
+                        <p class="t-long-string col-sm-8" title="{{acc.address}}">
+                            {{acc.address}}
                         </p>
+                        <p class="t-long-string col-sm-4" title="{{acc.balance}}">
+                            {{acc.balance}}
+                        </p>
+
+                        </div>
                     </ng-template>
                     <ng-template *ngIf="acc.symbol === curr.symbol" ngbPanelContent>
+                        <div class="btn-group col-sm-12 t-txpanel">
+                            <button (click)="aForm.openSend(acc)" class="btn fa" title="{{trans.translate('labels.send_money')}}">
+                                <span>{{trans.translate('labels.send_money')}}</span>
+                                <span>
+                                        &#xf0d6;</span>
+                            </button>
+                            <button class="btn fa" title="{{trans.translate('labels.refresh')}}"
+                                    (click)="getTxs(acc)">
+                                <span>{{trans.translate('labels.refresh')}}</span>
+                                <span>
+                                        &#xf021;</span>
+                            </button>
+                        </div>
                         <div class="txs-header row">
                             <p class="col-12 col-md-4" name="hash">{{trans.translate('labels.hash')}}</p>
                             <p class="col-3 col-md-2" name="date">{{trans.translate('labels.date')}}</p>
                             <p class="col-3 col-md-2" name="time">{{trans.translate('labels.time')}}</p>
-                            <p class="col-6 col-md-4" name="ammount">{{trans.translate('labels.ammount')}}</p>
+                            <p class="col-6 col-md-4 " name="ammount">{{trans.translate('labels.ammount')}}</p>
                         </div>
                         <div class="txs-row row" *ngFor="let tx of acc.transactions">
-                            <p class="col-12 col-md-4" name="hash" title={{tx.hash}}>{{tx.short_hash}}</p>
+                            <p class="col-12 col-md-4 t-long-string" name="hash" title={{tx.hash}}>{{tx.hash}}</p>
                             <p class="col-3 col-md-2" name="date">{{toDateString(tx.time)}}</p>
                             <p class="col-3 col-md-2" name="time">{{toTimeString(tx.time)}}</p>
-                            <p class="col-6 col-md-4" name="ammount">{{tx.value}}</p>
+                            <p class="col-6 col-md-4 t-long-string" name="ammount">{{tx.value}}</p>
                         </div>
                     </ng-template>
                 </ngb-panel>
@@ -89,7 +115,7 @@
                 </ngb-accordion>
             </ng-template>
         </ngb-tab>
-    </ngb-tabset> -->
+    </ngb-tabset>-->
     <h5 class="selected-currency">{{selectedCurrency}}</h5>
     <form [formGroup]="addForm" class="t-add-account" *ngIf="aForm.enable">
         <div  class="col-sm-6 offset-sm-3">
@@ -127,6 +153,49 @@
                     <input type="file" name="cpass" formControlName="keyfile"
                            (change)="aForm.open($event)"/>
                 </label>
+            </div>
+            <div id="step4" class="col-sm-12 row" *ngIf="aForm.step === 4">
+                <h3>{{trans.translate('labels.sender') + ': '}}
+                    <h6 class="t-long-string">{{aForm.sender.address}}</h6>
+                    {{' (' + aForm.sender.symbol + '/' +
+                    aForm.sender.network + ')'}}</h3>
+                <h4 class="info col-sm-12">
+                    {{trans.translate('info.fill_transaction_data')}}</h4>
+                    <label class="col-12">{{trans.translate('labels.receiver')}}
+                        <input class="col-12" type="text" name="receiver"
+                               formControlName="receiver"/>
+                    </label>
+                    <label class="col-6 offset-6">{{trans.translate('labels.ammount')}}
+                        <input class="col-sm-12" type="number" name="ammount"
+                               formControlName="ammount"/>
+                    </label>
+
+                <label class="col-sm-12">{{trans.translate('labels.advanced')}}
+                    <input type="checkbox" formControlName="advanced" value="false"
+                    />
+                </label>
+                <label class="col-6 offset-6" *ngIf="addForm.get('advanced').value"
+                    >{{trans.translate('labels.gas')}}
+                    <input class="col-sm-12" type="number" name="gas" formControlName="gas"/>
+                </label>
+            </div>
+            <div id="step5" class="col-sm-12 row" *ngIf="aForm.step === 5">
+                <h3>{{trans.translate('labels.sender') + ': '}}
+                    <h6 class="t-long-string">{{aForm.sender.address}}</h6>
+                    {{' (' + aForm.sender.symbol + '/' +
+                    aForm.sender.network + ')'}}</h3>
+                <h4 class="info col-12">
+                    {{trans.translate('info.raw_transaction')}}</h4>
+                <textarea class="col-12" rows="5">{{aForm.rawTx}}</textarea>
+            </div>
+            <div id="step6" class="col-sm-12 row" *ngIf="aForm.step === 6">
+                <h3>{{trans.translate('labels.sender') + ': '}}
+                    <h6 class="t-long-string">{{aForm.sender.address}}</h6>
+                    {{' (' + aForm.sender.symbol + '/' +
+                    aForm.sender.network + ')'}}</h3>
+                <h4 class="info col-12">
+                    {{trans.translate('labels.hash')}}</h4>
+                <textarea class="col-12" rows="3">{{aForm.txHash}}</textarea>
             </div>
             <div class="row">
                 <button name="back" (click)="aForm.makeStep($event.target)"

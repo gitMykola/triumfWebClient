@@ -2,12 +2,9 @@
   border: 1px solid #000000;
 }
 .select-lang {
-  list-style: none;
-  display: inline;
   position: absolute;
-  top: 10px;
-  right: 50px;
-  cursor: pointer;
+  top: 0;
+  right: 130px;
 }
 #t-tabset-header {
   display: inline-block;
@@ -87,4 +84,13 @@ P[name="next"] {
 }
 .t-tabset-content .t-content {
   display: none;
+}
+.t-long-string {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.t-txpanel {
+  display: flex;
+  justify-content: flex-end;
 }
