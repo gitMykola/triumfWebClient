@@ -1,6 +1,9 @@
 /* You can add global styles to this file, and also import other style files */
+@import './assets/animations.css';
+@import "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css";
+
 h1,h2,h3,h4,h5,h6,label{
-    padding: 10px 5px 0px 5px!important;
+    padding: 10px 5px 0 5px!important;
 }
 .btn {
     margin: 5px 0;
@@ -75,6 +78,7 @@ h1,h2,h3,h4,h5,h6,label{
 }
 .t-wallet {
     margin-top: 55px;
+    margin-bottom: 20px;
 }
 .t-wallet select{
     border: none;
@@ -127,4 +131,34 @@ h1,h2,h3,h4,h5,h6,label{
     cursor: pointer;
     font-size: x-large;
     font-weight: bold;
+}
+.txs-header, .txs-row{
+    display: block;
+    padding: 0!important;
+    margin: 0!important;
+}
+.txs-header P, .txs-row P{
+    padding: 2px;
+    margin: 0;
+}
+.txs-header P {
+    text-align: center;
+    border: 1px solid #dddddd;
+}
+.txs-row P {
+    text-align: right;
+    border: 1px solid #dddddd;
+}
+.txs-row P[name="hash"] {
+    text-align: left;
+}
+.t-hidden {
+    opacity: 0;
+}
+.t-fadein {
+    animation-name: fadeIn;
+    animation-duration: 0.2s;
+    animation-timing-function: cubic-bezier(0, 0, 1, 1);
+    animation-direction: normal;
+    animation-iteration-count: 1;
 }

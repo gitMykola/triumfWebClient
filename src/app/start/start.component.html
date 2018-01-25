@@ -2,8 +2,18 @@
     <li class="lang-item" *ngFor="let lang of langs"
         (click)="trans.set(lang.symbol)">{{lang.name}}</li>
 </ul>
-<div class="container t-wallet" xmlns="">
-    <ngb-tabset [justify]="just" (tabChange)="sc($event)">
+<div class="container t-wallet">
+    <div id="t-tabset-header">
+        <ul id="t-tabset" class="t-tabset">
+            <li class="t-tabset-item"
+                    (click)="tabSelect($event)" *ngFor="let t of ['first','secondtabuninteruptabletext','third tab big text jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj']">
+                <a>{{t}}</a>
+            </li>
+        </ul>
+        <p name="prev" class="t-step"><span class="fa">&#xf104;</span></p>
+        <p name="next" class="t-step"><span class="fa">&#xf105;</span></p>
+    </div>
+    <ngb-tabset justify="justified" (tabChange)="sc($event)">
         <ngb-tab *ngFor="let currency of currencies"
                  id="{{currency.symbol}}" title="{{trans.translate('currencies.' + currency.symbol + '_name')}}">
             <ng-template ngbTabContent>
@@ -18,14 +28,25 @@
                 <button class="btn"
                         (click)="addAccount(currency.symbol, networks[currency.symbol])">{{trans.translate('buttons.add_account')}}
                 </button>
-                <ngb-accordion>
-                    <ngb-panel *ngFor="let acc of getAccounts(currency.symbol, networks[currency.symbol])">
+                <ngb-accordion><!--getAccounts(currency.symbol, networks[currency.symbol])-->
+                    <ngb-panel *ngFor="let acc of accounts[currency.symbol]">
                         <ng-template *ngIf="acc.symbol === currency.symbol" ngbPanelTitle>
-                            <p>Address: {{acc.address}}
+                            <p (click)="getTxs($event, acc)">Address: {{acc.address}}
                             </p>
                         </ng-template>
                         <ng-template *ngIf="acc.symbol === currency.symbol" ngbPanelContent>
-                            <div>Transactions</div>
+                            <div class="txs-header row">
+                                <p class="col-12 col-md-4" name="hash">{{trans.translate('labels.hash')}}</p>
+                                <p class="col-3 col-md-2" name="date">{{trans.translate('labels.date')}}</p>
+                                <p class="col-3 col-md-2" name="time">{{trans.translate('labels.time')}}</p>
+                                <p class="col-6 col-md-4" name="ammount">{{trans.translate('labels.ammount')}}</p>
+                            </div>
+                               <div class="txs-row row" *ngFor="let tx of acc.transactions">
+                                   <p class="col-12 col-md-4" name="hash" title={{tx.hash}}>{{tx.short_hash}}</p>
+                                   <p class="col-3 col-md-2" name="date">{{toDateString(tx.time)}}</p>
+                                   <p class="col-3 col-md-2" name="time">{{toTimeString(tx.time)}}</p>
+                                   <p class="col-6 col-md-4" name="ammount">{{tx.value}}</p>
+                                </div>
                         </ng-template>
                     </ngb-panel>
                 </ngb-accordion>

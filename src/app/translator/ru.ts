@@ -12,7 +12,15 @@ export const RU = {
     labels: {
         passphrase: 'Секретная фраза',
         cpass: 'Подтверждение секретной фразы',
-        key_file: 'Ключ - файл'
+        key_file: 'Ключ - файл',
+        date: 'Дата',
+        time: 'Время',
+        sender: 'Отправитель',
+        receiver: 'Получатель',
+        ammount: 'Сумма',
+        fee: 'Комиссия',
+        balance: 'Баланс',
+        hash: 'Хэш'
     },
     app: {
         title_1: 'Триумф ',
@@ -26,9 +34,9 @@ export const RU = {
             ' Любые данные этого процесса не будут храниться на стороне сервера.'],
     },
     err: {
-        serverConnectionError: 'Ошибка соединения с сервером.',
-        localStorageError: 'Ошибка доступа к локальному хранилищу.',
-        localStorageReadWriteError: 'Ошибка чтения/записи в локальном хранилище.',
+        server_connection_error: 'Ошибка соединения с сервером.',
+        local_storage_error: 'Ошибка доступа к локальному хранилищу.',
+        local_storage_read_write_error: 'Ошибка чтения/записи в локальном хранилище.',
         wrong_account_params_object: 'Wrong account parameters object.',
         account_not_exists: 'Account not exists.',
         wrong_address: 'Wrong address.',
@@ -36,11 +44,13 @@ export const RU = {
         wrong_symbol: 'Wrong currency symbol.',
         bad_key: 'Bad private key.',
         bad_key_file: 'Bad key file.',
+        bad_transactions_object: 'Bad transactions object',
         bad_network: 'Unnoun network.',
         wrong_account_params_object_field: 'Wrong account params object field.',
         eth_account_open_error: 'Ethereum account open error.',
         passphrase_cpass: 'Секретная фраза должна совпадать с подтверждением.',
-        passphrase_length: 'Сектретная фраза должна быть не меньше 8 символов и не более 256.'
+        passphrase_length: 'Сектретная фраза должна быть не меньше 8 символов и не более 256.',
+        wrong_hash: 'Не правильный хэш.'
     },
     info: {
         account_opened_successfully: 'Account open successfully.',

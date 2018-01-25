@@ -12,7 +12,15 @@ export const EN = {
     labels: {
         passphrase: 'Passphrase',
         cpass: 'Confirm passphrase',
-        key_file: 'Key file'
+        key_file: 'Key file',
+        date: 'Date',
+        time: 'Time',
+        sender: 'Sender',
+        receiver: 'Receiver',
+        ammount: 'Ammount',
+        fee: 'Fee',
+        balance: 'Balance',
+        hash: 'Hash'
     },
     app: {
         title_1: 'Triumf ',
@@ -26,9 +34,9 @@ export const EN = {
         open_account: ['']
     },
     err: {
-        serverConnectionError: 'Server connection error.',
-        localStorageError: 'Local Storage error.',
-        localStorageReadWriteError: 'Read/write Local Storage error.',
+        server_connection_error: 'Server connection error.',
+        local_storage_rror: 'Local Storage error.',
+        local_storage_read_write_error: 'Read/write Local Storage error.',
         wrong_account_params_object: 'Wrong account parameters object.',
         account_not_exists: 'Account not exists.',
         wrong_address: 'Wrong address.',
@@ -37,10 +45,12 @@ export const EN = {
         bad_key: 'Bad private key.',
         bad_key_file: 'Bad key file.',
         bad_network: 'Unnoun network.',
+        bad_transactions_object: 'Bad transactions object',
         wrong_account_params_object_field: 'Wrong account params object field.',
         eth_account_open_error: 'Ethereum account open error.',
         passphrase_cpass: 'Passphrase not equal confirmed passphrase.',
-        passphrase_length: 'Passphrase should be at least 8 characters and less then 256 characters.'
+        passphrase_length: 'Passphrase should be at least 8 characters and less then 256 characters.',
+        wrong_hash: 'Wrong hash.'
     },
     info: {
         account_opened_successfully: 'Account open successfully.',

@@ -1,0 +1,30 @@
+.activ {
+  animation-name: left;
+  animation-duration: 1s;
+  animation-timing-function: cubic-bezier(0.5, 0, 0, 1);
+  animation-direction: normal;
+  animation-iteration-count:1;
+  animation-fill-mode: forwards;
+}
+.inactiv {
+  animation-name: right;
+  animation-duration: 1s;
+  animation-timing-function: cubic-bezier(0.5, 0, 0, 1);
+  animation-direction: normal;
+  animation-iteration-count:1;
+  animation-fill-mode: forwards;
+}
+@keyframes left {
+  0% {
+    }
+  100% {
+    transform: translateX(-80px);
+  }
+}
+@keyframes right {
+  0% {
+  }
+  100% {
+    transform: translateX(-180px);
+  }
+}

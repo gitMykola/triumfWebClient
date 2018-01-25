@@ -14,13 +14,15 @@ import {HttpClientModule} from '@angular/common/http';
 import {TranslatorService} from './translator';
 import {AccountsService} from './_services/accounts.service';
 import {CommonModule} from '@angular/common';
+import {TxComponent} from './lib/Tx/tx.component';
 
 @NgModule({
   declarations: [
     AppComponent,
       HomeComponent,
       WalletComponent,
-      StartComponent
+      StartComponent,
+      TxComponent
   ],
   imports: [
     BrowserModule,
@@ -33,7 +35,8 @@ import {CommonModule} from '@angular/common';
     exports: [
         AppComponent,
         FormsModule,
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        TxComponent
     ],
   providers: [
       AuthenticationService,

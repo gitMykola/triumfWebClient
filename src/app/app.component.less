@@ -1,11 +1,94 @@
+@color_border: #ccc;
+@color_border_light: #eee;
+@color_background_1: rgba(0,0,0,0.2);
 .nav{
   border: 1px solid #000000;
 }
 .select-lang{
   list-style: none;
-  display:block;
+  display:inline;
   position:absolute;
   top: 10px;
   right: 50px;
   cursor: pointer;
+}
+#t-tabset-header {
+  display: inline-block;
+  position: relative;
+  overflow-x: hidden;
+  height: 60px;
+  width: 100%;
+  .t-tabset {
+    list-style: none!important;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    .active {
+      a {
+        border-top: 1px solid @color_border;
+        border-left: 1px solid @color_border;
+        border-right: 1px solid @color_border;
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+      }
+      border-bottom: 1px solid transparent;
+      &:hover {
+        a {
+          border-top: 1px solid @color_border;
+          border-left: 1px solid @color_border;
+          border-right: 1px solid @color_border;
+        }
+      }
+    };
+    li {
+      a{
+        display: block;
+        padding: 10px 15px;
+        border: 1px solid transparent;
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+        margin-bottom: -1px;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
+      text-align: center;
+      border-bottom: 1px solid @color_border;
+      cursor: pointer;
+      padding: 0;
+      flex: 1 1 auto;
+      &:hover {
+        a {
+          border-top: 1px solid @color_border_light;
+          border-left: 1px solid @color_border_light;
+          border-right: 1px solid @color_border_light;
+        }
+      }
+    };
+
+  }
+}
+.t-visible {
+  display: inline-block!important;
+}
+.t-step {
+  display:none;
+  position:absolute;
+  background: @color_border_light;
+  font-size: xx-large;
+  cursor: pointer;
+  margin: 0;
+  padding: 0 10px;
+  &:hover {
+    background: @color_background_1;
+  }
+}
+P[name="prev"]{
+  left:0;
+}
+P[name="next"]{
+  right:0;
 }

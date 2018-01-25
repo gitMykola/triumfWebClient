@@ -7,7 +7,8 @@ import {NgbTabChangeEvent} from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
     selector: 'app-t-start',
-    templateUrl: './start.component.html'
+    templateUrl: './start.component.html',
+    styleUrls: ['../app.component.css']
 })
 export class StartComponent implements OnInit {
     currencies: any;
@@ -32,11 +33,16 @@ export class StartComponent implements OnInit {
         this.trans.set('EN');
         this.just = 'fill';
         this.selectedCurrency = 'ETH';
-        this.accounts = this.aService.getAccounts();
+        this.accounts = [];
+        this.currencies.forEach(
+            el => this.accounts[el.symbol] = []
+        );
         this.networks = {
-            ETH: '',
-            BTC: '',
-            LTC: ''
+            ETH: this.currencies.filter(e => e.symbol === 'ETH')[0].networks[0],
+            BTC: this.currencies.filter(e => e.symbol === 'BTC')[0].networks[0],
+            LTC: this.currencies.filter(e => e.symbol === 'LTC')[0].networks[0],
+            BTG: this.currencies.filter(e => e.symbol === 'BTG')[0].networks[0],
+            BCH: this.currencies.filter(e => e.symbol === 'BCH')[0].networks[0]
         };
         this.currencies.forEach(e => {
             this.networks[e.symbol] = e.networks[0];
@@ -51,6 +57,7 @@ export class StartComponent implements OnInit {
         });
         this.initAForm();
         this.wait = false;
+        this.tabInit();
     }
     sc($event: NgbTabChangeEvent) {
         this.selectedCurrency = $event.nextId;
@@ -67,6 +74,13 @@ export class StartComponent implements OnInit {
             return this.aService.getAccounts()
                 .filter(el => el.symbol === symbol && el.network === network);
         }
+    }
+    getTxs(e: any, account: any) {
+        e.preventDefault();
+        this.aService.getAccountTransactions(account, txs => {
+            console.dir(txs);
+            console.dir(account);
+        });
     }
     addAccount(accSymbol: string, network: string) {
         this.aForm.enable = true;
@@ -159,6 +173,7 @@ export class StartComponent implements OnInit {
         self.aService.openAccount(params, account => {
             self.wait = false;
             console.dir(account);
+            self.accounts[params.symbol].push(account);
             console.log('Account response');
             self.aForm.close();
         });
@@ -172,9 +187,10 @@ export class StartComponent implements OnInit {
         };
         console.log('Generate');
         console.dir(params);
-        self.aService.createAccount(params, response => {
+        self.aService.createAccount(params, account => {
             self.wait = false;
-            console.dir(response);
+            self.accounts[params.symbol].push(account);
+            console.dir(account);
             self.aForm.close();
         });
     };
@@ -183,4 +199,72 @@ export class StartComponent implements OnInit {
         self.addForm.reset();
     };
 }
+    toDateString(date: Date): string {
+        const days = (date.getDate().toString().length < 2) ? '0' + date.getDate()
+                : date.getDate(),
+            month = ((date.getMonth() + 1).toString().length < 2) ? '0' + (date.getMonth() + 1)
+                : (date.getMonth() + 1);
+        return days + '.' + month + '.' + date.getFullYear();
+    }
+    toTimeString(date: Date): string {
+        const hours = (date.getHours().toString().length < 2) ? '0' + date.getHours()
+            : date.getHours(),
+            minutes = (date.getMinutes().toString().length < 2) ? '0' + date.getMinutes()
+                : date.getMinutes(),
+            seconds = (date.getSeconds().toString().length < 2) ? '0' + date.getSeconds()
+                : date.getSeconds();
+        return hours + ':' + minutes + ':' + seconds;
+    }
+    tabSelect(event) {
+        const target = event.target.tagName === 'LI' ?
+            event.target : event.target.parentElement,
+            lis = document.querySelectorAll('#t-tabset LI');
+        for (let k = 0; k < lis.length; k++) {
+            lis.item(k).className = '';
+        }
+        target.className = 'active';
+        /*target.style.animationName =
+            target.style.animationName === 'left' ? 'right' : 'left';
+        console.dir(event.target);
+        target.style.animationDuration = '1s';
+        target.style.animationTimingFunction = 'cubic-bezier(0.5, 0, 0, 1)';
+        target.style.animationDirection = 'normal';
+        target.style.animationIterationCount = '1';
+        target.style.animationFillMode = 'forwards';*/
+    }
+    tabInit() {
+        window.onresize = () => {
+            const tabsetHeader = document.getElementById('t-tabset-header'),
+                tabSet = document.getElementById('t-tabset'),
+                tabItems = document.querySelectorAll('.t-tabset-item'),
+                ffa = tabsetHeader.parentElement.getElementsByClassName('t-step');
+             let tabsLen = 0;
+            for (let i = 0; i < tabItems.length; i++) {
+                tabsLen += tabItems[i].clientWidth;
+            }
+            console.log (tabsLen + ' ' + tabSet.offsetWidth);
+            if (tabsLen > tabSet.offsetWidth) {
+                tabSet.style.width = tabsLen + 'px';
+                // const mar = tabSet.style.marginLeft.replace('px','');
+                // tabSet.style.marginLeft = Number(mar) - 30 + 'px';
+                console.log(tabSet.style.marginLeft);
+                ffa.item(0).className = ffa.item(0).className.indexOf(' t-visible') ?
+                    ffa.item(0).className + ' t-visible' :
+                    ffa.item(0).className;
+                ffa.item(1).className = ffa.item(1).className.indexOf(' t-visible') ?
+                    ffa.item(1).className + ' t-visible' :
+                    ffa.item(1).className;
+            } else {
+                tabSet.style.width = '100%';
+                // const mar = tabSet.style.marginLeft.replace('px','');
+                // tabSet.style.marginLeft = Number(mar) + 30 + 'px';
+                ffa.item(0).className = ffa.item(0).className.indexOf(' t-visible') ?
+                    ffa.item(0).className.replace(' t-visible', '') :
+                    ffa.item(0).className;
+                ffa.item(1).className = ffa.item(1).className.indexOf(' t-visible') ?
+                    ffa.item(1).className.replace(' t-visible', '') :
+                    ffa.item(1).className;
+            }
+        };
+    }
 }

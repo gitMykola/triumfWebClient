@@ -4,6 +4,7 @@ import { config } from '../config';
 import {TranslatorService} from '../translator';
 import * as Keythe from '../../../node_modules/keythereum';
 import * as EthTxjs from '../../../node_modules/ethereumjs-tx';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
 
 @Injectable()
 export class AccountsService {
@@ -12,7 +13,9 @@ export class AccountsService {
     public infoMessage: string;
     public errorMessage: string;
 
-    constructor(public trans: TranslatorService) {
+    constructor(
+        public trans: TranslatorService,
+        private http: HttpClient) {
         this._config = config();
         this.accounts = [];
     }
@@ -36,7 +39,8 @@ export class AccountsService {
             return {
                 address: el.address,
                 network: el.network,
-                symbol: el.symbol
+                symbol: el.symbol,
+                transactions: el.transactions
             };
         });
     }
@@ -59,9 +63,61 @@ export class AccountsService {
         this.infoInit();
         return '0.00';
     }
-    getAccountTransactions(address: string, callback: any) {
+    getAccountTransactions(params: any, next: any) {
+        const opts: any = {};
+        opts.address = params.address || null;
+        opts.symbol = params.symbol || null;
+        opts.network = params.network || null;
         this.infoInit();
-        return [];
+        if (!this._verifyAccountParams(opts)) {
+            next({err: this.errorMessage});
+        } else {
+            opts.method = 'getTransactions';
+            this._getApi(opts, txs => {
+                if (!txs) {
+                    this.error(this.trans.translate('err.server_connection_error'));
+                    next({err: this.errorMessage});
+                } else {
+                    const transactions = (txs.out && txs.in) ? txs.out.map(e => {
+                        return {
+                            hash: e.hash,
+                            short_hash: e.hash.toString().slice(0, 16) + '...',
+                            time: new Date(e.timestamp * 1000),
+                            value: '-' + e.value
+                        };
+                    }).concat(txs.in.map(e => {
+                        return {
+                            hash: e.hash,
+                            short_hash: e.hash.toString().slice(0, 8) + '...',
+                            time: new Date(e.timestamp),
+                            value: '+' + e.value
+                        };
+                    })) : [];
+                    this.accounts.forEach(el => {
+                        if (el.address === opts.address
+                            && el.network === opts.network
+                            && el.symbol === opts.symbol) {
+                            el.transactions = transactions;
+                        }
+                    });
+                    next(transactions);
+            }
+            });
+        }
+    }
+    getTx(params: any, next: any) {
+        params.hash = params.hash || null;
+        params.symbol = params.symbol || null;
+        params.network = params.network || null;
+        this.infoInit();
+        if (!this._verifyAccountParams(params)) {
+            next({err: this.errorMessage});
+        } else {
+            params.method = 'getTransaction';
+            this._getApi(params, tx => {
+                next(tx);
+            });
+        }
     }
     createTx(params: any, callback: any) {
         this.infoInit();
@@ -87,7 +143,7 @@ export class AccountsService {
                            next({err: this.errorMessage});
                        } else {
                            this.info(this.trans.translate('info.account_created_successfully') + ' ' +
-                           response.account.address);
+                           response.address);
                            next(response);
                        }
                     });
@@ -99,7 +155,7 @@ export class AccountsService {
                             next({err: this.errorMessage});
                         } else {
                             this.info(this.trans.translate('info.account_created_successfully') + ' ' +
-                                response.account.address);
+                                response.address);
                             next(response);
                         }
                     });
@@ -141,7 +197,7 @@ export class AccountsService {
                                 } else {
                                     this.info(this.trans.translate('info.account_opened_successfully') +
                                     ' ' + response.address);
-                                    next({account: response.account});
+                                    next(response);
                                 }
                             });
                             break;
@@ -153,8 +209,8 @@ export class AccountsService {
                                         + this.errorMessage});
                                 } else {
                                     this.info(this.trans.translate('info.account_open_successfully') +
-                                        ' ' + response.account.address);
-                                    next({account: response.account});
+                                        ' ' + response.address);
+                                    next(response);
                                 }
                             });
                             break;
@@ -227,9 +283,44 @@ export class AccountsService {
                             return false;
                         }
                         break;
-                    case 'pKey':
+                    case 'hash':
+                        if ( typeof params[ind] !== 'string') {
+                            this.error(this.trans.translate('err.wrong_hash'));
+                            console.log('step 20');
+                            return false;
+                        }
+                        break;
+                    case 'time':
+                        if ( typeof params[ind] !== 'object') {
+                            this.error(this.trans.translate('err.wrong_hash'));
+                            console.log('step 21');
+                            return false;
+                        }
+                        break;
+                    case 'value':
+                        if ( typeof params[ind] !== 'string') {
+                            this.error(this.trans.translate('err.wrong_hash'));
+                            console.log('step 22');
+                            return false;
+                        }
+                        break;
+                    case 'short_hash':
+                        if ( typeof params[ind] !== 'string') {
+                            this.error(this.trans.translate('err.wrong_hash'));
+                            console.log('step 20');
+                            return false;
+                        }
+                        break;
+                    case '_pKey':
                         if ( typeof params[ind] !== 'string'
                             || params[ind].length < 32 || params[ind].length > 256) {
+                            this.error(this.trans.translate('err.bad_key'));
+                            console.log('step 18');
+                            return false;
+                        }
+                        break;
+                    case 'key':
+                        if ( 0 ) {
                             this.error(this.trans.translate('err.bad_key'));
                             console.log('step 18');
                             return false;
@@ -238,6 +329,13 @@ export class AccountsService {
                     case 'keyFile':
                         if ( typeof params[ind] !== 'object') {
                             this.error(this.trans.translate('err.bad_key_file'));
+                            console.log('step 12');
+                            return false;
+                        }
+                        break;
+                    case 'transactions':
+                        if ( typeof params[ind] !== 'object') {
+                            this.error(this.trans.translate('err.bad_transactions_object'));
                             console.log('step 12');
                             return false;
                         }
@@ -262,17 +360,7 @@ export class AccountsService {
             }
         }
         return true;
-        }/*{
-            params.symbol = params.symbol || null;
-            if (!params.symbol || !this._config.symbols.filter(el => {
-                return el === params.symbols;
-                }).length) {
-                this.error(this.trans.translate('err.wrong_currency_symbol'));
-                return false;
-            } else {
-
-            }
-        }*/
+        }
     }
     _openETHAccount(params: any, callback: any) {
         try {
@@ -285,9 +373,10 @@ export class AccountsService {
                         if (pKey) {
                             const account = new Account();
                             account.address = '0x' + keyFile.address;
-                            account.key = pKey;
+                            account.key = pKey.toString('hex');
                             account.network = params.network;
                             account.symbol = params.symbol;
+                            account.transactions = [];
                             this.accounts.push(account);
                             callback(account);
                         } else {
@@ -297,7 +386,7 @@ export class AccountsService {
                     });
                 } catch (e) {
                     this.error(e.message);
-                    callback({e: this.errorMessage});
+                    callback({err: this.errorMessage});
                 }
 
             };
@@ -343,6 +432,7 @@ export class AccountsService {
                 account.key = dk.toString('hex');
                 account.network = params.network;
                 account.symbol = params.symbol;
+                account.transactions = [];
                 this.accounts.push(account);
                 callback(account);
             } else {
@@ -375,5 +465,84 @@ export class AccountsService {
             + month + '- ' + days + 'T' + hours + ':' + mins + ':' + seconds + '.' + mseconds +
             'Z--' + address;
         return filename;
+    }
+    _getApi(opts: any, next: any) {
+        const self = this;
+        opts.url = 'http://194.71.227.15/api/v4.0/';
+        opts.headers = {
+            headers: new HttpHeaders()
+                .set('Content-Type', 'application/json')
+        };
+        if (!opts.method || !opts.symbol || !opts.network) {
+            next(null);
+        } else {
+            try {
+                switch (opts.method) {
+                    case 'getBalance': {
+                        self.http.get(opts.url + opts.symbol + '/getBalance/' + opts.address,
+                            opts)
+                            .subscribe(response => {console.dir(response);
+                                next(response ? response : null);
+                            });
+                        break;
+                    }
+                    case 'getTransactions': {
+                        console.log('step11');
+                        self.http.get(opts.url + opts.symbol +
+                            '/getTransactionsList/' + opts.address,
+                            opts)
+                            .subscribe(response => {console.dir(response);
+                                next(response ? response : null);
+                            });
+                        break;
+                    }
+                    case 'getTransaction': {
+                        self.http.get(opts.url + opts.symbol +
+                            '/getTransactionByHash/' + opts.hash,
+                            opts)
+                            .subscribe(response => {console.dir(response);
+                                next(response ? response : null);
+                            });
+                        break;
+                    }
+                    case 'getPriceLimit': {
+                        self.http.get(opts.url + opts.symbol + '/getPriceLimit',
+                            opts)
+                            .subscribe(response => {console.dir(response);
+                                next(response ? response : null);
+                            });
+                        break;
+                    }
+                    case 'sendRawTransaction': {
+                        self.http.get(opts.url + opts.symbol + '/sendRawTransaction/' +
+                            opts.hex,
+                            opts)
+                            .subscribe(response => { // console.dir(response);
+                                next({response: response ? response : null, err: null});
+                            }, err => {
+                                if (err.error && err.error.hs && err.error.hs.err) {
+                                    next({response: null, err: err.error.hs.err});
+                                }
+                            });
+                        break;
+                    }
+                    case 'getTransactionCount': {
+                        console.log(opts.url + opts.symbol + '/getTransactionCount/' +
+                            opts.address);
+                        self.http.get(opts.url + opts.symbol + '/getTransactionCount/' +
+                            opts.address,
+                            opts)
+                            .subscribe(response => {console.dir(response);
+                                next(response ? response : null);
+                            });
+                        break;
+                    }
+                    default: next(null);
+                }
+            } catch (err) {
+                this.error(err.message);
+                next(null);
+            }
+        }
     }
 }
