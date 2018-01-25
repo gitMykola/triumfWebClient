@@ -167,13 +167,15 @@ export class AccountsService {
         }
     }
     openAccount(params: any, next: any) {
-        params.symbol = params.symbol || null;
-        params.keyFile = params.keyFile || null;
-        params.passphrase = params.passphrase || null;
-        params.network = params.network || null;
+        const opts: any = {};
+        opts.symbol = params.symbol || null;
+        opts.keyFile = params.keyFile || null;
+        opts.passphrase = params.passphrase || null;
+        opts.network = params.network || null;
+        console.dir(opts);
         console.log('Step 6');
         this.infoInit();
-         if (!this._verifyAccountParams(params)) {
+         if (!this._verifyAccountParams(opts)) {
              console.log('Step 7');
              next({err: this.errorMessage});
          } else {

@@ -82,8 +82,9 @@
   cursor: pointer;
   margin: 0;
   padding: 0 10px;
+  opacity: 0.3;
   &:hover {
-    background: @color_background_1;
+    opacity: 0.8;
   }
 }
 P[name="prev"]{
@@ -91,4 +92,9 @@ P[name="prev"]{
 }
 P[name="next"]{
   right:0;
+}
+.t-tabset-content {
+  .t-content {
+    display:none;
+  }
 }

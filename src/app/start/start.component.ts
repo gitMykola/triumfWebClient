@@ -215,7 +215,7 @@ export class StartComponent implements OnInit {
                 : date.getSeconds();
         return hours + ':' + minutes + ':' + seconds;
     }
-    tabSelect(event) {
+    tabSelect(event, symbol) {
         const target = event.target.tagName === 'LI' ?
             event.target : event.target.parentElement,
             lis = document.querySelectorAll('#t-tabset LI');
@@ -223,48 +223,74 @@ export class StartComponent implements OnInit {
             lis.item(k).className = '';
         }
         target.className = 'active';
-        /*target.style.animationName =
-            target.style.animationName === 'left' ? 'right' : 'left';
-        console.dir(event.target);
-        target.style.animationDuration = '1s';
-        target.style.animationTimingFunction = 'cubic-bezier(0.5, 0, 0, 1)';
-        target.style.animationDirection = 'normal';
-        target.style.animationIterationCount = '1';
-        target.style.animationFillMode = 'forwards';*/
+        const conts = document.querySelectorAll('.t-tabset-content .t-content');
+        for (let k = 0; k < conts.length; k++) {
+            if (conts.item(k).getAttribute('id') === symbol) {
+                conts.item(k).setAttribute('style', 'display:block');
+            } else {
+                conts.item(k).setAttribute('style', 'display:none');
+            }
+        }
+        this.selectedCurrency = symbol;
     }
     tabInit() {
         window.onresize = () => {
-            const tabsetHeader = document.getElementById('t-tabset-header'),
-                tabSet = document.getElementById('t-tabset'),
-                tabItems = document.querySelectorAll('.t-tabset-item'),
-                ffa = tabsetHeader.parentElement.getElementsByClassName('t-step');
-             let tabsLen = 0;
-            for (let i = 0; i < tabItems.length; i++) {
-                tabsLen += tabItems[i].clientWidth;
-            }
-            console.log (tabsLen + ' ' + tabSet.offsetWidth);
-            if (tabsLen > tabSet.offsetWidth) {
-                tabSet.style.width = tabsLen + 'px';
-                // const mar = tabSet.style.marginLeft.replace('px','');
-                // tabSet.style.marginLeft = Number(mar) - 30 + 'px';
-                console.log(tabSet.style.marginLeft);
-                ffa.item(0).className = ffa.item(0).className.indexOf(' t-visible') ?
-                    ffa.item(0).className + ' t-visible' :
-                    ffa.item(0).className;
-                ffa.item(1).className = ffa.item(1).className.indexOf(' t-visible') ?
-                    ffa.item(1).className + ' t-visible' :
-                    ffa.item(1).className;
-            } else {
-                tabSet.style.width = '100%';
-                // const mar = tabSet.style.marginLeft.replace('px','');
-                // tabSet.style.marginLeft = Number(mar) + 30 + 'px';
-                ffa.item(0).className = ffa.item(0).className.indexOf(' t-visible') ?
-                    ffa.item(0).className.replace(' t-visible', '') :
-                    ffa.item(0).className;
-                ffa.item(1).className = ffa.item(1).className.indexOf(' t-visible') ?
-                    ffa.item(1).className.replace(' t-visible', '') :
-                    ffa.item(1).className;
-            }
+            this.setTabs();
         };
+        window.onorientationchange = () => {
+            this.setTabs();
+        };
+        window.onload = () => {
+            this.setTabs();
+        };
+    }
+    setTabs() {
+        const tabsetHeader = document.getElementById('t-tabset-header'),
+            tabSet = document.getElementById('t-tabset'),
+            tabItems = document.querySelectorAll('.t-tabset-item'),
+            ffa = tabsetHeader.parentElement.getElementsByClassName('t-step');
+        let tabsLen = 0;
+        for (let i = 0; i < tabItems.length; i++) {
+            tabsLen += tabItems[i].clientWidth;
+        }
+        console.log (tabsLen + ' ' + tabSet.clientWidth);
+        if (tabsLen > tabSet.clientWidth) {
+            tabSet.style.width = tabsLen + 'px';
+            // const mar = tabSet.style.marginLeft.replace('px','');
+            // tabSet.style.marginLeft = Number(mar) - 30 + 'px';
+            console.log(tabSet.style.marginLeft);
+            ffa.item(0).className = ffa.item(0).className.indexOf(' t-visible') ?
+                ffa.item(0).className + ' t-visible' :
+                ffa.item(0).className;
+            ffa.item(1).className = ffa.item(1).className.indexOf(' t-visible') ?
+                ffa.item(1).className + ' t-visible' :
+                ffa.item(1).className;
+        } else {
+            tabSet.style.width = '100%';
+            // const mar = tabSet.style.marginLeft.replace('px','');
+            // tabSet.style.marginLeft = Number(mar) + 30 + 'px';
+            ffa.item(0).className = ffa.item(0).className.indexOf(' t-visible') ?
+                ffa.item(0).className.replace(' t-visible', '') :
+                ffa.item(0).className;
+            ffa.item(1).className = ffa.item(1).className.indexOf(' t-visible') ?
+                ffa.item(1).className.replace(' t-visible', '') :
+                ffa.item(1).className;
+        }
+    }
+    left() {
+        const tabsetHeader = document.getElementById('t-tabset-header'),
+            tabSet = document.getElementById('t-tabset');
+        const mar = tabSet.style.marginLeft.replace('px','');
+        console.log(tabSet.clientWidth + ' ' + tabsetHeader.clientWidth);
+        tabSet.style.marginLeft = tabSet.offsetWidth - tabsetHeader.offsetWidth + Number(mar) > 0 ?
+            Number(mar) - 50 + 'px' : tabsetHeader.offsetWidth - tabSet.offsetWidth + 'px';
+    }
+    right() {
+        const tabsetHeader = document.getElementById('t-tabset-header'),
+            tabSet = document.getElementById('t-tabset');
+        const mar = tabSet.style.marginLeft.replace('px','');
+        console.log(tabSet.clientWidth + ' ' + tabsetHeader.clientWidth);
+        tabSet.style.marginLeft = Number(mar) < 0 ?
+            Number(mar) + 50 + 'px' : '0px';
     }
 }
