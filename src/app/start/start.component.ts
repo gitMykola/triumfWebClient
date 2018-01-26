@@ -290,6 +290,14 @@ export class StartComponent implements OnInit {
             self.aForm.step = 4;
             self.aForm.enable = true;
             self.aForm.sender = account;
+            self.aService.getGas()
+                .then(gas => {
+                    console.dir(gas);
+                    self.addForm.get('gas').setValue(gas);
+                })
+                .catch(err => {
+                    self.aForm.error = err;
+                });
         };
         self.aForm.createRawTx = function () {
             self.aForm.rawTx = null;

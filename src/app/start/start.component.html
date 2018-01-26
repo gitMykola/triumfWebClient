@@ -122,7 +122,7 @@
             <h3 *ngIf="wait">
                 {{trans.translate('info.please_wait')}}
             </h3>
-            <div id="step1" class="col-sm-12" *ngIf="aForm.step === 1">
+            <div id="step1" class="col-sm-12 t-step-item" *ngIf="aForm.step === 1">
                 <h4 class="info col-sm-12">{{trans.translate('info.open_create_account')}}</h4>
                 <label>{{trans.translate('buttons.new_account')}}
                     <input type="checkbox" formControlName="new" value="false"
@@ -133,13 +133,14 @@
                            />
                 </label>-->
             </div>
-            <div id="step2" class="col-sm-12" *ngIf="aForm.step === 2">
+            <div id="step2" class="col-sm-12 t-step-item" *ngIf="aForm.step === 2">
                 <h4 class="info col-sm-12" *ngIf="!addForm.get('new').value">
                     {{trans.translate('info.input_passphrase_open_account')}}</h4>
                 <h4 class="info col-sm-12" *ngIf="addForm.get('new').value && !wait">
                     {{trans.translate('info.input_passphrase_new_account')}}</h4>
                 <label class="col-12">{{trans.translate('labels.passphrase')}}
-                    <input class="col-12" type="password" name="passphrase" formControlName="passphrase"
+                    <input class="col-12" type="password" autofocus
+                           name="passphrase" formControlName="passphrase"
                            (input)="aForm.validation()"/>
                 </label>
                 <label class="col-12" *ngIf="addForm.get('new').value">{{trans.translate('labels.cpass')}}
@@ -147,14 +148,14 @@
                            (input)="aForm.validation()"/>
                 </label>
             </div>
-            <div id="step3" class="col-sm-12" *ngIf="aForm.step === 3">
+            <div id="step3" class="col-sm-12 t-step-item" *ngIf="aForm.step === 3">
                 <label *ngIf="!addForm.get('new').value && !wait">
                     {{trans.translate('labels.key_file')}}
                     <input type="file" name="cpass" formControlName="keyfile"
                            (change)="aForm.open($event)"/>
                 </label>
             </div>
-            <div id="step4" class="col-sm-12 row" *ngIf="aForm.step === 4">
+            <div id="step4" class="col-sm-12 t-step-item" *ngIf="aForm.step === 4">
                 <h3>{{trans.translate('labels.sender') + ': '}}
                     <h6 class="t-long-string">{{aForm.sender.address}}</h6>
                     {{' (' + aForm.sender.symbol + '/' +
@@ -162,7 +163,7 @@
                 <h4 class="info col-sm-12">
                     {{trans.translate('info.fill_transaction_data')}}</h4>
                     <label class="col-12">{{trans.translate('labels.receiver')}}
-                        <input class="col-12" type="text" name="receiver"
+                        <input class="col-12" type="text" name="receiver" autofocus
                                formControlName="receiver"/>
                     </label>
                     <label class="col-6 offset-6">{{trans.translate('labels.ammount')}}
@@ -179,7 +180,7 @@
                     <input class="col-sm-12" type="number" name="gas" formControlName="gas"/>
                 </label>
             </div>
-            <div id="step5" class="col-sm-12 row" *ngIf="aForm.step === 5 && !wait">
+            <div id="step5" class="col-sm-12 t-step-item" *ngIf="aForm.step === 5 && !wait">
                 <h3>{{trans.translate('labels.sender') + ': '}}
                     <h6 class="t-long-string">{{aForm.sender.address}}</h6>
                     {{' (' + aForm.sender.symbol + '/' +
@@ -188,7 +189,7 @@
                     {{trans.translate('info.raw_transaction')}}</h4>
                 <textarea class="col-12" rows="5">{{aForm.rawTx}}</textarea>
             </div>
-            <div id="step6" class="col-sm-12 row" *ngIf="aForm.step === 6">
+            <div id="step6" class="col-sm-12 t-step-item" *ngIf="aForm.step === 6">
                 <h3>{{trans.translate('labels.sender') + ': '}}
                     <h6 class="t-long-string">{{aForm.sender.address}}</h6>
                     {{' (' + aForm.sender.symbol + '/' +
@@ -203,7 +204,7 @@
                 <button name="next" (click)="aForm.makeStep($event.target)"
                         class="btn col-2 offset-4" [disabled]="!aForm.next || wait">Next</button>
             </div>
-            <div name="error" class="error" *ngIf="aForm.error">{{aForm.error}}</div>
+            <div name="error" class="error" *ngIf="aForm.error" title={{aForm.error}}>{{aForm.error}}</div>
             <div class="turnoff" (click)="aForm.close()">X</div>
         </div>
     </form>

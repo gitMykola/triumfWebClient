@@ -7,6 +7,7 @@ import * as EthTx from '../../../node_modules/ethereumjs-tx';
 import * as EthUtils from 'ethjs-util';
 import {Buffer} from 'buffer';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
+import {reject} from 'q';
 
 @Injectable()
 export class AccountsService {
@@ -108,24 +109,26 @@ export class AccountsService {
                             hash: e.hash,
                             short_hash: e.hash.toString().slice(0, 16) + '...',
                             time: new Date(e.timestamp * 1000),
-                            value: '-' + e.value
+                            value: '-' + e.value.toString()
                         };
                     }).concat(txs.in.map(e => {
                         return {
                             hash: e.hash,
-                            short_hash: e.hash.toString().slice(0, 8) + '...',
-                            time: new Date(e.timestamp),
-                            value: '+' + e.value
+                            short_hash: e.hash.toString().slice(0, 16) + '...',
+                            time: new Date(e.timestamp * 1000),
+                            value: '+' + e.value.toString()
                         };
                     })) : [];
                     this.accounts.forEach(el => {
                         if (el.address === opts.address
                             && el.network === opts.network
                             && el.symbol === opts.symbol) {
-                            el.transactions = transactions.sort((a, b) => a.time > b.time);
+                            el.transactions = transactions
+                                .sort((a, b) => b.time.getTime() - a.time.getTime());
                         }
                     });
-                    next(transactions.sort((a, b) => a.time > b.time));
+                    console.dir(transactions);
+                    next(transactions.sort((a, b) => b.time.getTime() - a.time.getTime()));
             }
             });
         }
@@ -309,6 +312,21 @@ export class AccountsService {
                     }
                 }
         }
+    }
+    getGas() {
+        return new Promise((resolve, reject) => {
+            this._getApi({
+                method: 'getPriceLimit',
+                symbol: 'ETH',
+                network: 'ropsten'
+            }, gas => {
+                if (!gas || !gas.gasLimit) {
+                    reject(this.trans.translate('err.server_connection_error'));
+                } else {
+                    resolve(gas.gasLimit);
+                }
+            });
+        });
     }
     closeAcount(address: string, network: string): boolean {
         const acc = this.accounts.
