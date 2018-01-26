@@ -133,21 +133,21 @@
                            />
                 </label>-->
             </div>
-            <div id="step2" class="col-sm-12" *ngIf="aForm.step === 2 && !wait">
+            <div id="step2" class="col-sm-12" *ngIf="aForm.step === 2">
                 <h4 class="info col-sm-12" *ngIf="!addForm.get('new').value">
                     {{trans.translate('info.input_passphrase_open_account')}}</h4>
-                <h4 class="info col-sm-12" *ngIf="addForm.get('new').value">
+                <h4 class="info col-sm-12" *ngIf="addForm.get('new').value && !wait">
                     {{trans.translate('info.input_passphrase_new_account')}}</h4>
-                <label>{{trans.translate('labels.passphrase')}}
-                    <input type="password" name="passphrase" formControlName="passphrase"
+                <label class="col-12">{{trans.translate('labels.passphrase')}}
+                    <input class="col-12" type="password" name="passphrase" formControlName="passphrase"
                            (input)="aForm.validation()"/>
                 </label>
-                <label *ngIf="addForm.get('new').value">{{trans.translate('labels.cpass')}}
-                    <input type="password" name="cpass" formControlName="cpass"
+                <label class="col-12" *ngIf="addForm.get('new').value">{{trans.translate('labels.cpass')}}
+                    <input class="col-12" type="password" name="cpass" formControlName="cpass"
                            (input)="aForm.validation()"/>
                 </label>
             </div>
-            <div id="step3" class="col-sm-12" *ngIf="aForm.step === 3 && !wait">
+            <div id="step3" class="col-sm-12" *ngIf="aForm.step === 3">
                 <label *ngIf="!addForm.get('new').value && !wait">
                     {{trans.translate('labels.key_file')}}
                     <input type="file" name="cpass" formControlName="keyfile"
@@ -179,7 +179,7 @@
                     <input class="col-sm-12" type="number" name="gas" formControlName="gas"/>
                 </label>
             </div>
-            <div id="step5" class="col-sm-12 row" *ngIf="aForm.step === 5">
+            <div id="step5" class="col-sm-12 row" *ngIf="aForm.step === 5 && !wait">
                 <h3>{{trans.translate('labels.sender') + ': '}}
                     <h6 class="t-long-string">{{aForm.sender.address}}</h6>
                     {{' (' + aForm.sender.symbol + '/' +
@@ -199,9 +199,9 @@
             </div>
             <div class="row">
                 <button name="back" (click)="aForm.makeStep($event.target)"
-                        class="btn col-2 offset-2" [disabled]="!(aForm.step > 1)">Back</button>
+                        class="btn col-2 offset-2" [disabled]="!aForm.back || wait">Back</button>
                 <button name="next" (click)="aForm.makeStep($event.target)"
-                        class="btn col-2 offset-4" [disabled]="!aForm.next">Next</button>
+                        class="btn col-2 offset-4" [disabled]="!aForm.next || wait">Next</button>
             </div>
             <div name="error" class="error" *ngIf="aForm.error">{{aForm.error}}</div>
             <div class="turnoff" (click)="aForm.close()">X</div>

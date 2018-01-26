@@ -3,7 +3,9 @@ import { Account } from '../lib/account';
 import { config } from '../config';
 import {TranslatorService} from '../translator';
 import * as Keythe from '../../../node_modules/keythereum';
-import * as EthTxjs from '../../../node_modules/ethereumjs-tx';
+import * as EthTx from '../../../node_modules/ethereumjs-tx';
+import * as EthUtils from 'ethjs-util';
+import {Buffer} from 'buffer';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 
 @Injectable()
@@ -120,10 +122,10 @@ export class AccountsService {
                         if (el.address === opts.address
                             && el.network === opts.network
                             && el.symbol === opts.symbol) {
-                            el.transactions = transactions;
+                            el.transactions = transactions.sort((a, b) => a.time > b.time);
                         }
                     });
-                    next(transactions);
+                    next(transactions.sort((a, b) => a.time > b.time));
             }
             });
         }
@@ -142,13 +144,74 @@ export class AccountsService {
             });
         }
     }
-    createTx(params: any, callback: any) {
+    createTx(params: any, next: any) {
         this.infoInit();
+        this._getApi({
+            method: 'getTransactionCount',
+            symbol: params.symbol,
+            network: params.network,
+            address: params.sender
+    }, txCount => {
+            if (!txCount) {
+                next({err: this.trans.translate('err.server_connection_error')});
+            } else {
+                this._getApi({
+                    method: 'getPriceLimit',
+                    symbol: params.symbol,
+                    network: params.network
+                }, gasPL => {
+                    if (!gasPL) {
+                        next({err: this.trans.translate('err.server_connection_error')});
+                    } else {
+                        const txParams: any = {
+                            nonce: '0x' + Number(txCount.TransationCount).toString(16),
+                            gasPrice: EthUtils.intToHex(gasPL.gasPrice),
+                            gasLimit: EthUtils.intToHex(params.gas),
+                            to: params.receiver,
+                            value: '0x' + (params.ammount * 1e18).toString(16),
+                            data: '',
+                            chainId: params.network === 'livenet' ? 1 : 3
+                            };
+                        try {
+                            const tx = new EthTx(txParams);
+                            console.dir(tx);
+                            const key = this.accounts
+                                .filter(el => el.address === params.sender
+                                && el.symbol === params.symbol
+                                && el.network === params.network)[0].key;
+                            tx.sign(key);
+                            console.dir(tx.nonce.toString('hex'));
+                            console.dir(tx.from.toString('hex'));
+                            console.dir(tx.to.toString('hex'));
+                            console.dir(tx.gasPrice.toString('hex'));
+                            console.dir(tx.gasLimit.toString('hex'));
+                            console.dir(tx.data.toString('hex'));
+                            console.log('Value ' + tx.value.toString('hex'));
+                            const raw = tx.serialize();
+                            next({tx: '0x' + raw.toString('hex')});
+                        } catch (e) {
+                            console.log(e.message);
+                            next({err: this.trans.translate('err.raw_tx_error')});
+                        }
+                    }
+                });
+            }
+        });
         return '';
     }
-    sendTx(hex: string, callback: any) {
-        this.infoInit();
-        return '';
+    sendTx(params: any, next: any) {
+        this._getApi({
+            method: 'sendRawTransaction',
+            symbol: params.symbol,
+            network: params.network,
+            hex: params.hex
+        }, hash => {console.dir(hash);
+            if (hash.err || hash.hash.hs.err) {
+                next({err: hash.err});
+            } else {
+                next({hash: hash.hash.hs.hash});
+            }
+        });
     }
     createAccount(params: any, next: any) {
         params.passphrase = params.passphrase || null;
@@ -294,7 +357,7 @@ export class AccountsService {
                         break;
                     case 'passphrase':
                         if ( typeof params[ind] !== 'string'
-                            || params[ind].length < 8 || params[ind].length > 256) {
+                            || params[ind].length < 6 || params[ind].length > 256) {
                             this.error(this.trans.translate('err.wrong_passphrase'));
                             console.log('step 11');
                             return false;
@@ -398,7 +461,7 @@ export class AccountsService {
                         if (pKey) {
                             const account = new Account();
                             account.address = '0x' + keyFile.address;
-                            account.key = pKey.toString('hex');
+                            account.key = pKey; // .toString('hex');
                             account.network = params.network;
                             account.symbol = params.symbol;
                             account.transactions = [];
@@ -455,7 +518,7 @@ export class AccountsService {
                 a.dispatchEvent(e);
                 const account = new Account();
                 account.address = '0x' + keyFile.address;
-                account.key = dk.toString('hex');
+                account.key = dk; // .toString('hex');
                 account.network = params.network;
                 account.symbol = params.symbol;
                 account.transactions = [];
@@ -544,11 +607,11 @@ export class AccountsService {
                         self.http.get(opts.url + opts.symbol + '/sendRawTransaction/' +
                             opts.hex,
                             opts)
-                            .subscribe(response => { // console.dir(response);
-                                next({response: response ? response : null, err: null});
+                            .subscribe(response => { console.dir(response);
+                                next({hash: response ? response : null, err: null});
                             }, err => {
                                 if (err.error && err.error.hs && err.error.hs.err) {
-                                    next({response: null, err: err.error.hs.err});
+                                    next({hash: null, err: err.error.hs.err});
                                 }
                             });
                         break;

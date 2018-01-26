@@ -6,10 +6,10 @@ export class Account {
     private _pKey: string;
     public transactions: Transaction[];
     public balance: string;
-    get key(): string {
+    get key(): any {
         return this._pKey;
     }
-    set key(key: string) {
+    set key(key: any) {
         this._pKey = key;
     }
 }

@@ -56,7 +56,12 @@ export const EN = {
         eth_account_open_error: 'Ethereum account open error.',
         passphrase_cpass: 'Passphrase not equal confirmed passphrase.',
         passphrase_length: 'Passphrase should be at least 8 characters and less then 256 characters.',
-        wrong_hash: 'Wrong hash.'
+        wrong_hash: 'Wrong hash.',
+        wrong_receiver: 'Wrong receiver address.',
+        wrong_ammount: 'Wrong ammount value.',
+        wrong_gas: 'Wrong gas value.',
+        raw_tx_error: 'Raw transaction error.',
+        sending_transaction_error: 'Transaction not send. Please, try again.'
     },
     info: {
         account_opened_successfully: 'Account open successfully.',

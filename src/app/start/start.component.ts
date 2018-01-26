@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {TranslatorService} from '../translator';
 import {AccountsService} from '../_services/accounts.service';
 import {NgbTabChangeEvent} from '@ng-bootstrap/ng-bootstrap';
+import * as asy from 'async';
 
 @Component({
     selector: 'app-t-start',
@@ -49,7 +50,7 @@ export class StartComponent implements OnInit {
         });
         this.addForm = this.fBuilder.group({
             new: false,
-            passphrase: ['', [Validators.required, Validators.minLength(8),
+            passphrase: ['', [Validators.required, Validators.minLength(6),
                 Validators.maxLength(256)]],
             cpass: ['', [Validators.required, Validators.minLength(8),
                 Validators.maxLength(256)]],
@@ -108,120 +109,224 @@ export class StartComponent implements OnInit {
         console.dir('');
     }
     initAForm() {
-    const self = this;
-    self.wait = false;
-    self.aForm = {};
-    self.aForm.step = 1;
-    self.aForm.enable = false;
-    self.aForm.back = false;
-    self.aForm.next = true;
-    self.aForm.advanced = false;
-    self.aForm.sender = null;
-    self.aForm.rawTx = '';
-    self.aForm.txHash = '';
-    self.aForm.validation = function(): boolean {
-        console.log('Next' + self.aForm.step);
-        switch (self.aForm.step) {
-            case 1:
-                self.aForm.error = null;
-                self.aForm.next = true;
-                return true;
-            case 2:
-                console.log('1' + self.aForm.next);
-                if (self.addForm.get('passphrase').status === 'INVALID') {
-                    self.aForm.error = self.trans.translate('err.passphrase_length');
-                    self.aForm.next = false;
-                    console.log('2' + self.aForm.next);
-                    return false;
-                } else if (self.addForm.get('new').value
-                    && self.addForm.get('passphrase').value !== self.addForm.get('cpass').value) {
-                    self.aForm.error = self.trans.translate('err.passphrase_cpass');
-                    self.aForm.next = false;
-                    console.log('3' + self.aForm.next);
-                    return false;
-                } else {
+        const self = this;
+        self.wait = false;
+        self.aForm = {};
+        self.aForm.step = 1;
+        self.aForm.enable = false;
+        self.aForm.back = false;
+        self.aForm.next = true;
+        self.aForm.advanced = false;
+        self.aForm.sender = null;
+        self.aForm.rawTx = '';
+        self.aForm.txHash = '';
+        self.aForm.validation = function (): boolean {
+            console.log('Next' + self.aForm.step);
+            switch (self.aForm.step) {
+                case 1:
                     self.aForm.error = null;
                     self.aForm.next = true;
-                    console.log('4' + self.aForm.next);
                     return true;
-                }
-            case 3:
-                console.log('5' + self.aForm.next);
-                if (!self.addForm.get('new').value &&
-                    self.addForm.get('keyfile').status !== 'INVALID') {
-                    console.dir(self.addForm.get('keyfile'));
-                }
-            default:
-                return false;
-        }
-    };
-    self.aForm.makeStep = function(e) {
-        if (e.name === 'next') {
-            self.aForm.step = self.aForm.step < 6 ? self.aForm.step + 1 : 6;
-        } else {
-            self.aForm.step = self.aForm.step > 1 ? self.aForm.step - 1 : 1;
-        }
-        self.aForm.validation();
-         // 20400074498630 4-e
-        console.log(self.aForm.step);
-        console.log(self.addForm.get('passphrase').value);
-        console.log(self.addForm.get('cpass').value);
-        console.log(self.addForm.get('new').value);
-        console.dir(self.addForm.get('keyfile'));
-        console.dir(self.aForm.next);
-        if (self.aForm.step === 3) {
-            self.aForm.next = false;
-            if (self.addForm.get('new').value) {
-                console.log('Generate Account');
-                self.aForm.createAccount();
+                case 2:
+                    console.log('Next step ' + self.aForm.next);
+                    if (self.addForm.get('passphrase').status === 'INVALID') {
+                        self.aForm.error = self.trans.translate('err.passphrase_length');
+                        self.aForm.next = false;
+                        return false;
+                    } else if (self.addForm.get('new').value
+                        && self.addForm.get('passphrase').value !== self.addForm.get('cpass').value) {
+                        self.aForm.error = self.trans.translate('err.passphrase_cpass');
+                        self.aForm.next = false;
+                        return false;
+                    } else {
+                        self.aForm.error = null;
+                        self.aForm.next = true;
+                        return true;
+                    }
+                case 3:
+                    console.log('Next step ' + self.aForm.next);
+                    if (!self.addForm.get('new').value &&
+                        self.addForm.get('keyfile').status !== 'INVALID') {
+                        console.dir(self.addForm.get('keyfile'));
+                        return true;
+                    } else {
+                        return false;
+                    }
+                case 4:
+                    if (self.addForm.get('receiver').status === 'INVALID') {
+                        self.aForm.error = self.trans.translate('err.wrong_receiver');
+                        return false;
+                    }
+                    if (self.addForm.get('ammount').status === 'INVALID') {
+                        self.aForm.error = self.trans.translate('err.wrong_ammount');
+                        return false;
+                    }
+                    if (self.addForm.get('gas').status === 'INVALID') {
+                        self.aForm.error = self.trans.translate('err.wrong_gas');
+                        return false;
+                    } else {
+                        self.aForm.error = null;
+                        return true;
+                    }
+                case 5:
+                    return false;
+                default:
+                    return false;
             }
-        }
-    };
-    self.aForm.open = function(files) {
-        self.wait = true;
-        const params = {
-            passphrase: self.addForm.get('passphrase').value,
-            symbol: self.selectedCurrency,
-            network: self.networks[self.selectedCurrency],
-            keyFile: files.target.files[0]
         };
-        console.log('Open Account');
-        console.dir(params);
-        self.aService.openAccount(params, account => {
-            self.wait = false;
-            console.dir(account);
-            self.accounts[params.symbol].push(account);
-            console.log('Account response');
-            self.aForm.close();
-        });
+        self.aForm.makeStep = function (e) {
+            if (e.name === 'next') {
+                // self.aForm.step = self.aForm.step < 6 ? self.aForm.step + 1 : 6;
+                switch (self.aForm.step) {
+                    case 1:
+                        self.aForm.step++;
+                        self.aForm.back = true;
+                        break;
+                    case 2:
+                        if (self.aForm.validation()) {
+                            self.aForm.back = true;
+                            self.aForm.step += 1;
+                            if (self.addForm.get('new').value) {
+                                console.log('Generate Account');
+                                self.aForm.next = false;
+                                self.wait = true;
+                                setTimeout(() => {
+                                    self.aForm.createAccount();
+                                }, 500);
+                            }
+                        }
+                        break;
+                    case 3:
+                        break;
+                    case 4:
+                        if (self.aForm.validation()) {
+                            self.aForm.step += 1;
+                            self.aForm.back = true;
+                            self.wait = true;
+                            self.aForm.createRawTx();
+                        }
+                        break;
+                    case 5:
+                        self.aForm.step += 1;
+                        self.wait = true;
+                        self.aForm.sendRawTx();
+                        break;
+                    case 6:
+                        self.aForm.next = false;
+                        break;
+                    default:
+                        break;
+                }
+            } else {
+                switch (self.aForm.step) {
+                    case 2:
+                        self.aForm.step--;
+                        self.aForm.back = false;
+                        break;
+                    case 3:
+                        break;
+                    case 4:
+                        self.aForm.back = false;
+                        break;
+                    case 5:
+                        self.aForm.step -= 1;
+                        break;
+                    case 6:
+                        self.aForm.step -= 1;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            self.aForm.validation();
+            console.log(self.aForm.step);
+            console.log(self.addForm.get('passphrase').value);
+            console.log(self.addForm.get('cpass').value);
+            console.log(self.addForm.get('new').value);
+            console.dir(self.addForm.get('keyfile'));
+            console.dir(self.aForm.next);
         };
-    self.aForm.createAccount = function() {
-        self.wait = true;
-        const params = {
-            passphrase: self.addForm.get('passphrase').value,
-            symbol: self.selectedCurrency,
-            network: self.networks[self.selectedCurrency]
+        self.aForm.open = function (files) {
+            self.wait = true;
+            const params = {
+                passphrase: self.addForm.get('passphrase').value,
+                symbol: self.selectedCurrency,
+                network: self.networks[self.selectedCurrency],
+                keyFile: files.target.files[0]
+            };
+            console.log('Open Account');
+            console.dir(params);
+            setTimeout(() => {
+                self.aService.openAccount(params, account => {
+                    self.wait = false;
+                    console.dir(account);
+                    self.accounts[params.symbol].push(account);
+                    console.log('Account response');
+                    self.aForm.close();
+                });
+            }, 100);
         };
-        console.log('Generate');
-        console.dir(params);
-        self.aService.createAccount(params, account => {
-            self.wait = false;
-            self.accounts[params.symbol].push(account);
-            console.dir(account);
-            self.aForm.close();
-        });
-    };
-    self.aForm.close = function() {
-        self.initAForm();
-        self.addForm.reset();
-    };
-    self.aForm.openSend = function(account: any) {
-        self.initAForm();
-        self.aForm.step = 4;
-        self.aForm.enable = true;
-        self.aForm.sender = account;
+        self.aForm.createAccount = function () {
+            const params = {
+                passphrase: self.addForm.get('passphrase').value,
+                symbol: self.selectedCurrency,
+                network: self.networks[self.selectedCurrency]
+            };
+            console.log('Generate');
+            console.dir(params);
+            self.aService.createAccount(params, account => {
+                self.wait = false;
+                self.accounts[params.symbol].push(account);
+                console.dir(account);
+                self.aForm.close();
+            });
         };
-}
+        self.aForm.close = function () {
+            self.initAForm();
+            self.addForm.reset();
+        };
+        self.aForm.openSend = function (account: any) {
+            self.initAForm();
+            self.aForm.step = 4;
+            self.aForm.enable = true;
+            self.aForm.sender = account;
+        };
+        self.aForm.createRawTx = function () {
+            self.aForm.rawTx = null;
+            const opts: any = {};
+            opts.symbol = self.aForm.sender.symbol;
+            opts.network = self.aForm.sender.network;
+            opts.sender = self.aForm.sender.address;
+            opts.receiver = self.addForm.get('receiver').value;
+            opts.ammount = self.addForm.get('ammount').value;
+            opts.gas = self.addForm.get('gas').value;
+            self.aService.createTx(opts, rawTx => {
+                self.wait = false;
+                if (!rawTx.tx) {
+                    self.aForm.error = rawTx.err;
+                } else {
+                    self.aForm.rawTx = rawTx.tx;
+                }
+            });
+        };
+        self.aForm.sendRawTx = function () {
+            self.aForm.txHash = null;
+            self.aService.sendTx({
+                symbol: self.aForm.sender.symbol,
+                network: self.aForm.sender.network,
+                hex: self.aForm.rawTx,
+            }, hash => {
+                self.wait = false;
+                console.dir(hash);
+                if (hash.err) {
+                    self.aForm.error = self.trans.translate('err.sending_transaction_error')
+                    + ' ' + hash.err;
+                } else {
+                    self.aForm.txHash = hash.hash;
+                }
+            });
+        };
+    }
     toDateString(date: Date): string {
         const days = (date.getDate().toString().length < 2) ? '0' + date.getDate()
                 : date.getDate(),

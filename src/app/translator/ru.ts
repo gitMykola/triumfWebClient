@@ -56,7 +56,11 @@ export const RU = {
         eth_account_open_error: 'Ethereum account open error.',
         passphrase_cpass: 'Секретная фраза должна совпадать с подтверждением.',
         passphrase_length: 'Сектретная фраза должна быть не меньше 8 символов и не более 256.',
-        wrong_hash: 'Не правильный хэш.'
+        wrong_hash: 'Не правильный хэш.',
+        wrong_receiver: 'Неправильный адрес получателя.',
+        wrong_ammount: 'Неправильная сумма.',
+        wrong_gas: 'Неправильная величина газа.',
+        sending_transaction_error: 'Транзакция не отправлена. Пожалуйста, попробуйте ещё раз.'
     },
     info: {
         account_opened_successfully: 'Account open successfully.',
