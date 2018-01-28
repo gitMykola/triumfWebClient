@@ -7,10 +7,10 @@ const appRoutes: Routes = [
     { path: 'wallet', component: WalletComponent },
     { path: 'start', component: StartComponent },
     { path: 'home', component: HomeComponent },
-    { path: '', component: WalletComponent},
+    { path: '', component: StartComponent},
 
     // otherwise redirect to home
-    { path: '**', redirectTo: '' }
+    { path: '**', redirectTo: 'start' }
 ];
 
 export const routing = RouterModule.forRoot(appRoutes);

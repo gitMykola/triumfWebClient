@@ -8,6 +8,8 @@ import * as EthUtils from 'ethjs-util';
 import {Buffer} from 'buffer';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {reject} from 'q';
+import * as Bitcore from 'bitcore-lib';
+import * as cryptoJS from 'crypto-js';
 
 @Injectable()
 export class AccountsService {
@@ -552,7 +554,45 @@ export class AccountsService {
             callback({err: this.errorMessage});
         }
     }
-    _createBTCAccount(params: any, callback: any) {}
+    _createBTCAccount(params: any, callback: any) {
+        try {
+            const phrase = new Buffer(params.passphrase),
+                hash = Bitcore.crypto.Hash.sha256(phrase),
+                bn = Bitcore.crypto.BN.fromBuffer(hash),
+                pkey = new Bitcore.PrivateKey(params.network),
+                cifertext = cryptoJS.AES.encrypt(pkey.toWIF(), params.passphrase),
+                keyFile = {
+                    address: pkey.toAddress().toString(),
+                    alg: 'AES',
+                    cyfertext: cifertext.toString()
+                };
+            console.dir(cifertext.toString());
+            const decifer = cryptoJS.AES.decrypt(cifertext.toString(), params.passphrase);
+            console.dir(Bitcore.PrivateKey.fromWIF(decifer.toString()));
+            if (keyFile) {
+                const blob = new Blob([JSON.stringify(keyFile)], {type: 'text/json'});
+                const e = document.createEvent('MouseEvent');
+                const a = document.createElement('a');
+                a.download = this._keyFileName(keyFile.address);
+                a.href = window.URL.createObjectURL(blob);
+                a.dataset.downloadurl = ['text/json', a.download, a.href].join(':');
+                e.initMouseEvent('click', true, false, window,
+                    0, 0, 0, 0, 0, false, false, false, false, 0, null);
+                a.dispatchEvent(e);
+                const account = new Account();
+                account.address = keyFile.address;
+                account.key = pkey; // .toString('hex');
+                account.network = params.network;
+                account.symbol = params.symbol;
+                account.transactions = [];
+                account.balance = '';
+                this.accounts.push(account);
+                callback(account);
+            }
+        } catch (e) {
+            console.log(e.message);
+        }
+    }
     _keyFileName (address: string): string {
         const cd = new Date();
         const month = ((cd.getMonth() + 1).toString().length === 1) ?
