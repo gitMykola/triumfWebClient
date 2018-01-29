@@ -35,7 +35,7 @@
             <ngb-accordion>
                 <ngb-panel *ngFor="let acc of accounts[curr.symbol]">
                     <ng-template *ngIf="acc.symbol === curr.symbol" ngbPanelTitle>
-                        <div class="row" (click)="getTxs(acc)">
+                        <div class="row" (click)="get(acc)">
                         <p class="t-long-string col-sm-8" title="{{acc.address}}">
                             {{acc.address}}
                         </p>
@@ -53,23 +53,27 @@
                                         &#xf0d6;</span>
                             </button>
                             <button class="btn fa" title="{{trans.translate('labels.refresh')}}"
-                                    (click)="getTxs(acc)">
+                                    (click)="get(acc)">
                                 <span>{{trans.translate('labels.refresh')}}</span>
                                 <span>
                                         &#xf021;</span>
                             </button>
                         </div>
-                        <div class="txs-header row">
-                            <p class="col-12 col-md-4" name="hash">{{trans.translate('labels.hash')}}</p>
-                            <p class="col-3 col-md-2" name="date">{{trans.translate('labels.date')}}</p>
-                            <p class="col-3 col-md-2" name="time">{{trans.translate('labels.time')}}</p>
-                            <p class="col-6 col-md-4 " name="ammount">{{trans.translate('labels.ammount')}}</p>
-                        </div>
-                        <div class="txs-row row" *ngFor="let tx of acc.transactions">
-                            <p class="col-12 col-md-4 t-long-string" name="hash" title={{tx.hash}}>{{tx.hash}}</p>
-                            <p class="col-3 col-md-2" name="date">{{toDateString(tx.time)}}</p>
-                            <p class="col-3 col-md-2" name="time">{{toTimeString(tx.time)}}</p>
-                            <p class="col-6 col-md-4 t-long-string" name="ammount">{{tx.value}}</p>
+                            <div class="txs-header row">
+                                <p class="col-12 col-md-4" name="hash">{{trans.translate('labels.hash')}}/Id</p>
+                                <p class="col-3 col-md-2" name="date">{{trans.translate('labels.date')}}</p>
+                                <p class="col-3 col-md-2" name="time">{{trans.translate('labels.time')}}</p>
+                                <p class="col-6 col-md-4 " name="ammount">{{trans.translate('labels.ammount')}}</p>
+                            </div>
+                            <div class="txs-row row" *ngFor="let tx of acc.transactions">
+                                <p class="col-12 col-md-4 t-long-string" name="hash"
+                                   title={{tx.hash}}>{{tx.hash}}</p>
+                                <p class="col-3 col-md-2" name="date">{{toDateString(tx.time)}}</p>
+                                <p class="col-3 col-md-2" name="time">{{toTimeString(tx.time)}}</p>
+                                <p class="col-6 col-md-4 t-long-string" name="ammount">{{tx.vout[0].value}}</p>
+                            </div>
+                        <div *ngIf="acc.symbol !== 'ETH'">
+
                         </div>
                     </ng-template>
                 </ngb-panel>

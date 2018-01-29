@@ -107,32 +107,68 @@ export class AccountsService {
                     this.error(this.trans.translate('err.server_connection_error'));
                     next({err: this.errorMessage});
                 } else {
-                    const transactions = (txs.out && txs.in) ? txs.out.map(e => {
-                        return {
-                            hash: e.hash,
-                            short_hash: e.hash.toString().slice(0, 16) + '...',
-                            time: new Date(e.timestamp * 1000),
-                            value: '-' + e.value.toString()
-                        };
-                    }).concat(txs.in.map(e => {
-                        return {
-                            hash: e.hash,
-                            short_hash: e.hash.toString().slice(0, 16) + '...',
-                            time: new Date(e.timestamp * 1000),
-                            value: '+' + e.value.toString()
-                        };
-                    })) : [];
-                    this.accounts.forEach(el => {
-                        if (el.address === opts.address
-                            && el.network === opts.network
-                            && el.symbol === opts.symbol) {
-                            el.transactions = transactions
-                                .sort((a, b) => b.time.getTime() - a.time.getTime());
-                        }
-                    });
-                    console.dir(transactions);
-                    next(transactions.sort((a, b) => b.time.getTime() - a.time.getTime()));
-            }
+                    if (opts.symbol === 'ETH') {
+                        const transactions = (txs.out && txs.in) ? txs.out.map(e => {
+                            return {
+                                hash: e.hash,
+                                short_hash: e.hash.toString().slice(0, 16) + '...',
+                                time: new Date(e.timestamp * 1000),
+                                value: '-' + e.value.toString()
+                            };
+                        }).concat(txs.in.map(e => {
+                            return {
+                                hash: e.hash,
+                                short_hash: e.hash.toString().slice(0, 16) + '...',
+                                time: new Date(e.timestamp * 1000),
+                                value: '+' + e.value.toString()
+                            };
+                        })) : [];
+                        this.accounts.forEach(el => {
+                            if (el.address === opts.address
+                                && el.network === opts.network
+                                && el.symbol === opts.symbol) {
+                                el.transactions = transactions
+                                    .sort((a, b) => b.time.getTime() - a.time.getTime());
+                            }
+                        });
+                        console.dir(transactions);
+                        next(transactions.sort((a, b) => b.time.getTime() - a.time.getTime()));
+                    } else {
+                        console.dir(txs);
+                        const trx = JSON.parse(txs.txs);
+                        console.dir(trx);
+                        const trans = trx.txs;
+                        console.dir(trans);
+                        const transactions = trans.map(e => {
+                            return {
+                                hash: e.txid,
+                                time: new Date(e.time * 1000),
+                                vin: e.vin.map(el => {
+                                    return {
+                                        adress: el.addr,
+                                        value: el.value,
+                                        txid: el.txid
+                                    };
+                                }),
+                                vout: e.vout.map(el => {
+                                    return {
+                                        address: el.scriptPubKey.addresses,
+                                        value: el.value
+                                    };
+                                })
+                            };
+                        });
+                        const toTxs = transactions.sort((a, b) => b.time.getTime() - a.time.getTime());
+                        this.accounts.forEach(el => {
+                            if (el.address === opts.address
+                                && el.network === opts.network
+                                && el.symbol === opts.symbol) {
+                                el.transactions = toTxs;
+                            }
+                        });
+                        next(toTxs);
+                    }
+                }
             });
         }
     }
@@ -207,7 +243,30 @@ export class AccountsService {
                 });
                 break;
             case 'BTC':
-
+                this._getApi({
+                    method: 'getUTXOS',
+                    symbol: params.symbol,
+                    network: params.network,
+                    address: params.sender
+                }, ut => {
+                    if (!ut || !ut.utxos) {} else {
+                        try {
+                            const tx = Bitcore.Transaction();
+                            tx.from(ut.utxos);
+                            tx.to(params.address, params.ammount * 1e8);
+                            tx.change(params.change);
+                            const key = this.accounts
+                                .filter(el => el.address === params.sender
+                                    && el.symbol === params.symbol
+                                    && el.network === params.network)[0].key;
+                            tx.sign(key);
+                            next({tx: '0x' + tx.serialize()});
+                        } catch (e) {
+                            console.log(e.message);
+                            next({err: this.trans.translate('err.raw_tx_error')});
+                        }
+                    }
+                });
                 break;
             default:
                 next({err: this.trans.translate('err.raw_tx_error')});
@@ -529,7 +588,7 @@ export class AccountsService {
                     dKey += decifer.final('utf8');
                     const pKey = Bitcore.PrivateKey.fromWIF(dKey);
                     const account = new Account();
-                            account.address = '0x' + keyFile.address;
+                            account.address = keyFile.address;
                             account.key = pKey; // .toString('hex');
                             account.network = params.network;
                             account.symbol = params.symbol;
@@ -681,10 +740,16 @@ export class AccountsService {
             try {
                 switch (opts.method) {
                     case 'getBalance': {
-                        self.http.get(opts.url + opts.symbol + '/getBalance/' + opts.address,
+                        const url = opts.symbol === 'ETH' ? opts.url + opts.symbol +
+                            '/getBalance/' + opts.address :
+                            opts.url + opts.symbol +
+                            '/balance/' + opts.address;
+                        self.http.get(url,
                             opts)
                             .subscribe(response => {console.dir(response);
-                                next(response ? response : null);
+                            const bs: any = response;
+                                next(response ?
+                                    (opts.symbol === 'ETH') ? response : {balance: bs.b} : null);
                             });
                         break;
                     }
@@ -740,7 +805,11 @@ export class AccountsService {
                         break;
                     }
                     case 'getUTXOS':
-                        
+                        console.log(opts.url + opts.symbol + '/UTXOs/' +
+                        opts.address);
+                        self.http.get(opts.url + opts.symbol + '/UTXOs/' +
+                            opts.address, opts);
+                        break;
                     default: next(null);
                 }
             } catch (err) {

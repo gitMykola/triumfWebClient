@@ -83,7 +83,7 @@ export class StartComponent implements OnInit {
                 .filter(el => el.symbol === symbol && el.network === network);
         }
     }
-    getTxs(account: any) {
+    get(account: any) {
         // e.preventDefault();
         this.aService.getAccountTransactions(account, txs => {
             console.dir(txs);
