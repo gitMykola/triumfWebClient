@@ -10,6 +10,7 @@ import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {reject} from 'q';
 import * as Bitcore from 'bitcore-lib';
 import * as cryptoJS from 'crypto-js';
+import * as crypto from 'crypto-browserify';
 
 @Injectable()
 export class AccountsService {
@@ -151,57 +152,67 @@ export class AccountsService {
     }
     createTx(params: any, next: any) {
         this.infoInit();
-        this._getApi({
-            method: 'getTransactionCount',
-            symbol: params.symbol,
-            network: params.network,
-            address: params.sender
-    }, txCount => {
-            if (!txCount) {
-                next({err: this.trans.translate('err.server_connection_error')});
-            } else {
+        switch (params.symbol) {
+            case 'ETH':
                 this._getApi({
-                    method: 'getPriceLimit',
+                    method: 'getTransactionCount',
                     symbol: params.symbol,
-                    network: params.network
-                }, gasPL => {
-                    if (!gasPL) {
+                    network: params.network,
+                    address: params.sender
+            }, txCount => {
+                    if (!txCount) {
                         next({err: this.trans.translate('err.server_connection_error')});
                     } else {
-                        const txParams: any = {
-                            nonce: '0x' + Number(txCount.TransationCount).toString(16),
-                            gasPrice: EthUtils.intToHex(gasPL.gasPrice),
-                            gasLimit: EthUtils.intToHex(params.gas),
-                            to: params.receiver,
-                            value: '0x' + (params.ammount * 1e18).toString(16),
-                            data: '',
-                            chainId: params.network === 'livenet' ? 1 : 3
-                            };
-                        try {
-                            const tx = new EthTx(txParams);
-                            console.dir(tx);
-                            const key = this.accounts
-                                .filter(el => el.address === params.sender
-                                && el.symbol === params.symbol
-                                && el.network === params.network)[0].key;
-                            tx.sign(key);
-                            console.dir(tx.nonce.toString('hex'));
-                            console.dir(tx.from.toString('hex'));
-                            console.dir(tx.to.toString('hex'));
-                            console.dir(tx.gasPrice.toString('hex'));
-                            console.dir(tx.gasLimit.toString('hex'));
-                            console.dir(tx.data.toString('hex'));
-                            console.log('Value ' + tx.value.toString('hex'));
-                            const raw = tx.serialize();
-                            next({tx: '0x' + raw.toString('hex')});
-                        } catch (e) {
-                            console.log(e.message);
-                            next({err: this.trans.translate('err.raw_tx_error')});
-                        }
+                        this._getApi({
+                            method: 'getPriceLimit',
+                            symbol: params.symbol,
+                            network: params.network
+                        }, gasPL => {
+                            if (!gasPL) {
+                                next({err: this.trans.translate('err.server_connection_error')});
+                            } else {
+                                const txParams: any = {
+                                    nonce: '0x' + Number(txCount.TransationCount).toString(16),
+                                    gasPrice: EthUtils.intToHex(gasPL.gasPrice),
+                                    gasLimit: EthUtils.intToHex(params.gas),
+                                    to: params.receiver,
+                                    value: '0x' + (params.ammount * 1e18).toString(16),
+                                    data: '',
+                                    chainId: params.network === 'livenet' ? 1 : 3
+                                    };
+                                try {
+                                    const tx = new EthTx(txParams);
+                                    console.dir(tx);
+                                    const key = this.accounts
+                                        .filter(el => el.address === params.sender
+                                        && el.symbol === params.symbol
+                                        && el.network === params.network)[0].key;
+                                    tx.sign(key);
+                                    console.dir(tx.nonce.toString('hex'));
+                                    console.dir(tx.from.toString('hex'));
+                                    console.dir(tx.to.toString('hex'));
+                                    console.dir(tx.gasPrice.toString('hex'));
+                                    console.dir(tx.gasLimit.toString('hex'));
+                                    console.dir(tx.data.toString('hex'));
+                                    console.log('Value ' + tx.value.toString('hex'));
+                                    const raw = tx.serialize();
+                                    next({tx: '0x' + raw.toString('hex')});
+                                } catch (e) {
+                                    console.log(e.message);
+                                    next({err: this.trans.translate('err.raw_tx_error')});
+                                }
+                            }
+                        });
                     }
                 });
-            }
-        });
+                break;
+            case 'BTC':
+
+                break;
+            default:
+                next({err: this.trans.translate('err.raw_tx_error')});
+                break;
+        }
         return '';
     }
     sendTx(params: any, next: any) {
@@ -504,7 +515,35 @@ export class AccountsService {
             callback({err: this.errorMessage});
         }
     }
-    _openBTCAccount(params: any, callback: any) {}
+    _openBTCAccount(params: any, callback: any) {
+        try {
+            const file = new FileReader();
+            file.readAsText(params.keyFile);
+            file.onload = (event: any) => {
+                const keyFile: any = JSON.parse(event.target.result);
+                console.dir(keyFile);
+                const decifer = crypto.createDecipher(
+                    keyFile.calg,
+                    params.passphrase);
+                    let dKey = decifer.update(keyFile.cifertext, 'hex', 'utf8');
+                    dKey += decifer.final('utf8');
+                    const pKey = Bitcore.PrivateKey.fromWIF(dKey);
+                    const account = new Account();
+                            account.address = '0x' + keyFile.address;
+                            account.key = pKey; // .toString('hex');
+                            account.network = params.network;
+                            account.symbol = params.symbol;
+                            account.transactions = [];
+                            account.balance = '';
+                            this.accounts.push(account);
+                            callback(account);
+
+            };
+        } catch (err) {
+            this.error(err.message);
+            callback({err: this.errorMessage});
+        }
+    }
     _createETHAccount(params: any, callback: any) {
         try {
             const opts = { keyBytes: 32, ivBytes: 16 },
@@ -560,15 +599,30 @@ export class AccountsService {
                 hash = Bitcore.crypto.Hash.sha256(phrase),
                 bn = Bitcore.crypto.BN.fromBuffer(hash),
                 pkey = new Bitcore.PrivateKey(params.network),
-                cifertext = cryptoJS.AES.encrypt(pkey.toWIF(), params.passphrase),
-                keyFile = {
+                key = pkey.toWIF(),
+                salt = crypto.randomBytes(32).toString('hex').slice(0, 32),
+                iv = crypto.randomBytes(16),
+                cifer = crypto.createCipher('aes256', params.passphrase);
+            // crypto.createCipheriv('aes-256-cbc', salt, iv);
+                let cifertext = cifer.update(Buffer.from(key), 'utf8', 'hex');
+                cifertext += cifer.final('hex');
+                const keyFile = {
                     address: pkey.toAddress().toString(),
-                    alg: 'AES',
-                    cyfertext: cifertext.toString()
+                    calg: 'aes256',
+                //    salt: salt,
+                //    iv: iv,
+                //    it: 1000,
+                //    kl: 256,
+                //    ciferalg: 'aes-256-cbc',
+                //    alg: 'sha256',
+                    cifertext: cifertext
                 };
-            console.dir(cifertext.toString());
-            const decifer = cryptoJS.AES.decrypt(cifertext.toString(), params.passphrase);
-            console.dir(Bitcore.PrivateKey.fromWIF(decifer.toString()));
+             console.log(key);
+                const decifer = crypto.createDecipher('aes256', params.passphrase);
+            // const decifer = crypto.createDecipheriv('aes-256-cbc', keyFile.salt, keyFile.iv);
+             let   dectext = decifer.update(keyFile.cifertext, 'hex', 'utf8');
+             dectext += decifer.final('utf8');
+             console.dir(dectext);
             if (keyFile) {
                 const blob = new Blob([JSON.stringify(keyFile)], {type: 'text/json'});
                 const e = document.createEvent('MouseEvent');
@@ -685,6 +739,8 @@ export class AccountsService {
                             });
                         break;
                     }
+                    case 'getUTXOS':
+                        
                     default: next(null);
                 }
             } catch (err) {
