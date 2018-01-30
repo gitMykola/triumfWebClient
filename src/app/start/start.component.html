@@ -179,10 +179,17 @@
                     <input type="checkbox" formControlName="advanced" value="false"
                     />
                 </label>
-                <label class="col-6 offset-6" *ngIf="addForm.get('advanced').value"
-                    >{{trans.translate('labels.gas')}}
-                    <input class="col-sm-12" type="number" name="gas" formControlName="gas"/>
-                </label>
+                <div class="col-12" *ngIf="addForm.get('advanced').value">
+                    <label class="col-6 offset-6" *ngIf="selectedCurrency === 'ETH'">
+                        {{trans.translate('labels.gas')}}
+                        <input class="col-sm-12" type="number" name="gas" formControlName="gas"/>
+                    </label>
+                    <label class="col-12" *ngIf="selectedCurrency === 'BTC'">
+                        {{trans.translate('labels.change')}}
+                        <input class="col-12" type="text" name="change"
+                               formControlName="change"/>
+                    </label>
+                </div>
             </div>
             <div id="step5" class="col-sm-12 t-step-item" *ngIf="aForm.step === 5 && !wait">
                 <h3>{{trans.translate('labels.sender') + ': '}}

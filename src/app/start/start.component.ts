@@ -62,6 +62,8 @@ export class StartComponent implements OnInit {
                 Validators.max(1e18)]],
             receiver: ['', [Validators.required, Validators.minLength(8),
                 Validators.maxLength(256)]],
+            change: ['', [Validators.required, Validators.minLength(8),
+                Validators.maxLength(256)]]
         });
         this.initAForm();
         this.wait = false;
@@ -118,6 +120,7 @@ export class StartComponent implements OnInit {
         self.aForm.next = true;
         self.aForm.advanced = false;
         self.aForm.sender = null;
+        self.aForm.change = null;
         self.aForm.rawTx = '';
         self.aForm.txHash = '';
         self.aForm.validation = function (): boolean {
@@ -290,6 +293,7 @@ export class StartComponent implements OnInit {
             self.aForm.step = 4;
             self.aForm.enable = true;
             self.aForm.sender = account;
+            self.aForm.change = account;
             self.aService.getGas()
                 .then(gas => {
                     console.dir(gas);
@@ -308,6 +312,7 @@ export class StartComponent implements OnInit {
             opts.receiver = self.addForm.get('receiver').value;
             opts.ammount = self.addForm.get('ammount').value;
             opts.gas = self.addForm.get('gas').value;
+            opts.change = self.addForm.get('change').value;
             self.aService.createTx(opts, rawTx => {
                 self.wait = false;
                 if (!rawTx.tx) {
