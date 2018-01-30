@@ -338,14 +338,14 @@ export class StartComponent implements OnInit {
                 symbol: self.aForm.sender.symbol,
                 network: self.aForm.sender.network,
                 hex: self.aForm.rawTx,
-            }, hash => {
+            }, res => {
                 self.wait = false;
-                console.dir(hash);
-                if (hash.err) {
+                console.dir(res);
+                if (res.err) {
                     self.aForm.error = self.trans.translate('err.sending_transaction_error')
-                    + ' ' + hash.err;
+                    + ' ' + res.err;
                 } else {
-                    self.aForm.txHash = hash.hash;
+                    self.aForm.txHash = (self.aForm.sender.symbol === 'ETH') ? res.hash : res.txid;
                 }
             });
         };

@@ -265,7 +265,7 @@ export class AccountsService {
                                     && el.network === params.network)[0].key;
                             tx.sign(key);
                             console.log(tx.serialize());
-                            next({tx: '0x' + tx.serialize()});
+                            next({tx: tx.serialize()});
                         /*} catch (e) {
                             console.log(e.message);
                             next({err: this.trans.translate('err.raw_tx_error')});
@@ -285,12 +285,20 @@ export class AccountsService {
             symbol: params.symbol,
             network: params.network,
             hex: params.hex
-        }, hash => {console.dir(hash);
-            if (hash.err || hash.hash.hs.err) {
-                next({err: hash.err});
+        }, res => {console.dir(res);
+        if (params.symbol === 'EHT') {
+            if (res.err || res.hash.hs.err) {
+                next({err: res.err});
             } else {
-                next({hash: hash.hash.hs.hash});
+                next({hash: res.hash.hs.hash});
             }
+        } else {
+            if (res.err) {
+                next({err: res.err});
+            } else {
+                next({txid: res.txid});
+            }
+        }
         });
     }
     createAccount(params: any, next: any) {
@@ -786,16 +794,29 @@ export class AccountsService {
                         break;
                     }
                     case 'sendRawTransaction': {
-                        self.http.get(opts.url + opts.symbol + '/sendRawTransaction/' +
-                            opts.hex,
-                            opts)
-                            .subscribe(response => { console.dir(response);
-                                next({hash: response ? response : null, err: null});
-                            }, err => {
-                                if (err.error && err.error.hs && err.error.hs.err) {
-                                    next({hash: null, err: err.error.hs.err});
-                                }
-                            });
+                        if (opts.symbol === 'EHT') {
+                            self.http.get(opts.url + opts.symbol + '/sendRawTransaction/' +
+                                opts.hex,
+                                opts)
+                                .subscribe(response => { console.dir(response);
+                                    next({hash: response ? response : null, err: null});
+                                }, err => {
+                                    if (err.error && err.error.hs && err.error.hs.err) {
+                                        next({hash: null, err: err.error.hs.err});
+                                    }
+                                });
+                        } else {
+                            self.http.get(opts.url + opts.symbol + '/sendRawTransaction/' +
+                                opts.hex,
+                                opts)
+                                .subscribe(response => { console.dir(response);
+                                    next({txid: response ? response : null, err: null});
+                                }, err => {
+                                    if (err.error && err.error.hs && err.error.hs.err) { // TODO check error response
+                                        next({txid: null, err: err.error.hs.err});
+                                    }
+                                });
+                        }
                         break;
                     }
                     case 'getTransactionCount': {
