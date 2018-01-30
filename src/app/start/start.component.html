@@ -70,7 +70,10 @@
                                    title={{tx.hash}}>{{tx.hash}}</p>
                                 <p class="col-3 col-md-2" name="date">{{toDateString(tx.time)}}</p>
                                 <p class="col-3 col-md-2" name="time">{{toTimeString(tx.time)}}</p>
-                                <p class="col-6 col-md-4 t-long-string" name="ammount">{{tx.vout[0].value}}</p>
+                                <p *ngIf="acc.symbol === 'ETH'"
+                                        class="col-6 col-md-4 t-long-string" name="ammount">{{tx.value}}</p>
+                                <p *ngIf="acc.symbol !== 'ETH'"
+                                   class="col-6 col-md-4 t-long-string" name="ammount">{{tx.vout[0].value}}</p>
                             </div>
                         <div *ngIf="acc.symbol !== 'ETH'">
 
