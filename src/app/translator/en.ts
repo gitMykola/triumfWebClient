@@ -27,6 +27,7 @@ export const EN = {
         send_email: 'Send email',
         advanced: 'Advanced',
         gas: 'Gas',
+        change: 'Change address',
     },
     app: {
         title_1: 'Triumf ',
@@ -60,6 +61,7 @@ export const EN = {
         wrong_receiver: 'Wrong receiver address.',
         wrong_ammount: 'Wrong ammount value.',
         wrong_gas: 'Wrong gas value.',
+        wrong_change: 'Wrong change address.',
         raw_tx_error: 'Raw transaction error.',
         sending_transaction_error: 'Transaction not send. Please, try again.'
     },

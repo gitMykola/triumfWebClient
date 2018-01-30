@@ -156,21 +156,27 @@ export class StartComponent implements OnInit {
                         return false;
                     }
                 case 4:
-                    if (self.addForm.get('receiver').status === 'INVALID') {
-                        self.aForm.error = self.trans.translate('err.wrong_receiver');
-                        return false;
-                    }
-                    if (self.addForm.get('ammount').status === 'INVALID') {
-                        self.aForm.error = self.trans.translate('err.wrong_ammount');
-                        return false;
-                    }
-                    if (self.addForm.get('gas').status === 'INVALID') {
-                        self.aForm.error = self.trans.translate('err.wrong_gas');
-                        return false;
-                    } else {
-                        self.aForm.error = null;
-                        return true;
-                    }
+                        if (self.addForm.get('receiver').status === 'INVALID') {
+                            self.aForm.error = self.trans.translate('err.wrong_receiver');
+                            return false;
+                        }
+                        if (self.addForm.get('ammount').status === 'INVALID') {
+                            self.aForm.error = self.trans.translate('err.wrong_ammount');
+                            return false;
+                        }
+                        if (self.selectedCurrency === 'ETH' &&
+                            self.addForm.get('gas').status === 'INVALID') {
+                            self.aForm.error = self.trans.translate('err.wrong_gas');
+                            return false;
+                        }
+                        if (self.selectedCurrency === 'BTC' &&
+                            self.addForm.get('change').status === 'INVALID') {
+                            self.aForm.error = self.trans.translate('err.wrong_change');
+                            return false;
+                        } else {
+                                self.aForm.error = null;
+                                return true;
+                            }
                 case 5:
                     return false;
                 default:
@@ -202,6 +208,7 @@ export class StartComponent implements OnInit {
                     case 3:
                         break;
                     case 4:
+                        console.log(self.aForm.validation());
                         if (self.aForm.validation()) {
                             self.aForm.step += 1;
                             self.aForm.back = true;
@@ -293,15 +300,17 @@ export class StartComponent implements OnInit {
             self.aForm.step = 4;
             self.aForm.enable = true;
             self.aForm.sender = account;
-            self.aForm.change = account;
-            self.aService.getGas()
-                .then(gas => {
-                    console.dir(gas);
-                    self.addForm.get('gas').setValue(gas);
-                })
-                .catch(err => {
-                    self.aForm.error = err;
-                });
+            self.addForm.get('change').setValue(account.address);
+            if (account.symbol === 'ETH') {
+                self.aService.getGas()
+                    .then(gas => {
+                        console.dir(gas);
+                        self.addForm.get('gas').setValue(gas);
+                    })
+                    .catch(err => {
+                        self.aForm.error = err;
+                    });
+            }
         };
         self.aForm.createRawTx = function () {
             self.aForm.rawTx = null;
@@ -313,6 +322,7 @@ export class StartComponent implements OnInit {
             opts.ammount = self.addForm.get('ammount').value;
             opts.gas = self.addForm.get('gas').value;
             opts.change = self.addForm.get('change').value;
+            console.dir(opts);
             self.aService.createTx(opts, rawTx => {
                 self.wait = false;
                 if (!rawTx.tx) {

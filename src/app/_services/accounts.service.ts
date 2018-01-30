@@ -249,22 +249,27 @@ export class AccountsService {
                     network: params.network,
                     address: params.sender
                 }, ut => {
-                    if (!ut || !ut.utxos) {} else {
-                        try {
+                    if (!ut || !ut.utxos) {
+                        next({err: this.trans.translate('err.server_connection_error')});
+                    } else {
+                       // try {
+                        console.dir(params);
                             const tx = Bitcore.Transaction();
-                            tx.from(ut.utxos);
-                            tx.to(params.address, params.ammount * 1e8);
+                            tx.from(JSON.parse(ut.utxos));
+                            tx.to(params.receiver, params.ammount * 1e8);
                             tx.change(params.change);
+                            console.dir(tx);
                             const key = this.accounts
                                 .filter(el => el.address === params.sender
                                     && el.symbol === params.symbol
                                     && el.network === params.network)[0].key;
                             tx.sign(key);
+                            console.log(tx.serialize());
                             next({tx: '0x' + tx.serialize()});
-                        } catch (e) {
+                        /*} catch (e) {
                             console.log(e.message);
                             next({err: this.trans.translate('err.raw_tx_error')});
-                        }
+                        }*/
                     }
                 });
                 break;
@@ -808,7 +813,10 @@ export class AccountsService {
                         console.log(opts.url + opts.symbol + '/UTXOs/' +
                         opts.address);
                         self.http.get(opts.url + opts.symbol + '/UTXOs/' +
-                            opts.address, opts);
+                            opts.address, opts)
+                            .subscribe(response => {console.dir(response);
+                                next(response ? response : null);
+                            });
                         break;
                     default: next(null);
                 }

@@ -26,7 +26,8 @@ export const RU = {
         send: 'Отправить',
         send_email: 'Отправить email',
         advanced: 'Расширенный',
-        gas: 'Газ'
+        gas: 'Газ',
+        change: 'Изменить адрес'
     },
     app: {
         title_1: 'Триумф ',
@@ -60,6 +61,7 @@ export const RU = {
         wrong_receiver: 'Неправильный адрес получателя.',
         wrong_ammount: 'Неправильная сумма.',
         wrong_gas: 'Неправильная величина газа.',
+        wrong_change: 'Неправильный адрес изменения.',
         sending_transaction_error: 'Транзакция не отправлена. Пожалуйста, попробуйте ещё раз.'
     },
     info: {
