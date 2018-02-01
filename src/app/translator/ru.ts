@@ -28,7 +28,20 @@ export const RU = {
         send_email: 'Отправить email',
         advanced: 'Расширенный',
         gas: 'Газ',
-        change: 'Изменить адрес'
+        change: 'Изменить адрес',
+        status: 'Cтатус транзакции',
+        block_height: 'Номер блока',
+        timestamp: 'Время транзакции',
+        from: 'Отправитель',
+        to: 'Получатель',
+        value: 'Сумма',
+        gas_limit: 'Лимит газа',
+        gas_used_by_txn: 'Использованный газ',
+        gas_price: 'Цена газа',
+        actual_tx_cost_fee: 'Стоимость транзакции/Комиссия',
+        cumulative_gas_used: 'Кумулятивно использованный газ',
+        nonce: 'Номер',
+        input_data: 'Данные транзакции'
     },
     app: {
         title_1: 'Триумф ',
@@ -63,7 +76,8 @@ export const RU = {
         wrong_ammount: 'Неправильная сумма.',
         wrong_gas: 'Неправильная величина газа.',
         wrong_change: 'Неправильный адрес изменения.',
-        sending_transaction_error: 'Транзакция не отправлена. Пожалуйста, попробуйте ещё раз.'
+        sending_transaction_error: 'Транзакция не отправлена. Пожалуйста, попробуйте ещё раз.',
+        tx_open_error: 'Ошибка открытия транзакции.'
     },
     info: {
         account_opened_successfully: 'Account open successfully.',

@@ -1,0 +1,68 @@
+<div class="t-tx col-12 t-hidden" id="t-tx">
+    <div class="t-wait" *ngIf="tx.wait">
+        <span class="fa">&#xf013;</span>
+        <span class="fa">&#xf013;</span>
+    </div>
+    <div class="t-hash" *ngIf="!tx.wait">
+        <div class="row">
+            <h6 class="t-hash-key col-12 col-md-4">{{trans.translate('labels.hash')}}</h6>
+            <p class="t-long-string col-12 col-md-8" title={{tx.hash}}>{{tx.hash}}</p>
+        </div>
+        <div class="row">
+            <h6 class="t-hash-key col-12 col-md-4">{{trans.translate('labels.status')}}</h6>
+            <p class="col-12 col-md-8">{{tx.status ? 'Success' : 'Error'}}</p>
+        </div>
+        <div class="row">
+            <h6 class="t-hash-key col-12 col-md-4">{{trans.translate('labels.block_height')}}</h6>
+            <p class="col-12 col-md-8">{{tx.blockHeight}}</p>
+        </div>
+        <div class="row">
+            <h6 class="t-hash-key col-12 col-md-4">{{trans.translate('labels.timestamp')}}</h6>
+            <p class="col-12 col-md-8">{{tx.timestamp}}</p>
+        </div>
+        <div class="row">
+            <h6 class="t-hash-key col-12 col-md-4">{{trans.translate('labels.from')}}</h6>
+            <p class="t-long-string col-12 col-md-8">{{tx.from}}</p>
+        </div>
+        <div class="row">
+            <h6 class="t-hash-key col-12 col-md-4">{{trans.translate('labels.to')}}</h6>
+            <p class="t-long-string col-12 col-md-8">{{tx.to}}</p>
+        </div>
+        <div class="row">
+            <h6 class="t-hash-key col-12 col-md-4">{{trans.translate('labels.value')}}</h6>
+            <p class="t-long-string col-12 col-md-8">{{tx.value}}</p>
+        </div>
+        <div class="row">
+            <h6 class="t-hash-key col-12 col-md-4">{{trans.translate('labels.gas_limit')}}</h6>
+            <p class="t-long-string col-12 col-md-8">{{tx.gasLimit}}</p>
+        </div>
+        <div class="row">
+            <h6 class="t-hash-key col-12 col-md-4">{{trans.translate('labels.gas_used_by_txn')}}</h6>
+            <p class="t-long-string col-12 col-md-8">{{tx.gasUsedByTxn}}</p>
+        </div>
+        <div class="row">
+            <h6 class="t-hash-key col-12 col-md-4">{{trans.translate('labels.gas_price')}}</h6>
+            <p class="t-long-string col-12 col-md-8">{{tx.gasPrice}}</p>
+        </div>
+        <div class="row">
+            <h6 class="t-hash-key col-12 col-md-4">{{trans.translate('labels.actual_tx_cost_fee')}}</h6>
+            <p class="t-long-string col-12 col-md-8">{{tx.fee}}</p>
+        </div>
+        <div class="row">
+            <h6 class="t-hash-key col-12 col-md-4">{{trans.translate('labels.cumulative_gas_used')}}</h6>
+            <p class="t-long-string col-12 col-md-8">{{tx.cumulativeGasUsed}}</p>
+        </div>
+        <div class="row">
+            <h6 class="t-hash-key col-12 col-md-4">{{trans.translate('labels.nonce')}}</h6>
+            <p class="t-long-string col-12 col-md-8">{{tx.nonce}}</p>
+        </div>
+        <div class="row">
+            <h6 class="t-hash-key col-12 col-md-4">{{trans.translate('labels.input_data')}}</h6>
+            <textarea class="col-12 col-md-8" disabled rows="5">{{tx.input}}</textarea>
+        </div>
+    </div>
+    <div class="t-error" *ngIf="tx.error && !tx.wait">
+        <p>{{tx.errorMsg}}</p>
+    </div>
+    <span class="t-close fa" (click)="close()">&#xf00d;</span>
+</div>

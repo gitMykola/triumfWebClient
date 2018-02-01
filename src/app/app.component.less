@@ -111,3 +111,71 @@ P[name="next"]{
      }
   }
 }
+.txs-row {
+  .t-hash, .t-id {
+    cursor: pointer;
+    color: cornflowerblue;
+  }
+}
+.t-add-account {
+  z-index: 10;
+}
+.t-tx {
+  position: absolute;
+  top:0;
+  left:0;
+  z-index: 100;
+  box-shadow: 0 10px 10px 5px rgba(0, 0, 0, 0.4);
+  background: rgba(220,220,220,0.8);
+  min-height: 100%;
+  padding-top: 40px;
+  .t-wait {
+    position: absolute;
+    text-align: center;
+    top:45%;
+    left:45%;
+    span {
+      font-size: 40px;
+      color: cornflowerblue;
+      animation-duration: 3s;
+      animation-timing-function: cubic-bezier(0.5, 0, 0, 1);
+      animation-direction: normal;
+      animation-iteration-count: infinite;
+      animation-fill-mode: forwards;
+    }
+    span:nth-child(1) {
+      animation-name: rotateRight;
+      margin-right: -5px;
+    }
+    span:nth-child(2) {
+      animation-name: rotateLeft;
+    }
+  }
+  .t-close {
+    cursor:pointer;
+    position:absolute;
+    top:0;
+    right:0;
+    color: #333333;
+    font-size: x-large;
+    margin: 10px;
+  }
+  .row {
+    background: #eeeeee;
+    border-bottom: 1px solid #dddddd;
+  }
+}
+.t-hidden {
+  display: none;
+}
+@media screen and (max-width:768px) {
+  .t-tx {
+    .row {
+      p {
+        text-align: right;
+      }
+    }
+  }
+}
+
+

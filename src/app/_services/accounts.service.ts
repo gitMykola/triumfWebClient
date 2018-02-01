@@ -172,19 +172,27 @@ export class AccountsService {
             });
         }
     }
-    getTx(params: any, next: any) {
-        params.hash = params.hash || null;
-        params.symbol = params.symbol || null;
-        params.network = params.network || null;
-        this.infoInit();
-        if (!this._verifyAccountParams(params)) {
-            next({err: this.errorMessage});
-        } else {
-            params.method = 'getTransaction';
-            this._getApi(params, tx => {
-                next(tx);
-            });
-        }
+    getTx(params: any) {
+        return new Promise( (resolve, reject) => {
+            const opts: any = {};
+            if (params.hash) {
+                opts.hash = params.hash;
+            }
+            if (params.id) {
+                opts.id = params.id;
+            }
+            opts.symbol = params.symbol || null;
+            opts.network = params.network || null;
+            this.infoInit();console.dir(opts);
+            if (!this._verifyAccountParams(opts)) {
+                reject(this.errorMessage);
+            } else {
+                opts.method = 'getTransaction';
+                this._getApi(opts, tx => {
+                    resolve(tx);
+                });
+            }
+        });
     }
     createTx(params: any, next: any) {
         this.infoInit();

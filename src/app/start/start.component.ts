@@ -15,6 +15,7 @@ export class StartComponent implements OnInit {
     currencies: any;
     langs: any;
     selectedLang: string;
+    selectedTx: any;
     just: string;
     selectedCurrency: string;
     eth: any;
@@ -68,6 +69,9 @@ export class StartComponent implements OnInit {
         this.initAForm();
         this.wait = false;
         this.tabInit();
+        this.selectedTx = {
+            status: false,
+        };
     }
     sc($event: NgbTabChangeEvent) {
         this.selectedCurrency = $event.nextId;
@@ -443,5 +447,28 @@ export class StartComponent implements OnInit {
         console.log(tabSet.clientWidth + ' ' + tabsetHeader.clientWidth);
         tabSet.style.marginLeft = Number(mar) < 0 ?
             Number(mar) + 50 + 'px' : '0px';
+    }
+    openTx(targetTx) {
+        const self = this;
+        self.selectedTx = {};
+        this.selectedTx.wait = true;
+        const tTx = document.getElementById('t-tx');
+        tTx.style.marginTop = window.scrollY + 'px';
+        tTx.className = tTx.className.replace(' t-hidden', ' t-showFade');
+        this.aService.getTx({
+            symbol: self.selectedCurrency,
+            network: self.networks[this.selectedCurrency],
+            hash: targetTx.hash
+        })
+            .then(res => {
+                self.selectedTx = res;
+                self.selectedTx.timestamp = new Date(self.selectedTx.timestamp * 1000);
+                self.selectedTx.wait = false;
+            })
+            .catch( err => {
+                self.selectedTx.wait = false;
+                self.selectedTx.error = true;
+                self.selectedTx.errorMsg = self.trans.translate('err.tx_open_error');
+            });
     }
 }

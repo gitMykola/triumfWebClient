@@ -29,6 +29,19 @@ export const EN = {
         advanced: 'Advanced',
         gas: 'Gas',
         change: 'Change address',
+        status: 'TxReceipt Status',
+        block_height: 'Block Height',
+        timestamp: 'TimeStamp',
+        from: 'From',
+        to: 'To',
+        value: 'Value',
+        gas_limit: 'Gas Limit',
+        gas_used_by_txn: 'Gas Used By Txn',
+        gas_price: 'Gas Price',
+        actual_tx_cost_fee: 'Actual Tx Cost/Fee',
+        cumulative_gas_used: 'Cumulative Gas Used',
+        nonce: 'Nonce',
+        input_data: 'Input Data'
     },
     app: {
         title_1: 'Triumf ',
@@ -64,7 +77,8 @@ export const EN = {
         wrong_gas: 'Wrong gas value.',
         wrong_change: 'Wrong change address.',
         raw_tx_error: 'Raw transaction error.',
-        sending_transaction_error: 'Transaction not send. Please, try again.'
+        sending_transaction_error: 'Transaction not send. Please, try again.',
+        tx_open_error: 'Transaction open error.'
     },
     info: {
         account_opened_successfully: 'Account open successfully.',

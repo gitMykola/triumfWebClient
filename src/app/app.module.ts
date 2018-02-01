@@ -14,7 +14,7 @@ import {HttpClientModule} from '@angular/common/http';
 import {TranslatorService} from './translator';
 import {AccountsService} from './_services/accounts.service';
 import {CommonModule} from '@angular/common';
-import {TxComponent} from './lib/Tx/tx.component';
+import {TxETHComponent} from './lib/Tx/txeth.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {
     MatAutocompleteModule,
@@ -56,7 +56,7 @@ import {
       HomeComponent,
       WalletComponent,
       StartComponent,
-      TxComponent
+      TxETHComponent
   ],
   imports: [
     BrowserModule,
@@ -77,11 +77,11 @@ import {
         AppComponent,
         FormsModule,
         ReactiveFormsModule,
-        TxComponent,
+        TxETHComponent,
         MatTableModule,
         MatTabsModule,
-        MatToolbarModule,
         MatTooltipModule,
+        MatToolbarModule,
         BrowserAnimationsModule,
         BrowserModule
     ],
