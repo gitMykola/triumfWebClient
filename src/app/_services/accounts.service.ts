@@ -141,7 +141,7 @@ export class AccountsService {
                         console.dir(trans);
                         const transactions = trans.map(e => {
                             return {
-                                hash: e.txid,
+                                id: e.txid,
                                 time: new Date(e.time * 1000),
                                 vin: e.vin.map(el => {
                                     return {

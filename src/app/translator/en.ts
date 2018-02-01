@@ -21,6 +21,7 @@ export const EN = {
         fee: 'Fee',
         balance: 'Balance',
         hash: 'Hash',
+        id: 'Id',
         send_money: 'Send money',
         refresh: 'Refresh',
         send: 'Send',

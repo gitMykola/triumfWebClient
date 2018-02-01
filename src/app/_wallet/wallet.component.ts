@@ -96,7 +96,7 @@ export class WalletComponent implements OnInit {
                 dklen: 32,
                 p: 8,
                 r: 1
-                                    // prf: 'hmac-sha256' somePass1Wf
+                                        // prf: 'hmac-sha256' somePass1Wf
             }
         };
         const keyFile = keythe.dump(password, dk.privateKey, dk.salt, dk.iv,

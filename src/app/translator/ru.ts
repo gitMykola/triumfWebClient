@@ -21,6 +21,7 @@ export const RU = {
         fee: 'Комиссия',
         balance: 'Баланс',
         hash: 'Хэш',
+        id: 'Id',
         send_money: 'Отправить деньги',
         refresh: 'Обновить',
         send: 'Отправить',
