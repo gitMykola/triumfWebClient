@@ -111,9 +111,10 @@ P[name="next"] {
   left: 0;
   z-index: 100;
   box-shadow: 0 10px 10px 5px rgba(0, 0, 0, 0.4);
-  background: rgba(220, 220, 220, 0.8);
-  min-height: 100%;
+  background: #dcdcdc;
+  min-height: 400px;
   padding-top: 40px;
+  padding-bottom: 10px;
 }
 .t-tx .t-wait {
   position: absolute;
@@ -149,12 +150,64 @@ P[name="next"] {
 .t-tx .row {
   background: #eeeeee;
   border-bottom: 1px solid #dddddd;
+  margin: 0;
+  padding: 10px 10px 5px 10px ;
+}
+.t-tx .row h6 {
+  margin: 0;
+  padding: 0 5px;
+}
+.t-tx .row p:nth-child(1) {
+  font-weight: bold;
+}
+.t-tx .row p {
+  margin: 0;
+  padding: 0 5px;
+}
+.t-tx .t-detail div {
+  border: none;
+  padding: 0;
+}
+.t-tx .t-detail div div {
+  margin: 2px;
+  padding: 2px;
+  border-radius: 3px;
+  border: 1px solid #cccccc;
+  background: aliceblue;
+}
+.t-tx .t-detail div div p:nth-child(1) {
+  font-weight: lighter;
+}
+.t-tx .t-fee {
+  display: flex;
+  justify-content: right;
+  padding: 0 10px;
+  background: #eeeeee;
+}
+.t-tx .t-fee p {
+  flex: 1 1 auto;
+  font-weight: normal;
+  border-radius: 3px;
+  background: ivory;
+  margin: 2px;
+  padding: 5px;
 }
 .t-hidden {
   display: none;
 }
 @media screen and (max-width: 768px) {
-  .t-tx .row p {
+  .t-tx .row p:nth-child(2) {
     text-align: right;
+  }
+  .t-tx .t-fee {
+    display: inline-block;
+    width: 100%;
+  }
+  .t-tx .t-fee p {
+    font-weight: normal;
+    border-radius: 3px;
+    background: ivory;
+    margin: 2px;
+    padding: 5px;
   }
 }

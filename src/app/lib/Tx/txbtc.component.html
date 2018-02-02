@@ -1,0 +1,65 @@
+<div class="t-tx col-12 t-hidden" id="t-tx-BTC">
+    <div class="t-wait" *ngIf="tx.wait">
+        <span class="fa">&#xf013;</span>
+        <span class="fa">&#xf013;</span>
+    </div>
+    <div class="t-id" *ngIf="!tx.wait">
+        <h4 class="col-12">{{trans.translate('labels.transaction')}}</h4>
+        <div class="row">
+            <p class="col-md-3">{{trans.translate('labels.id')}}</p>
+            <p class="t-long-string col-md-9" title={{tx.txid}}>{{tx.txid}}</p>
+        </div>
+        <h5 class="col-12">{{trans.translate('labels.summary')}}</h5>
+        <div class="row">
+            <p class="col-md-3">{{trans.translate('labels.size')}}</p>
+            <p class="col-md-9">{{tx.size + '(bytes)'}}</p>
+        </div>
+        <div class="row">
+            <p class="col-md-3">{{trans.translate('labels.feeRate')}}</p>
+            <p class="t-long-string col-md-9">{{tx.feeRate + '(' + tx.symbol
+                + ' ' + trans.translate('labels.per') + ' Kb)'}}</p>
+        </div>
+        <div class="row">
+            <p class="col-md-3">{{trans.translate('labels.timestamp')}}</p>
+            <p class="col-md-9">{{tx.timestamp}}</p>
+        </div>
+        <div class="row">
+            <p class="col-md-3">{{trans.translate('labels.block_height')}}</p>
+            <p class="col-md-9">{{tx.blockheight}}</p>
+        </div>
+        <h5 class="col-12">{{trans.translate('labels.details')}}</h5>
+        <div class="row t-detail">
+            <div class="col-md-6">
+                <div class="row" *ngFor="let accin of tx.vin">
+                    <p class="t-long-string col-md-12">{{accin.addr}}</p>
+                    <p class="col-12 text-right">
+                        {{accin.value + ' (' + tx.symbol +')' }}</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="row" *ngFor="let accout of tx.vout">
+                    <p class="t-long-string col-md-12"
+                       *ngFor="let addr of accout.scriptPubKey.addresses">
+                        {{addr}}</p>
+                    <p class="col-12 text-right">
+                        {{accout.value + ' (' + tx.symbol +')' }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="t-fee text-right">
+            <p class="">
+              {{trans.translate('labels.fee') + ': ' + tx.fees + '(' + tx.symbol + ')'}}
+            </p>
+            <p class="">
+                {{trans.translate('labels.confirmations') + ': ' + tx.confirmations}}
+            </p>
+            <p class="">
+                {{tx.sumVout + '(' + tx.symbol + ')'}}
+            </p>
+        </div>
+    </div>
+    <div class="t-error" *ngIf="tx.error && !tx.wait">
+        <p>{{tx.errorMsg}}</p>
+    </div>
+    <span class="t-close fa" (click)="close()">&#xf00d;</span>
+</div>

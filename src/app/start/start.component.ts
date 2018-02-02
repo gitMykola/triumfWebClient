@@ -5,6 +5,7 @@ import {TranslatorService} from '../translator';
 import {AccountsService} from '../_services/accounts.service';
 import {NgbTabChangeEvent} from '@ng-bootstrap/ng-bootstrap';
 import * as asy from 'async';
+import * as Big from 'bignumber.js';
 
 @Component({
     selector: 'app-t-start',
@@ -452,20 +453,33 @@ export class StartComponent implements OnInit {
         const self = this;
         self.selectedTx = {};
         this.selectedTx.wait = true;
-        const tTx = document.getElementById('t-tx');
+        const tTx = document.getElementById('t-tx-' + this.selectedCurrency);
         tTx.style.marginTop = window.scrollY + 'px';
         tTx.className = tTx.className.replace(' t-hidden', ' t-showFade');
-        this.aService.getTx({
+        const opts: any = {
             symbol: self.selectedCurrency,
-            network: self.networks[this.selectedCurrency],
-            hash: targetTx.hash
-        })
-            .then(res => {
+            network: self.networks[this.selectedCurrency]
+        };
+        if (targetTx.hash) { opts.hash = targetTx.hash; }
+        if (targetTx.id) { opts.id = targetTx.id; }
+        this.aService.getTx(opts)
+            .then(res => {console.dir(res);
                 self.selectedTx = res;
-                self.selectedTx.timestamp = new Date(self.selectedTx.timestamp * 1000);
+                self.selectedTx.symbol = self.selectedCurrency;
+                self.selectedTx.timestamp = new Date(
+                    self.selectedTx.timestamp || self.selectedTx.time
+                    * 1000);
                 self.selectedTx.wait = false;
+                if (self.selectedTx.symbol === 'BTC') {
+                    const fees = new Big(self.selectedTx.fees),
+                        size = new Big(self.selectedTx.size);
+                    self.selectedTx.feeRate = fees.dividedBy(
+                        size.dividedBy(1000));
+                    self.selectedTx.sumVout = self.selectedTx.vout.reduce((a, b) =>
+                        new Big(a.value).plus(b.value));
+                }
             })
-            .catch( err => {
+            .catch( err => {console.dir(err);
                 self.selectedTx.wait = false;
                 self.selectedTx.error = true;
                 self.selectedTx.errorMsg = self.trans.translate('err.tx_open_error');

@@ -7,7 +7,6 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 
 import { AppComponent } from './app.component';
 import { StartComponent } from './start';
-import {HomeComponent} from './home';
 import {WalletComponent} from './_wallet';
 import {AuthenticationService} from './_services';
 import {HttpClientModule} from '@angular/common/http';
@@ -15,74 +14,31 @@ import {TranslatorService} from './translator';
 import {AccountsService} from './_services/accounts.service';
 import {CommonModule} from '@angular/common';
 import {TxETHComponent} from './lib/Tx/txeth.component';
-import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {
-    MatAutocompleteModule,
-    MatButtonModule,
-    MatButtonToggleModule,
-    MatCardModule,
-    MatCheckboxModule,
-    MatChipsModule,
-    MatDatepickerModule,
-    MatDialogModule,
-    MatExpansionModule,
-    MatGridListModule,
-    MatIconModule,
-    MatInputModule,
-    MatListModule,
-    MatMenuModule,
-    MatNativeDateModule,
-    MatPaginatorModule,
-    MatProgressBarModule,
-    MatProgressSpinnerModule,
-    MatRadioModule,
-    MatRippleModule,
-    MatSelectModule,
-    MatSidenavModule,
-    MatSliderModule,
-    MatSlideToggleModule,
-    MatSnackBarModule,
-    MatSortModule,
-    MatTableModule,
-    MatTabsModule,
-    MatToolbarModule,
-    MatTooltipModule,
-    MatStepperModule,
-} from '@angular/material';
+import {TxBTCComponent} from './lib/Tx/txbtc.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-      HomeComponent,
       WalletComponent,
       StartComponent,
-      TxETHComponent
+      TxETHComponent,
+      TxBTCComponent
   ],
   imports: [
     BrowserModule,
-      BrowserAnimationsModule,
       FormsModule,
-      MatNativeDateModule,
       routing,
       NgbModule.forRoot(),
       ReactiveFormsModule,
       HttpClientModule,
-      CommonModule,
-      MatTableModule,
-      MatTabsModule,
-      MatToolbarModule,
-      MatTooltipModule,
+      CommonModule
   ],
     exports: [
         AppComponent,
         FormsModule,
         ReactiveFormsModule,
         TxETHComponent,
-        MatTableModule,
-        MatTabsModule,
-        MatTooltipModule,
-        MatToolbarModule,
-        BrowserAnimationsModule,
+        TxBTCComponent,
         BrowserModule
     ],
   providers: [

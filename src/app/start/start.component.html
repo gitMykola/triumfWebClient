@@ -73,7 +73,7 @@
                                    title={{tx.hash}} (click)="openTx(tx)">
                                     {{tx.hash}}</p>
                                 <p *ngIf="acc.symbol !== 'ETH'" class="col-12 col-md-4 t-long-string t-id"
-                                   title={{tx.id}}>{{tx.id}}</p>
+                                   title={{tx.id}} (click)="openTx(tx)">{{tx.id}}</p>
                                 <p class="col-3 col-md-2 t-date">{{toDateString(tx.time)}}</p>
                                 <p class="col-3 col-md-2 t-time">{{toTimeString(tx.time)}}</p>
                                 <p *ngIf="acc.symbol === 'ETH'"
@@ -228,7 +228,8 @@
             <div class="turnoff" (click)="aForm.close()">X</div>
         </div>
     </form>
-    <app-txeth [tx]="selectedTx"></app-txeth>
+    <app-tx-eth [tx]="selectedTx" *ngIf="selectedCurrency === 'ETH'"></app-tx-eth>
+    <app-tx-btc [tx]="selectedTx" ></app-tx-btc>
 </div>
 
 

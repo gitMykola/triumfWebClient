@@ -489,6 +489,13 @@ export class AccountsService {
                             return false;
                         }
                         break;
+                    case 'id':
+                        if ( typeof params[ind] !== 'string') {
+                            this.error(this.trans.translate('err.wrong_id'));
+                            console.log('step 20');
+                            return false;
+                        }
+                        break;
                     case 'time':
                         if ( typeof params[ind] !== 'object') {
                             this.error(this.trans.translate('err.wrong_hash'));
@@ -785,12 +792,27 @@ export class AccountsService {
                         break;
                     }
                     case 'getTransaction': {
-                        self.http.get(opts.url + opts.symbol +
-                            '/getTransactionByHash/' + opts.hash,
-                            opts)
-                            .subscribe(response => {console.dir(response);
-                                next(response ? response : null);
-                            });
+                        switch (opts.symbol) {
+                            case 'ETH':
+                                self.http.get(opts.url + opts.symbol +
+                                    '/getTransactionByHash/' + opts.hash,
+                                    opts)
+                                    .subscribe(response => {console.dir(response);
+                                        next(response ? response : null);
+                                    });
+                                break;
+                            case 'BTC':
+                                self.http.get(opts.url + opts.symbol +
+                                    '/getTransactionById/' + opts.id,
+                                    opts)
+                                    .subscribe(response => {console.dir(response);
+                                        next(response ? response : null);
+                                    });
+                                break;
+                            default:
+                                next(null);
+                                break;
+                        }
                         break;
                     }
                     case 'getPriceLimit': {

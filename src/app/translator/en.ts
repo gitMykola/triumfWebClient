@@ -41,7 +41,14 @@ export const EN = {
         actual_tx_cost_fee: 'Actual Tx Cost/Fee',
         cumulative_gas_used: 'Cumulative Gas Used',
         nonce: 'Nonce',
-        input_data: 'Input Data'
+        input_data: 'Input Data',
+        size: 'Size',
+        transaction: 'Transaction',
+        summary: 'Summary',
+        details: 'Details',
+        feeRate: 'Fee Rate',
+        confirmations: 'Confirmations',
+        per: 'per',
     },
     app: {
         title_1: 'Triumf ',
@@ -72,6 +79,7 @@ export const EN = {
         passphrase_cpass: 'Passphrase not equal confirmed passphrase.',
         passphrase_length: 'Passphrase should be at least 8 characters and less then 256 characters.',
         wrong_hash: 'Wrong hash.',
+        wrong_id: 'Wrong id.',
         wrong_receiver: 'Wrong receiver address.',
         wrong_ammount: 'Wrong ammount value.',
         wrong_gas: 'Wrong gas value.',

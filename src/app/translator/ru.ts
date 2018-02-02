@@ -41,7 +41,14 @@ export const RU = {
         actual_tx_cost_fee: 'Стоимость транзакции/Комиссия',
         cumulative_gas_used: 'Кумулятивно использованный газ',
         nonce: 'Номер',
-        input_data: 'Данные транзакции'
+        input_data: 'Данные транзакции',
+        size: 'Объём',
+        transaction: 'Транзакция',
+        summary: 'Содержание',
+        details: 'Детали',
+        feeRate: 'Цена комиссии',
+        confirmations: 'Подтверждения',
+        per: 'за'
     },
     app: {
         title_1: 'Триумф ',
@@ -71,7 +78,8 @@ export const RU = {
         eth_account_open_error: 'Ethereum account open error.',
         passphrase_cpass: 'Секретная фраза должна совпадать с подтверждением.',
         passphrase_length: 'Сектретная фраза должна быть не меньше 8 символов и не более 256.',
-        wrong_hash: 'Не правильный хэш.',
+        wrong_hash: 'Неправильный хэш.',
+        wrong_id: 'Неправильный id.',
         wrong_receiver: 'Неправильный адрес получателя.',
         wrong_ammount: 'Неправильная сумма.',
         wrong_gas: 'Неправильная величина газа.',
