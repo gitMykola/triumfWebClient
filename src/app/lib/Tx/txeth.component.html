@@ -4,10 +4,12 @@
         <span class="fa">&#xf013;</span>
     </div>
     <div class="t-hash" *ngIf="!tx.wait">
+        <h4 class="col-12">{{trans.translate('labels.transaction')}}</h4>
         <div class="row">
             <h6 class="t-hash-key col-12 col-md-4">{{trans.translate('labels.hash')}}</h6>
             <p class="t-long-string col-12 col-md-8" title={{tx.hash}}>{{tx.hash}}</p>
         </div>
+        <h5 class="col-12">{{trans.translate('labels.details')}}</h5>
         <div class="row">
             <h6 class="t-hash-key col-12 col-md-4">{{trans.translate('labels.status')}}</h6>
             <p class="col-12 col-md-8">{{tx.status ? 'Success' : 'Error'}}</p>
