@@ -4,7 +4,6 @@ import { FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {TranslatorService} from '../translator';
 import {AccountsService} from '../_services/accounts.service';
 import {NgbTabChangeEvent} from '@ng-bootstrap/ng-bootstrap';
-import * as asy from 'async';
 import * as Big from 'bignumber.js';
 
 @Component({
@@ -15,7 +14,6 @@ import * as Big from 'bignumber.js';
 export class StartComponent implements OnInit {
     currencies: any;
     langs: any;
-    selectedLang: string;
     selectedTx: any;
     just: string;
     selectedCurrency: string;
@@ -436,7 +434,7 @@ export class StartComponent implements OnInit {
     left() {
         const tabsetHeader = document.getElementById('t-tabset-header'),
             tabSet = document.getElementById('t-tabset');
-        const mar = tabSet.style.marginLeft.replace('px','');
+        const mar = tabSet.style.marginLeft.replace('px', '');
         console.log(tabSet.clientWidth + ' ' + tabsetHeader.clientWidth);
         tabSet.style.marginLeft = tabSet.offsetWidth - tabsetHeader.offsetWidth + Number(mar) > 0 ?
             Number(mar) - 50 + 'px' : tabsetHeader.offsetWidth - tabSet.offsetWidth + 'px';
@@ -444,7 +442,7 @@ export class StartComponent implements OnInit {
     right() {
         const tabsetHeader = document.getElementById('t-tabset-header'),
             tabSet = document.getElementById('t-tabset');
-        const mar = tabSet.style.marginLeft.replace('px','');
+        const mar = tabSet.style.marginLeft.replace('px', '');
         console.log(tabSet.clientWidth + ' ' + tabsetHeader.clientWidth);
         tabSet.style.marginLeft = Number(mar) < 0 ?
             Number(mar) + 50 + 'px' : '0px';
