@@ -1,27 +1,62 @@
-import {Component, OnInit, Input} from '@angular/core';
+import {Component, Input, SimpleChange, OnChanges} from '@angular/core';
 import {TranslatorService} from '../../translator';
 import {AccountsService} from '../../_services/accounts.service';
+import {ETHTransaction} from '../transaction';
 
 @Component({
     selector: 'app-tx-eth',
     templateUrl: './txeth.component.html',
     styleUrls: ['../../app.component.css']
 })
-export class TxETHComponent implements OnInit {
-    @Input() tx: any;
-    constructor(public trans: TranslatorService) {
+export class TxETHComponent implements OnChanges {
+    @Input() hash: string;
+    @Input() network: string;
+    @Input() symbol: string;
+    public tx: ETHTransaction;
+    public wait: boolean;
+    public dom: any;
+    public error: boolean;
+    public errorMsg: string;
+    constructor(public trans: TranslatorService,
+                private aService: AccountsService) {
+        this.wait = false;
+        this.tx = new ETHTransaction();
     }
-    ngOnInit() {
+    ngOnChanges(changes: {[chtx: string]: SimpleChange}) {
+        if (changes.hash && changes.hash.previousValue !== changes.hash.currentValue) {
+            this.dom = document.getElementById('t-tx-ETH');
+            this.show();
+            this.wait = true;
+            this.aService.getTx({
+                hash: this.hash,
+                symbol: this.symbol,
+                network: this.network
+            })
+                .then(respTx => {
+                    this.wait = false;
+                    this.tx = Object.assign(respTx);
+                })
+                .catch(err => {
+                    this.wait = false;
+                    this.error = true;
+                    this.errorMsg = err;
+                });
+        }
     }
     close() {
-        const selfEl = document.getElementById('t-tx-ETH');
-        selfEl.className = selfEl.className
-                .replace(' t-showFade', ' t-hideFade');
+        this.hide();
+        this.error = false;
+        this.errorMsg = '';
+    }
+    show() {
+        this.dom.style.marginTop = window.scrollY + 'px';
+        this.dom.className = this.dom.className.replace(' t-hidden', ' t-showFade');
+    }
+    hide() {
+        this.dom.className = this.dom.className
+            .replace(' t-showFade', ' t-hideFade');
         setTimeout(() => {
-            selfEl.className = selfEl.className.replace(' t-hideFade', ' t-hidden');
+            this.dom.className = this.dom.className.replace(' t-hideFade', ' t-hidden');
         } , 301);
-        this.tx.error = false;
-        this.tx.errorMsg = '';
-        this.tx = {};
     }
 }

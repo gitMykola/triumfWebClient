@@ -1,27 +1,69 @@
-import {Component, OnInit, Input} from '@angular/core';
+import {Component, Input, SimpleChange, OnChanges} from '@angular/core';
 import {TranslatorService} from '../../translator';
 import {AccountsService} from '../../_services/accounts.service';
+import {BTCTransaction} from '../transaction';
+import * as Big from 'bignumber.js';
 
 @Component({
     selector: 'app-tx-btc',
     templateUrl: './txbtc.component.html',
     styleUrls: ['../../app.component.css']
 })
-export class TxBTCComponent implements OnInit {
-    @Input() tx: any;
-    constructor(public trans: TranslatorService) {
+export class TxBTCComponent implements OnChanges {
+    @Input() id: string;
+    @Input() network: string;
+    @Input() symbol: string;
+    public tx: BTCTransaction;
+    public wait: boolean;
+    public dom: any;
+    public error: boolean;
+    public errorMsg: string;
+    constructor(public trans: TranslatorService,
+                private aService: AccountsService) {
+        this.wait = false;
+        this.tx = new BTCTransaction();
     }
-    ngOnInit() {
+    ngOnChanges(changes: {[chtx: string]: SimpleChange}) {
+        if (changes.id && changes.id.previousValue !== changes.id.currentValue) {
+            this.dom = document.getElementById('t-tx-BTC');
+            this.show();
+            this.wait = true;
+            this.aService.getTx({
+                id: this.id,
+                symbol: this.symbol,
+                network: this.network
+            })
+                .then(respTx => {
+                    this.wait = false;
+                    this.tx = Object.assign(respTx);
+                    this.tx.fees = new Big(this.tx.fees);
+                    this.tx.size = new Big(this.tx.size);
+                    this.tx.feeRate = this.tx.fees.dividedBy(
+                        this.tx.size.dividedBy(1000));
+                    this.tx.sumVout = this.tx.vout ? this.tx.vout.reduce((a, b) =>
+                        new Big(a.value).plus(b.value)) : null;
+                })
+                .catch(err => {
+                    this.wait = false;
+                    this.error = true;
+                    this.errorMsg = err;
+                });
+        }
     }
     close() {
-        const selfEl = document.getElementById('t-tx-BTC');
-        selfEl.className = selfEl.className
+        this.hide();
+        this.error = false;
+        this.errorMsg = '';
+    }
+    show() {
+        this.dom.style.marginTop = window.scrollY + 'px';
+        this.dom.className = this.dom.className.replace(' t-hidden', ' t-showFade');
+    }
+    hide() {
+        this.dom.className = this.dom.className
             .replace(' t-showFade', ' t-hideFade');
         setTimeout(() => {
-            selfEl.className = selfEl.className.replace(' t-hideFade', ' t-hidden');
+            this.dom.className = this.dom.className.replace(' t-hideFade', ' t-hidden');
         } , 301);
-        this.tx.error = false;
-        this.tx.errorMsg = '';
-        this.tx = {};
     }
 }

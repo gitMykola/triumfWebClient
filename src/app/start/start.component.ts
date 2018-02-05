@@ -3,8 +3,6 @@ import { config } from '../config';
 import { FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {TranslatorService} from '../translator';
 import {AccountsService} from '../_services/accounts.service';
-import {NgbTabChangeEvent} from '@ng-bootstrap/ng-bootstrap';
-import * as Big from 'bignumber.js';
 
 @Component({
     selector: 'app-t-start',
@@ -71,14 +69,6 @@ export class StartComponent implements OnInit {
         this.selectedTx = {
             status: false,
         };
-    }
-    sc($event: NgbTabChangeEvent) {
-        this.selectedCurrency = $event.nextId;
-        // this.networks = this.currencies.filter(e => { return e.symbol === this.selectedCurrency; })[0].networks;
-    }
-    setLang(lang: string) {
-        console.dir(lang);
-        this.trans.set(lang);
     }
     getAccounts(symbol: string, network: string): any {
         console.log(symbol + ' ' + network);
@@ -410,8 +400,6 @@ export class StartComponent implements OnInit {
         console.log (tabsLen + ' ' + tabSet.clientWidth);
         if (tabsLen > tabSet.clientWidth) {
             tabSet.style.width = tabsLen + 'px';
-            // const mar = tabSet.style.marginLeft.replace('px','');
-            // tabSet.style.marginLeft = Number(mar) - 30 + 'px';
             console.log(tabSet.style.marginLeft);
             ffa.item(0).className = ffa.item(0).className.indexOf(' t-visible') ?
                 ffa.item(0).className + ' t-visible' :
@@ -421,8 +409,6 @@ export class StartComponent implements OnInit {
                 ffa.item(1).className;
         } else {
             tabSet.style.width = '100%';
-            // const mar = tabSet.style.marginLeft.replace('px','');
-            // tabSet.style.marginLeft = Number(mar) + 30 + 'px';
             ffa.item(0).className = ffa.item(0).className.indexOf(' t-visible') ?
                 ffa.item(0).className.replace(' t-visible', '') :
                 ffa.item(0).className;
@@ -447,40 +433,11 @@ export class StartComponent implements OnInit {
         tabSet.style.marginLeft = Number(mar) < 0 ?
             Number(mar) + 50 + 'px' : '0px';
     }
-    openTx(targetTx) {
-        const self = this;
-        self.selectedTx = {};
-        this.selectedTx.wait = true;
-        const tTx = document.getElementById('t-tx-' + this.selectedCurrency);
-        tTx.style.marginTop = window.scrollY + 'px';
-        tTx.className = tTx.className.replace(' t-hidden', ' t-showFade');
-        const opts: any = {
-            symbol: self.selectedCurrency,
-            network: self.networks[this.selectedCurrency]
-        };
-        if (targetTx.hash) { opts.hash = targetTx.hash; }
-        if (targetTx.id) { opts.id = targetTx.id; }
-        this.aService.getTx(opts)
-            .then(res => {console.dir(res);
-                self.selectedTx = res;
-                self.selectedTx.symbol = self.selectedCurrency;
-                self.selectedTx.timestamp = new Date(
-                    self.selectedTx.timestamp || self.selectedTx.time
-                    * 1000);
-                self.selectedTx.wait = false;
-                if (self.selectedTx.symbol === 'BTC') {
-                    const fees = new Big(self.selectedTx.fees),
-                        size = new Big(self.selectedTx.size);
-                    self.selectedTx.feeRate = fees.dividedBy(
-                        size.dividedBy(1000));
-                    self.selectedTx.sumVout = self.selectedTx.vout.reduce((a, b) =>
-                        new Big(a.value).plus(b.value));
-                }
-            })
-            .catch( err => {console.dir(err);
-                self.selectedTx.wait = false;
-                self.selectedTx.error = true;
-                self.selectedTx.errorMsg = self.trans.translate('err.tx_open_error');
-            });
+    openTx(target) {
+        if (this.selectedCurrency === 'ETH') {
+            this.selectedTx.hash = target.hash;
+        } else {
+            this.selectedTx.id = target.id;
+        }
     }
 }

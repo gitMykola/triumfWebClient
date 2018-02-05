@@ -1,9 +1,9 @@
 <div class="t-tx col-12 t-hidden" id="t-tx-BTC">
-    <div class="t-wait" *ngIf="tx.wait">
+    <div class="t-wait" *ngIf="wait">
         <span class="fa">&#xf013;</span>
         <span class="fa">&#xf013;</span>
     </div>
-    <div class="t-id" *ngIf="!tx.wait">
+    <div class="t-id" *ngIf="!wait">
         <h4 class="col-12">{{trans.translate('labels.transaction')}}</h4>
         <div class="row">
             <p class="col-md-3">{{trans.translate('labels.id')}}</p>
@@ -16,7 +16,7 @@
         </div>
         <div class="row">
             <p class="col-md-3">{{trans.translate('labels.feeRate')}}</p>
-            <p class="t-long-string col-md-9">{{tx.feeRate + '(' + tx.symbol
+            <p class="t-long-string col-md-9">{{tx.feeRate + '(' + symbol
                 + ' ' + trans.translate('labels.per') + ' Kb)'}}</p>
         </div>
         <div class="row">
@@ -33,7 +33,7 @@
                 <div class="row" *ngFor="let accin of tx.vin">
                     <p class="t-long-string col-md-12">{{accin.addr}}</p>
                     <p class="col-12 text-right">
-                        {{accin.value + ' (' + tx.symbol +')' }}</p>
+                        {{accin.value + ' (' + symbol +')' }}</p>
                 </div>
             </div>
             <div class="col-md-6">
@@ -42,24 +42,24 @@
                        *ngFor="let addr of accout.scriptPubKey.addresses">
                         {{addr}}</p>
                     <p class="col-12 text-right">
-                        {{accout.value + ' (' + tx.symbol +')' }}</p>
+                        {{accout.value + ' (' + symbol +')' }}</p>
                 </div>
             </div>
         </div>
         <div class="t-fee text-right">
             <p class="">
-              {{trans.translate('labels.fee') + ': ' + tx.fees + '(' + tx.symbol + ')'}}
+              {{trans.translate('labels.fee') + ': ' + tx.fees + '(' + symbol + ')'}}
             </p>
             <p class="">
                 {{trans.translate('labels.confirmations') + ': ' + tx.confirmations}}
             </p>
             <p class="">
-                {{tx.sumVout + '(' + tx.symbol + ')'}}
+                {{tx.sumVout + '(' + symbol + ')'}}
             </p>
         </div>
     </div>
-    <div class="t-error" *ngIf="tx.error && !tx.wait">
-        <p>{{tx.errorMsg}}</p>
+    <div class="t-error" *ngIf="error && !wait">
+        <p>{{errorMsg}}</p>
     </div>
     <span class="t-close fa" (click)="close()">&#xf00d;</span>
 </div>

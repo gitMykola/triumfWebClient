@@ -89,46 +89,6 @@
             </ngb-accordion>
         </div>
     </div>
-    <!--<ngb-tabset justify="justified" (tabChange)="sc($event)">
-        <ngb-tab *ngFor="let currency of currencies"
-                 id="{{currency.symbol}}" title="{{trans.translate('currencies.' + currency.symbol + '_name')}}">
-            <ng-template ngbTabContent>
-                <label class="">{{trans.translate('app.network')}}
-                    <select (click)="selectNetwork($event.target.value, currency.symbol)">
-                        <option *ngIf="networks[currency.symbol]"
-                                selected label={{networks[currency.symbol]}} hidden></option>
-                        <option *ngFor="let net of currency.networks"
-                                label={{net}} value={{net}}></option>
-                    </select>
-                </label>
-                <button class="btn"
-                        (click)="addAccount(currency.symbol, networks[currency.symbol])">{{trans.translate('buttons.add_account')}}
-                </button>
-                <ngb-accordion>
-                    <ngb-panel *ngFor="let acc of accounts[currency.symbol]">
-                        <ng-template *ngIf="acc.symbol === currency.symbol" ngbPanelTitle>
-                            <p (click)="getTxs($event, acc)">Address: {{acc.address}}
-                            </p>
-                        </ng-template>
-                        <ng-template *ngIf="acc.symbol === currency.symbol" ngbPanelContent>
-                            <div class="txs-header row">
-                                <p class="col-12 col-md-4" name="hash">{{trans.translate('labels.hash')}}</p>
-                                <p class="col-3 col-md-2" name="date">{{trans.translate('labels.date')}}</p>
-                                <p class="col-3 col-md-2" name="time">{{trans.translate('labels.time')}}</p>
-                                <p class="col-6 col-md-4" name="ammount">{{trans.translate('labels.ammount')}}</p>
-                            </div>
-                               <div class="txs-row row" *ngFor="let tx of acc.transactions">
-                                   <p class="col-12 col-md-4" name="hash" title={{tx.hash}}>{{tx.short_hash}}</p>
-                                   <p class="col-3 col-md-2" name="date">{{toDateString(tx.time)}}</p>
-                                   <p class="col-3 col-md-2" name="time">{{toTimeString(tx.time)}}</p>
-                                   <p class="col-6 col-md-4" name="ammount">{{tx.value}}</p>
-                                </div>
-                        </ng-template>
-                    </ngb-panel>
-                </ngb-accordion>
-            </ng-template>
-        </ngb-tab>
-    </ngb-tabset>-->
     <h5 class="selected-currency">{{selectedCurrency}}</h5>
     <form [formGroup]="addForm" class="t-add-account" *ngIf="aForm.enable">
         <div  class="col-sm-6 offset-sm-3">
@@ -228,8 +188,14 @@
             <div class="turnoff" (click)="aForm.close()">X</div>
         </div>
     </form>
-    <app-tx-eth [tx]="selectedTx" *ngIf="selectedCurrency === 'ETH'"></app-tx-eth>
-    <app-tx-btc [tx]="selectedTx" ></app-tx-btc>
+    <app-tx-eth [hash]="selectedTx.hash"
+              [network]="networks[selectedCurrency]"
+              [symbol]="selectedCurrency"
+              *ngIf="selectedCurrency === 'ETH'"></app-tx-eth>
+    <app-tx-btc [id]="selectedTx.id"
+                [network]="networks[selectedCurrency]"
+                [symbol]="selectedCurrency"
+                *ngIf="selectedCurrency === 'BTC'"></app-tx-btc>
 </div>
 
 

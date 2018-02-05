@@ -1,9 +1,9 @@
 <div class="t-tx col-12 t-hidden" id="t-tx-ETH">
-    <div class="t-wait" *ngIf="tx.wait">
+    <div class="t-wait" *ngIf="wait">
         <span class="fa">&#xf013;</span>
         <span class="fa">&#xf013;</span>
     </div>
-    <div class="t-hash" *ngIf="!tx.wait">
+    <div class="t-hash" *ngIf="!wait">
         <h4 class="col-12">{{trans.translate('labels.transaction')}}</h4>
         <div class="row">
             <h6 class="t-hash-key col-12 col-md-4">{{trans.translate('labels.hash')}}</h6>
@@ -63,8 +63,8 @@
             <textarea class="col-12 col-md-8" disabled rows="5">{{tx.input}}</textarea>
         </div>
     </div>
-    <div class="t-error" *ngIf="tx.error && !tx.wait">
-        <p>{{tx.errorMsg}}</p>
+    <div class="t-error" *ngIf="error && !wait">
+        <p>{{errorMsg}}</p>
     </div>
     <span class="t-close fa" (click)="close()">&#xf00d;</span>
 </div>
