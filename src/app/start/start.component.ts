@@ -255,19 +255,21 @@ export class StartComponent implements OnInit {
                 network: self.networks[self.selectedCurrency],
                 keyFile: files.target.files[0]
             };
-            console.log('Open Account');
-            console.dir(params);
-            setTimeout(() => {
-                self.aService.openAccount(params, account => {
-                    self.wait = false;
-                    console.dir(account);
-                    if (account.address) {
-                        self.accounts[params.symbol].push(account);
-                    }
-                    console.log('Account response');
-                    self.aForm.close();
-                });
-            }, 100);
+                self.aService.openAccount(params)
+                    .then(account => {
+                        self.wait = false;
+                        self.aForm.error = null;
+                        const acc: any = account;
+                        if (acc.address) {
+                            self.accounts[params.symbol].push(acc);
+                        }
+                        self.aForm.close();
+                    })
+                    .catch(err => {
+                        self.wait = false;
+                        self.aForm.error = self.trans
+                            .translate('err.account_open_error') + ' ' + err;
+                    });
         };
         self.aForm.createAccount = function () {
             const params = {

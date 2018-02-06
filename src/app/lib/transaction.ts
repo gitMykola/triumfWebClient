@@ -28,7 +28,7 @@ export class BTCTransaction {
     txid: string;
     size: Big;
     feeRate: Big;
-    timestamp: number;
+    timestamp: Date;
     blockheight: number;
     vin: any;
     vout: any;

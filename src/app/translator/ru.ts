@@ -62,6 +62,8 @@ export const RU = {
             ' Любые данные этого процесса не будут храниться на стороне сервера.'],
     },
     err: {
+        account_open_error: 'Ошибка открытия аккаунта.',
+        account_create_error: 'Ошибка создания аккаунта.',
         server_connection_error: 'Ошибка соединения с сервером.',
         server_response_error: 'Ошибка ответа сервера.',
         local_storage_error: 'Ошибка доступа к локальному хранилищу.',
@@ -81,6 +83,7 @@ export const RU = {
         passphrase_length: 'Сектретная фраза должна быть не меньше 8 символов и не более 256.',
         wrong_hash: 'Неправильный хэш.',
         wrong_method: 'Неправильная функция.',
+        wrong_account_data: 'Неверные данные аккаунта.',
         wrong_id: 'Неправильный id.',
         wrong_receiver: 'Неправильный адрес получателя.',
         wrong_ammount: 'Неправильная сумма.',

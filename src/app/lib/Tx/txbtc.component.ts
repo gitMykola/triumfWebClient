@@ -25,24 +25,27 @@ export class TxBTCComponent implements OnChanges {
         this.tx = new BTCTransaction();
     }
     ngOnChanges(changes: {[chtx: string]: SimpleChange}) {
+        const self = this;
         if (changes.id && changes.id.currentValue) {
-            this.dom = document.getElementById('t-tx-BTC');
-            this.show();
-            this.wait = true;
-            this.aService.getTx({
-                id: this.id,
-                symbol: this.symbol,
-                network: this.network
+            self.dom = document.getElementById('t-tx-BTC');
+            self.show();
+            self.wait = true;
+            self.aService.getTx({
+                id: self.id,
+                symbol: self.symbol,
+                network: self.network
             })
                 .then(respTx => {
-                    this.wait = false;
-                    this.tx = Object.assign(respTx);
-                    this.tx.fees = new Big(this.tx.fees);
-                    this.tx.size = new Big(this.tx.size);
-                    this.tx.feeRate = this.tx.fees.dividedBy(
-                        this.tx.size.dividedBy(1000));
-                    this.tx.sumVout = this.tx.vout ? this.tx.vout.reduce((a, b) =>
+                    const rtx: any = respTx;
+                    self.wait = false;
+                    self.tx = Object.assign(respTx);
+                    self.tx.fees = new Big(self.tx.fees);
+                    self.tx.size = new Big(self.tx.size);
+                    self.tx.feeRate = self.tx.fees.dividedBy(
+                        self.tx.size.dividedBy(1000));
+                    self.tx.sumVout = self.tx.vout ? self.tx.vout.reduce((a, b) =>
                         new Big(a.value).plus(b.value)) : null;
+                    self.tx.timestamp = new Date(rtx.time * 1000);
                 })
                 .catch(err => {
                     this.wait = false;

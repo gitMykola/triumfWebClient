@@ -7,11 +7,8 @@ import * as EthTx from '../../../node_modules/ethereumjs-tx';
 import * as EthUtils from 'ethjs-util';
 import {Buffer} from 'buffer';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
-import {reject} from 'q';
 import * as Bitcore from 'bitcore-lib';
-import * as cryptoJS from 'crypto-js';
 import * as crypto from 'crypto-browserify';
-import {promise} from 'selenium-webdriver';
 
 @Injectable()
 export class AccountsService {
@@ -28,7 +25,7 @@ export class AccountsService {
     }
     info(msg: string) {
         this.infoMessage = msg;
-        if (this._config.dev.mode){
+        if (this._config.dev.mode) {
             console.log(msg);
         }
     }
@@ -47,53 +44,20 @@ export class AccountsService {
                 address: el.address,
                 network: el.network,
                 symbol: el.symbol,
-                transactions: el.transactions
+                transactions: el.transactions,
+                hide: el.hide,
+                open: el.open
             };
         });
     }
-    isOpen(address: string, network: string): boolean {
-        this.infoInit();
+    isOpen(opts: any): any {
         const acc = this.accounts.
-        filter(el => { return el.address === address && el.network === network; });
-        if (!acc.length) {
-            this.error(this.trans.translate('err.account_not_exists') + ' ' + address);
-            return false;
-        } else if (acc[0].key !== null) {
-            this.info(this.trans.translate('info.account_open') + ' ' + address);
-            return true;
-        } else {
-            this.error(this.trans.translate('info.account_closed') + ' ' + address);
-            return false;
-        }
+        filter(el => el.address === opts.address
+            && el.network === opts.network
+            && el.symbol === opts.symbol);
+        return acc.length ? acc[0] : null;
     }
-    getAccountBalance(params: any, next: any) {
-        const opts: any = {};
-        opts.address = params.address || null;
-        opts.symbol = params.symbol || null;
-        opts.network = params.network || null;
-        this.infoInit();
-        if (!this._verifyAccountParams(opts)) {
-            next({err: this.errorMessage});
-        } else {
-            opts.method = 'getBalance';
-            this._getApi(opts, bs => {
-                if (!bs) {
-                    this.error(this.trans.translate('err.server_connection_error'));
-                    next({err: this.errorMessage});
-                } else {
-                    this.accounts.forEach(el => {
-                        if (el.address === opts.address
-                            && el.network === opts.network
-                            && el.symbol === opts.symbol) {
-                            el.balance = bs.balance ? bs.balance : '';
-                        }
-                    });
-                    next(bs);
-                }
-            });
-        }
-    }
-    getAccountBalance_P(params: any) {
+    getAccountBalance(params: any) {
         const self = this;
         const opts: any = {};
         opts.address = params.address || null;
@@ -122,86 +86,7 @@ export class AccountsService {
                 .catch(err => reject(err));
         });
     }
-    getAccountTransactions(params: any, next: any) {
-        const opts: any = {};
-        opts.address = params.address || null;
-        opts.symbol = params.symbol || null;
-        opts.network = params.network || null;
-        this.infoInit();
-        if (!this._verifyAccountParams(opts)) {
-            next({err: this.errorMessage});
-        } else {
-            opts.method = 'getTransactions';
-            this._getApi(opts, txs => {
-                if (!txs) {
-                    this.error(this.trans.translate('err.server_connection_error'));
-                    next({err: this.errorMessage});
-                } else {
-                    if (opts.symbol === 'ETH') {
-                        const transactions = (txs.out && txs.in) ? txs.out.map(e => {
-                            return {
-                                hash: e.hash,
-                                time: new Date(e.timestamp * 1000),
-                                value: '-' + e.value.toString()
-                            };
-                        }).concat(txs.in.map(e => {
-                            return {
-                                hash: e.hash,
-                                time: new Date(e.timestamp * 1000),
-                                value: '+' + e.value.toString()
-                            };
-                        })) : [];
-                        this.accounts.forEach(el => {
-                            if (el.address === opts.address
-                                && el.network === opts.network
-                                && el.symbol === opts.symbol) {
-                                el.transactions = transactions
-                                    .sort((a, b) => b.time.getTime() - a.time.getTime());
-                            }
-                        });
-                        console.dir(transactions);
-                        next(transactions.sort((a, b) => b.time.getTime() - a.time.getTime()));
-                    } else {
-                        console.dir(txs);
-                        const trx = JSON.parse(txs.txs);
-                        console.dir(trx);
-                        const trans = trx.txs;
-                        console.dir(trans);
-                        const transactions = trans.map(e => {
-                            return {
-                                blockheight: e.blockheight,
-                                id: e.txid,
-                                time: new Date(e.time * 1000),
-                                vin: e.vin.map(el => {
-                                    return {
-                                        adress: el.addr,
-                                        value: el.value,
-                                        txid: el.txid
-                                    };
-                                }),
-                                vout: e.vout.map(el => {
-                                    return {
-                                        address: el.scriptPubKey.addresses,
-                                        value: el.value
-                                    };
-                                })
-                            };
-                        });
-                        const toTxs = transactions.sort((a, b) => b.time.getTime() - a.time.getTime());
-                        this.accounts.forEach(el => {
-                            if (el.address === opts.address
-                                && el.network === opts.network
-                                && el.symbol === opts.symbol) {
-                                el.transactions = toTxs;
-                            }
-                        });
-                        next(toTxs);
-                    }
-                }
-            });
-        }
-    }
-    getAccountTransactions_P(params: any) {
+    getAccountTransactions(params: any) {
         const self = this;
         const opts: any = {};
         opts.address = params.address || null;
@@ -211,7 +96,7 @@ export class AccountsService {
             this._verifyAccountParams_P(opts)
                 .then(() => {
                     opts.method = 'getTransactions';
-                    return this._getApi_P(opts);
+                    return self._getApi_P(opts);
                 })
                 .then(res => {
                     const txs: any = res;
@@ -287,7 +172,6 @@ export class AccountsService {
     }
     getTx(params: any) {
         const self = this;
-        self.infoInit();
         return new Promise( (resolve, reject) => {
             const opts: any = {};
             if (params.hash) { opts.hash = params.hash; }
@@ -455,63 +339,30 @@ export class AccountsService {
             }
         }
     }
-    openAccount(params: any, next: any)     {
-        const opts: any = {};
+    openAccount(params: any) {
+        const self = this,
+            opts: any = {};
         opts.symbol = params.symbol || null;
         opts.keyFile = params.keyFile || null;
         opts.passphrase = params.passphrase || null;
         opts.network = params.network || null;
-        console.dir(opts);
-        console.log('Step 6');
-        this.infoInit();
-         if (!this._verifyAccountParams(opts)) {
-             console.log('Step 7');
-             next({err: this.errorMessage});
-         } else {
-                if (params.address && this.isOpen(params.address, params.network)) {
-                    this.info(this.trans.translate('info.account_already_open'));
-                    next({account:
-                            {
-                                address: params.address,
-                                symbol: params.symbol,
-                                network: params.network
-                            }
-                    });
-                } else {
+        return new Promise((resolve, reject) => {
+            self._verifyAccountParams_P(opts)
+                .then(() => {
+                    const account = self.isOpen(params);
+                    if (account) { return account; }
                     switch (params.symbol) {
-                        case 'ETH':
-                            this._openETHAccount(params, response => {
-                                console.dir(response);
-                                if (response.err) {
-                                    this.error(this.trans.translate('err.open_account_error'));
-                                    next({err: this.errorMessage});
-                                } else {
-                                    this.info(this.trans.translate('info.account_opened_successfully') +
-                                    ' ' + response.address);
-                                    next(response);
-                                }
-                            });
-                            break;
-                        case 'BTC':
-                            this._openBTCAccount_P(params)
-                                .then(account => {
-                                    const acc: any = account;
-                                    this.info(this.trans.translate('info.account_open_successfully') +
-                                        ' ' + acc.address);
-                                    next(account);
-                                })
-                                .catch(err => {
-                                    this.error(this.trans.translate('err.open_account_error'));
-                                    next({err: err});
-                                });
-                            break;
-                        default: {
-                            next({err: 'Error'});
-                            break;
+                            case 'ETH':
+                                return self._openETHAccount(params);
+                            case 'BTC':
+                                return self._openBTCAccount(params);
+                            default:
+                                return self._openETHAccount(params);
                         }
-                    }
-                }
-        }
+                })
+                .then(acc => resolve(acc))
+                .catch(err => reject(err));
+        });
     }
     getGas() {
         return new Promise((resolve, reject) => {
@@ -530,7 +381,7 @@ export class AccountsService {
     }
     closeAcount(address: string, network: string): boolean {
         const acc = this.accounts.
-        filter(el => { return el.address === address && el.network === network; });
+        filter(el => el.address === address && el.network === network);
         if (!acc.length) {
             this.error(this.trans.translate('err.account_not_exists') + ' ' + address);
             return false;
@@ -549,7 +400,7 @@ export class AccountsService {
     }
     _verifyAccountParams(params: any): boolean {
         console.log('step 15');
-        if (typeof params !== 'object'){
+        if (typeof params !== 'object') {
             this.error(this.trans.translate('err.wrong_account_params_object'));
             console.log('step 8');
             return false;
@@ -772,78 +623,38 @@ export class AccountsService {
             }
         });
     }
-    _openETHAccount(params: any, callback: any) {
-        try {
-            const file = new FileReader();
-            file.readAsText(params.keyFile);
-            file.onload = (event: any) => {
-                const keyFile: any = JSON.parse(event.target.result);
-                try {
-                    Keythe.recover(params.passphrase, keyFile, (pKey) => {
-                        if (pKey) {
-                            const account = new Account();
-                            account.address = '0x' + keyFile.address;
-                            account.key = pKey; // .toString('hex');
-                            account.network = params.network;
-                            account.symbol = params.symbol;
-                            account.transactions = [];
-                            account.balance = '';
-                            this.accounts.push(account);
-                            callback(account);
-                        } else {
-                            this.error(this.trans.translate('err.eth_account_open_error'));
-                            callback({err: this.errorMessage});
-                        }
-                    });
-                } catch (e) {
-                    this.error(e.message);
-                    callback({err: this.errorMessage});
-                }
+    _openETHAccount(params: any) {
+        return new Promise((resolve, reject) => {
+            try {
+                const file = new FileReader();
+                file.readAsText(params.keyFile);
+                file.onload = (event: any) => {
+                    try {
+                        const keyFile: any = JSON.parse(event.target.result);
+                        Keythe.recover(params.passphrase, keyFile, (pKey) => {
+                            if (pKey) {
+                                const account = new Account();
+                                account.address = '0x' + keyFile.address;
+                                account.key = pKey;
+                                account.network = params.network;
+                                account.symbol = params.symbol;
+                                account.transactions = [];
+                                account.balance = '';
+                                account.unlock = true;
+                                account.open = false;
+                                account.hide = true;
+                                this.accounts.push(account);
+                                resolve(account);
+                            } else { reject(this.trans
+                                .translate('err.eth_account_open_error')); }
+                        });
+                    } catch (e) { reject(e.message); }
 
-            };
-        } catch (err) {
-            this.error(err.message);
-            callback({err: this.errorMessage});
-        }
+                };
+            } catch (err) { reject(err.message); }
+        });
     }
-    _openBTCAccount(params: any, callback: any) {
-        try {
-            const file = new FileReader();
-            file.readAsText(params.keyFile);
-            file.onload = (event: any) => {
-                const keyFile: any = JSON.parse(event.target.result);
-                console.dir(keyFile);
-                let dKey, decifer: any = {};
-                try {
-                        decifer = crypto.createDecipher(
-                        keyFile.calg,
-                        params.passphrase);
-                        dKey = decifer.update(keyFile.cifertext, 'hex', 'utf8');
-                    dKey += decifer.final('utf8');
-                } catch (e) {
-                    console.dir(e);
-                    this.error(e.message);
-                    callback({err: this.errorMessage});
-                    return;
-                }
-                    const pKey = Bitcore.PrivateKey.fromWIF(dKey);
-                    const account = new Account();
-                            account.address = keyFile.address;
-                            account.key = pKey; // .toString('hex');
-                            account.network = params.network;
-                            account.symbol = params.symbol;
-                            account.transactions = [];
-                            account.balance = '';
-                            this.accounts.push(account);
-                            callback(account);
-
-            };
-        } catch (err) {
-            this.error(err.message);
-            callback({err: this.errorMessage});
-        }
-    }
-    _openBTCAccount_P(params: any) {
+    _openBTCAccount(params: any) {
         return new Promise((resolve, reject) => {
             const file = new FileReader();
             try {
@@ -861,11 +672,14 @@ export class AccountsService {
                         const pKey = Bitcore.PrivateKey.fromWIF(dKey);
                         const account = new Account();
                         account.address = keyFile.address;
-                        account.key = pKey; // .toString('hex');
+                        account.key = pKey;
                         account.network = params.network;
                         account.symbol = params.symbol;
                         account.transactions = [];
                         account.balance = '';
+                        account.unlock = true;
+                        account.open = false;
+                        account.hide = true;
                         this.accounts.push(account);
                         resolve(account);
                     } catch (err) {

@@ -62,6 +62,8 @@ export const EN = {
         open_account: ['']
     },
     err: {
+        account_open_error: 'Error open account process.',
+        account_create_error: 'Errir create account process.',
         server_connection_error: 'Server connection error.',
         server_response_error: 'Server response error.',
         local_storage_rror: 'Local Storage error.',
@@ -86,6 +88,7 @@ export const EN = {
         wrong_gas: 'Wrong gas value.',
         wrong_change: 'Wrong change address.',
         wrong_method: 'Wrong method.',
+        wrong_account_data: 'Wrong account data.',
         raw_tx_error: 'Raw transaction error.',
         sending_transaction_error: 'Transaction not send. Please, try again.',
         tx_open_error: 'Transaction open error.'

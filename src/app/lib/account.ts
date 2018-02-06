@@ -6,6 +6,9 @@ export class Account {
     private _pKey: string;
     public transactions: Transaction[];
     public balance: string;
+    public open: boolean;
+    public hide: boolean;
+    public unlock: boolean;
     get key(): any {
         return this._pKey;
     }
