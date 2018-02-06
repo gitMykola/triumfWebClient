@@ -79,15 +79,13 @@ export class StartComponent implements OnInit {
         }
     }
     get(account: any) {
-        // e.preventDefault();
-        this.aService.getAccountTransactions(account, txs => {
-            console.dir(txs);
-            console.dir(account);
-            this.aService.getAccountBalance(account, bs => {
-                console.log('Balance');
-                console.dir(bs);
-            });
-        });
+        const self = this;
+        self.aService.getAccountTransactions_P(account)
+            .then(() => self.aService.getAccountBalance_P(account))
+            .then((b) => {
+                console.dir(b);
+            })
+            .catch(err => console.dir(err));
     }
     addAccount(accSymbol: string, network: string) {
         this.aForm.enable = true;
@@ -263,7 +261,9 @@ export class StartComponent implements OnInit {
                 self.aService.openAccount(params, account => {
                     self.wait = false;
                     console.dir(account);
-                    self.accounts[params.symbol].push(account);
+                    if (account.address) {
+                        self.accounts[params.symbol].push(account);
+                    }
                     console.log('Account response');
                     self.aForm.close();
                 });

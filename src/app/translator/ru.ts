@@ -63,6 +63,7 @@ export const RU = {
     },
     err: {
         server_connection_error: 'Ошибка соединения с сервером.',
+        server_response_error: 'Ошибка ответа сервера.',
         local_storage_error: 'Ошибка доступа к локальному хранилищу.',
         local_storage_read_write_error: 'Ошибка чтения/записи в локальном хранилище.',
         wrong_account_params_object: 'Wrong account parameters object.',
@@ -79,6 +80,7 @@ export const RU = {
         passphrase_cpass: 'Секретная фраза должна совпадать с подтверждением.',
         passphrase_length: 'Сектретная фраза должна быть не меньше 8 символов и не более 256.',
         wrong_hash: 'Неправильный хэш.',
+        wrong_method: 'Неправильная функция.',
         wrong_id: 'Неправильный id.',
         wrong_receiver: 'Неправильный адрес получателя.',
         wrong_ammount: 'Неправильная сумма.',

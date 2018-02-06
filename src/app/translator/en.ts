@@ -63,6 +63,7 @@ export const EN = {
     },
     err: {
         server_connection_error: 'Server connection error.',
+        server_response_error: 'Server response error.',
         local_storage_rror: 'Local Storage error.',
         local_storage_read_write_error: 'Read/write Local Storage error.',
         wrong_account_params_object: 'Wrong account parameters object.',
@@ -84,6 +85,7 @@ export const EN = {
         wrong_ammount: 'Wrong ammount value.',
         wrong_gas: 'Wrong gas value.',
         wrong_change: 'Wrong change address.',
+        wrong_method: 'Wrong method.',
         raw_tx_error: 'Raw transaction error.',
         sending_transaction_error: 'Transaction not send. Please, try again.',
         tx_open_error: 'Transaction open error.'

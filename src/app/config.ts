@@ -4,7 +4,8 @@ export function config () { return {
         lang: [
             {symbol: 'EN', name: 'English'},
             {symbol: 'RU', name: 'Русский'}
-            ]
+            ],
+        apiURL: 'http://194.71.227.15/api/v4.0/'
     },
     dev: {
         mode: 1
