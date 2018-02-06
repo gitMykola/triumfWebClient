@@ -66,7 +66,7 @@ export class AccountsService {
         opts.method = 'getBalance';
         self.infoInit();
         return new Promise((resolve, reject) => {
-            self._verifyAccountParams_P(opts)
+            self._verifyAccountParams(opts)
                 .then(() => this._getApi_P(opts))
                 .then(bs => {
                     const bal: any = bs;
@@ -93,7 +93,7 @@ export class AccountsService {
         opts.symbol = params.symbol || null;
         opts.network = params.network || null;
         return new Promise((resolve, reject) => {
-            this._verifyAccountParams_P(opts)
+            this._verifyAccountParams(opts)
                 .then(() => {
                     opts.method = 'getTransactions';
                     return self._getApi_P(opts);
@@ -179,7 +179,7 @@ export class AccountsService {
             opts.symbol = params.symbol || null;
             opts.network = params.network || null;
             opts.method = 'getTransaction';
-            self._verifyAccountParams_P(opts)
+            self._verifyAccountParams(opts)
                 .then(() => self._getApi_P(opts))
                 .then(tx => resolve(tx))
                 .catch(err => reject(err));
@@ -300,44 +300,28 @@ export class AccountsService {
         }
         });
     }
-    createAccount(params: any, next: any) {
+    createAccount(params: any) {
+        const self = this;
         params.passphrase = params.passphrase || null;
         params.symbol = params.symbol || null;
         params.network = params.network || null;
-        this.infoInit();
-        if (!this._verifyAccountParams(params)) {
-            next({err: this.errorMessage});
-        } else {
-            switch (params.symbol) {
-                case 'ETH':
-                    this._createETHAccount(params, response => {
-                       if (response.err) {
-                           this.error(this.trans.translate('err.create_account_error'));
-                           next({err: this.errorMessage});
-                       } else {
-                           this.info(this.trans.translate('info.account_created_successfully') + ' ' +
-                           response.address);
-                           next(response);
-                       }
-                    });
-                    break;
-                case 'BTC':
-                    this._createBTCAccount(params, response => {
-                        if (response.err) {
-                            this.error(this.trans.translate('err.create_account_error'));
-                            next({err: this.errorMessage});
-                        } else {
-                            this.info(this.trans.translate('info.account_created_successfully') + ' ' +
-                                response.address);
-                            next(response);
+        return new Promise((resolve, reject) => {
+            self._verifyAccountParams(params)
+                .then(() => {
+                    {
+                        switch (params.symbol) {
+                            case 'ETH':
+                                 return self._createETHAccount(params);
+                            case 'BTC':
+                                return self._createBTCAccount(params);
+                            default:
+                                return self._createETHAccount(params);
                         }
-                    });
-                    break;
-                default:
-                    next({err: 'Error'});
-                    break;
-            }
-        }
+                    }
+                })
+                .then(acc => resolve(acc))
+                .catch(err => reject(err));
+        });
     }
     openAccount(params: any) {
         const self = this,
@@ -347,7 +331,7 @@ export class AccountsService {
         opts.passphrase = params.passphrase || null;
         opts.network = params.network || null;
         return new Promise((resolve, reject) => {
-            self._verifyAccountParams_P(opts)
+            self._verifyAccountParams(opts)
                 .then(() => {
                     const account = self.isOpen(params);
                     if (account) { return account; }
@@ -398,135 +382,7 @@ export class AccountsService {
             return false;
         }
     }
-    _verifyAccountParams(params: any): boolean {
-        console.log('step 15');
-        if (typeof params !== 'object') {
-            this.error(this.trans.translate('err.wrong_account_params_object'));
-            console.log('step 8');
-            return false;
-        } else {
-            console.log('step 16');
-            for (const ind in params) {
-                console.log('step 19');
-            if (!params[ind]) {
-                this.error(this.trans.translate('err.wrong_account_params_object'));
-                console.log('step 9');
-                return false;
-            } else {
-                switch (ind) {
-                    case 'symbol':
-                        if ( typeof params[ind] !== 'string'
-                            || !this._config.symbols.filter(el => {
-                                return el === params[ind];
-                            }).length) {
-                            this.error(this.trans.translate('err.wrong_symbol'));
-                            console.log('step 10');
-                            return false;
-                        }
-                        break;
-                    case 'passphrase':
-                        if ( typeof params[ind] !== 'string'
-                            || params[ind].length < 6 || params[ind].length > 256) {
-                            this.error(this.trans.translate('err.wrong_passphrase'));
-                            console.log('step 11');
-                            return false;
-                        }
-                        break;
-                    case 'address':
-                        if ( typeof params[ind] !== 'string'
-                            || params[ind].length < 32 || params[ind].length > 64) {
-                            this.error(this.trans.translate('err.wrong_address'));
-                            console.log('step 17');
-                            return false;
-                        }
-                        break;
-                    case 'hash':
-                        if ( typeof params[ind] !== 'string') {
-                            this.error(this.trans.translate('err.wrong_hash'));
-                            console.log('step 20');
-                            return false;
-                        }
-                        break;
-                    case 'id':
-                        if ( typeof params[ind] !== 'string') {
-                            this.error(this.trans.translate('err.wrong_id'));
-                            console.log('step 20');
-                            return false;
-                        }
-                        break;
-                    case 'time':
-                        if ( typeof params[ind] !== 'object') {
-                            this.error(this.trans.translate('err.wrong_hash'));
-                            console.log('step 21');
-                            return false;
-                        }
-                        break;
-                    case 'value':
-                        if ( typeof params[ind] !== 'string') {
-                            this.error(this.trans.translate('err.wrong_hash'));
-                            console.log('step 22');
-                            return false;
-                        }
-                        break;
-                    case 'short_hash':
-                        if ( typeof params[ind] !== 'string') {
-                            this.error(this.trans.translate('err.wrong_hash'));
-                            console.log('step 20');
-                            return false;
-                        }
-                        break;
-                    case '_pKey':
-                        if ( typeof params[ind] !== 'string'
-                            || params[ind].length < 32 || params[ind].length > 256) {
-                            this.error(this.trans.translate('err.bad_key'));
-                            console.log('step 18');
-                            return false;
-                        }
-                        break;
-                    case 'key':
-                        if ( 0 ) {
-                            this.error(this.trans.translate('err.bad_key'));
-                            console.log('step 18');
-                            return false;
-                        }
-                        break;
-                    case 'keyFile':
-                        if ( typeof params[ind] !== 'object') {
-                            this.error(this.trans.translate('err.bad_key_file'));
-                            console.log('step 12');
-                            return false;
-                        }
-                        break;
-                    case 'transactions':
-                        if ( typeof params[ind] !== 'object') {
-                            this.error(this.trans.translate('err.bad_transactions_object'));
-                            console.log('step 12');
-                            return false;
-                        }
-                        break;
-                    case 'network':
-                        if ( typeof params[ind] !== 'string'
-                            || !this._config.networks.filter(el => {
-                                return el === params[ind];
-                            }).length) {
-                            this.error(this.trans.translate('err.bad_network'));
-                            console.log('step 13');
-                            return false;
-                        }
-                        break;
-                    default: {
-                        this.error(this.trans.translate(
-                            'err.wrong_account_params_object_field') + ' ' + ind);
-                        console.log('step 14');
-                        return false;
-                    }
-                }
-            }
-        }
-        return true;
-        }
-    }
-    _verifyAccountParams_P(params: any) {
+    _verifyAccountParams(params: any) {
         return new Promise((resolve, reject) => {
             if (typeof params !== 'object') {
                 reject(this.trans.translate('err.wrong_account_params_object'));
@@ -691,11 +547,13 @@ export class AccountsService {
             }
         });
     }
-    _createETHAccount(params: any, callback: any) {
-        try {
-            const opts = { keyBytes: 32, ivBytes: 16 },
-                dk = Keythe.create(opts),
-                options = {
+    _createETHAccount(params: any) {
+        const self = this;
+        return new Promise((resolve, reject) => {
+            try {
+                const opts = { keyBytes: 32, ivBytes: 16 },
+                    dk = Keythe.create(opts),
+                    options = {
                         kdf: 'scrypt', // ,'pbkdf2',
                         cipher: 'aes-128-ctr',
                         kdfparams: {
@@ -706,93 +564,92 @@ export class AccountsService {
                             // prf: 'hmac-sha256' somePass1Wf
                         }
                     },
-                keyFile = Keythe.dump(
-                    params.passphrase,
-                    dk.privateKey,
-                    dk.salt,
-                    dk.iv,
-                    options);
-            if (keyFile) {
-                const blob = new Blob([JSON.stringify(keyFile)], {type: 'text/json'});
-                const e = document.createEvent('MouseEvent');
-                const a = document.createElement('a');
-                a.download = this._keyFileName(keyFile.address);
-                a.href = window.URL.createObjectURL(blob);
-                a.dataset.downloadurl = ['text/json', a.download, a.href].join(':');
-                e.initMouseEvent('click', true, false, window,
-                    0, 0, 0, 0, 0, false, false, false, false, 0, null);
-                a.dispatchEvent(e);
-                const account = new Account();
-                account.address = '0x' + keyFile.address;
-                account.key = dk; // .toString('hex');
-                account.network = params.network;
-                account.symbol = params.symbol;
-                account.transactions = [];
-                account.balance = '';
-                this.accounts.push(account);
-                callback(account);
-            } else {
-                this.error(this.trans.translate('err.eth_account_create_error'));
-                callback({err: this.errorMessage});
-            }
-        } catch (err) {
-            this.error(err.message);
-            callback({err: this.errorMessage});
-        }
+                    keyFile = Keythe.dump(
+                        params.passphrase,
+                        dk.privateKey,
+                        dk.salt,
+                        dk.iv,
+                        options);
+                if (keyFile) {
+                    const blob = new Blob([JSON.stringify(keyFile)],
+                        {type: 'text/json'});
+                    const e = document.createEvent('MouseEvent');
+                    const a = document.createElement('a');
+                    a.download = self._keyFileName(keyFile.address);
+                    a.href = window.URL.createObjectURL(blob);
+                    a.dataset.downloadurl = ['text/json', a.download, a.href]
+                        .join(':');
+                    e.initMouseEvent('click', true,
+                        false, window,
+                        0, 0, 0, 0,
+                        0, false, false,
+                        false, false, 0,
+                        null);
+                    a.dispatchEvent(e);
+                    const account = new Account();
+                    account.address = '0x' + keyFile.address;
+                    account.key = dk;
+                    account.network = params.network;
+                    account.symbol = params.symbol;
+                    account.transactions = [];
+                    account.balance = '';
+                    account.unlock = true;
+                    account.open = false;
+                    account.hide = true;
+                    self.accounts.push(account);
+                    resolve(account);
+                } else {
+                    reject(self.trans
+                        .translate('err.eth_account_create_error')); }
+            } catch (err) { reject(err.message); }
+        });
     }
-    _createBTCAccount(params: any, callback: any) {
-        try {
-            const phrase = new Buffer(params.passphrase),
-                hash = Bitcore.crypto.Hash.sha256(phrase),
-                bn = Bitcore.crypto.BN.fromBuffer(hash),
-                pkey = new Bitcore.PrivateKey(params.network),
-                key = pkey.toWIF(),
-                salt = crypto.randomBytes(32).toString('hex').slice(0, 32),
-                iv = crypto.randomBytes(16),
-                cifer = crypto.createCipher('aes256', params.passphrase);
-            // crypto.createCipheriv('aes-256-cbc', salt, iv);
-                let cifertext = cifer.update(Buffer.from(key), 'utf8', 'hex');
+    _createBTCAccount(params: any) {
+        const self = this;
+        return new Promise((resolve, reject) => {
+            try {
+                const pkey = new Bitcore.PrivateKey(params.network),
+                    key = pkey.toWIF(),
+                    cifer = crypto.createCipher('aes256', params.passphrase);
+                let cifertext = cifer.update(Buffer.from(key),
+                    'utf8', 'hex');
                 cifertext += cifer.final('hex');
                 const keyFile = {
                     address: pkey.toAddress().toString(),
                     calg: 'aes256',
-                //    salt: salt,
-                //    iv: iv,
-                //    it: 1000,
-                //    kl: 256,
-                //    ciferalg: 'aes-256-cbc',
-                //    alg: 'sha256',
                     cifertext: cifertext
                 };
-             console.log(key);
-                const decifer = crypto.createDecipher('aes256', params.passphrase);
-            // const decifer = crypto.createDecipheriv('aes-256-cbc', keyFile.salt, keyFile.iv);
-             let   dectext = decifer.update(keyFile.cifertext, 'hex', 'utf8');
-             dectext += decifer.final('utf8');
-             console.dir(dectext);
-            if (keyFile) {
-                const blob = new Blob([JSON.stringify(keyFile)], {type: 'text/json'});
+                const blob = new Blob([JSON.stringify(keyFile)],
+                    {type: 'text/json'});
                 const e = document.createEvent('MouseEvent');
                 const a = document.createElement('a');
-                a.download = this._keyFileName(keyFile.address);
+                a.download = self._keyFileName(keyFile.address);
                 a.href = window.URL.createObjectURL(blob);
-                a.dataset.downloadurl = ['text/json', a.download, a.href].join(':');
-                e.initMouseEvent('click', true, false, window,
-                    0, 0, 0, 0, 0, false, false, false, false, 0, null);
+                a.dataset.downloadurl = ['text/json', a.download, a.href]
+                    .join(':');
+                e.initMouseEvent('click', true,
+                    false, window,
+                    0, 0, 0,
+                    0, 0, false,
+                    false, false, false,
+                    0, null);
                 a.dispatchEvent(e);
                 const account = new Account();
                 account.address = keyFile.address;
-                account.key = pkey; // .toString('hex');
+                account.key = pkey;
                 account.network = params.network;
                 account.symbol = params.symbol;
                 account.transactions = [];
                 account.balance = '';
-                this.accounts.push(account);
-                callback(account);
+                account.unlock = true;
+                account.open = false;
+                account.hide = true;
+                self.accounts.push(account);
+                resolve(account);
+            } catch (e) {
+                reject(e.message);
             }
-        } catch (e) {
-            console.log(e.message);
-        }
+        });
     }
     _keyFileName (address: string): string {
         const cd = new Date();

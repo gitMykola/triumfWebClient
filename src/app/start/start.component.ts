@@ -80,8 +80,8 @@ export class StartComponent implements OnInit {
     }
     get(account: any) {
         const self = this;
-        self.aService.getAccountTransactions_P(account)
-            .then(() => self.aService.getAccountBalance_P(account))
+        self.aService.getAccountTransactions(account)
+            .then(() => self.aService.getAccountBalance(account))
             .then((b) => {
                 console.dir(b);
             })
@@ -89,8 +89,6 @@ export class StartComponent implements OnInit {
     }
     addAccount(accSymbol: string, network: string) {
         this.aForm.enable = true;
-        // console.log(accSymbol);
-        // console.dir(this.getAccounts(accSymbol, network));
     }
     openAccount(accSymbol: string) {
         console.log(accSymbol);
@@ -277,14 +275,17 @@ export class StartComponent implements OnInit {
                 symbol: self.selectedCurrency,
                 network: self.networks[self.selectedCurrency]
             };
-            console.log('Generate');
-            console.dir(params);
-            self.aService.createAccount(params, account => {
+            self.aService.createAccount(params)
+                .then(account => {
                 self.wait = false;
                 self.accounts[params.symbol].push(account);
-                console.dir(account);
                 self.aForm.close();
-            });
+            })
+                .catch(err => {
+                    self.wait = false;
+                    self.aForm.error = self.trans
+                        .translate('err.account_create_error') + ' ' + err;
+                });
         };
         self.aForm.close = function () {
             self.initAForm();
