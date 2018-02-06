@@ -1,4 +1,4 @@
-import {Component, Input, SimpleChange, OnChanges} from '@angular/core';
+import {Component, Input, SimpleChange, OnChanges, EventEmitter, Output} from '@angular/core';
 import {TranslatorService} from '../../translator';
 import {AccountsService} from '../../_services/accounts.service';
 import {ETHTransaction} from '../transaction';
@@ -12,6 +12,7 @@ export class TxETHComponent implements OnChanges {
     @Input() hash: string;
     @Input() network: string;
     @Input() symbol: string;
+    @Output() onClose = new EventEmitter<boolean>();
     public tx: ETHTransaction;
     public wait: boolean;
     public dom: any;
@@ -23,7 +24,7 @@ export class TxETHComponent implements OnChanges {
         this.tx = new ETHTransaction();
     }
     ngOnChanges(changes: {[chtx: string]: SimpleChange}) {
-        if (changes.hash && changes.hash.previousValue !== changes.hash.currentValue) {
+        if (changes.hash && changes.hash.currentValue) {
             this.dom = document.getElementById('t-tx-ETH');
             this.show();
             this.wait = true;
@@ -47,6 +48,7 @@ export class TxETHComponent implements OnChanges {
         this.hide();
         this.error = false;
         this.errorMsg = '';
+        this.onClose.emit(true);
     }
     show() {
         this.dom.style.marginTop = window.scrollY + 'px';

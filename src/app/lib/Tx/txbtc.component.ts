@@ -1,4 +1,4 @@
-import {Component, Input, SimpleChange, OnChanges} from '@angular/core';
+import {Component, Input, SimpleChange, OnChanges, Output, EventEmitter} from '@angular/core';
 import {TranslatorService} from '../../translator';
 import {AccountsService} from '../../_services/accounts.service';
 import {BTCTransaction} from '../transaction';
@@ -13,6 +13,7 @@ export class TxBTCComponent implements OnChanges {
     @Input() id: string;
     @Input() network: string;
     @Input() symbol: string;
+    @Output() onClose = new EventEmitter<boolean>();
     public tx: BTCTransaction;
     public wait: boolean;
     public dom: any;
@@ -24,7 +25,7 @@ export class TxBTCComponent implements OnChanges {
         this.tx = new BTCTransaction();
     }
     ngOnChanges(changes: {[chtx: string]: SimpleChange}) {
-        if (changes.id && changes.id.previousValue !== changes.id.currentValue) {
+        if (changes.id && changes.id.currentValue) {
             this.dom = document.getElementById('t-tx-BTC');
             this.show();
             this.wait = true;
@@ -54,6 +55,7 @@ export class TxBTCComponent implements OnChanges {
         this.hide();
         this.error = false;
         this.errorMsg = '';
+        this.onClose.emit(true);
     }
     show() {
         this.dom.style.marginTop = window.scrollY + 'px';

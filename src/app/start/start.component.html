@@ -191,10 +191,12 @@
     <app-tx-eth [hash]="selectedTx.hash"
               [network]="networks[selectedCurrency]"
               [symbol]="selectedCurrency"
+              (onClose)="closeTx($event)"
               *ngIf="selectedCurrency === 'ETH'"></app-tx-eth>
     <app-tx-btc [id]="selectedTx.id"
                 [network]="networks[selectedCurrency]"
                 [symbol]="selectedCurrency"
+                (onClose)="closeTx($event)"
                 *ngIf="selectedCurrency === 'BTC'"></app-tx-btc>
 </div>
 

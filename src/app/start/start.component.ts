@@ -435,9 +435,13 @@ export class StartComponent implements OnInit {
     }
     openTx(target) {
         if (this.selectedCurrency === 'ETH') {
-            this.selectedTx.hash = target.hash;
+            this.selectedTx.hash = '';
+            setTimeout(() => this.selectedTx.hash = target.hash, 0);
         } else {
             this.selectedTx.id = target.id;
         }
+    }
+    closeTx(ev: boolean) {
+        this.selectedTx.hash = this.selectedTx.id = null;
     }
 }
