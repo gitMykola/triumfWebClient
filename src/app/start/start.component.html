@@ -35,14 +35,17 @@
             <ngb-accordion>
                 <ngb-panel *ngFor="let acc of accounts[curr.symbol]">
                     <ng-template *ngIf="acc.symbol === curr.symbol" ngbPanelTitle>
-                        <div class="row" (click)="get(acc)">
+                        <div class="row" (click)="openFirst(acc)">
                         <p class="t-long-string col-sm-8" title="{{acc.address}}">
                             {{acc.address}}
                         </p>
                         <p class="t-long-string col-sm-4" title="{{acc.balance}}">
                             {{acc.balance}}
                         </p>
-
+                        <div class="t-refresh t-wait" *ngIf="acc.refresh">
+                            <span class="fa">&#xf013;</span>
+                            <span class="fa">&#xf013;</span>
+                        </div>
                         </div>
                     </ng-template>
                     <ng-template *ngIf="acc.symbol === curr.symbol" ngbPanelContent>
@@ -53,7 +56,7 @@
                                         &#xf0d6;</span>
                             </button>
                             <button class="btn fa" title="{{trans.translate('labels.refresh')}}"
-                                    (click)="get(acc)">
+                                    (click)="refreshAccount(acc)">
                                 <span>{{trans.translate('labels.refresh')}}</span>
                                 <span>
                                         &#xf021;</span>
@@ -81,9 +84,6 @@
                                 <p *ngIf="acc.symbol !== 'ETH'"
                                    class="col-6 col-md-4 t-long-string t-ammount">{{tx.vout[0].value}}</p>
                             </div>
-                        <div *ngIf="acc.symbol !== 'ETH'">
-
-                        </div>
                     </ng-template>
                 </ngb-panel>
             </ngb-accordion>
@@ -181,7 +181,7 @@
                         class="btn col-2 offset-4" [disabled]="!aForm.next || wait">Next</button>
             </div>
             <div name="error" class="error" *ngIf="aForm.error" title={{aForm.error}}>{{aForm.error}}</div>
-            <div class="turnoff" (click)="aForm.close()">X</div>
+            <span class="t-close fa" (click)="aForm.close()">&#xf00d;</span>
         </div>
     </form>
     <app-tx-eth [hash]="selectedTx.hash"
@@ -194,6 +194,7 @@
                 [symbol]="selectedCurrency"
                 (onClose)="closeTx($event)"
                 *ngIf="selectedCurrency === 'BTC'"></app-tx-btc>
+    <div class="error" *ngIf="error" (click)="errorClose($event)">{{error}}</div>
 </div>
 
 

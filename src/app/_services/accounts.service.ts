@@ -499,6 +499,7 @@ export class AccountsService {
                                 account.unlock = true;
                                 account.open = false;
                                 account.hide = true;
+                                account.refresh = false;
                                 this.accounts.push(account);
                                 resolve(account);
                             } else { reject(this.trans
@@ -536,6 +537,7 @@ export class AccountsService {
                         account.unlock = true;
                         account.open = false;
                         account.hide = true;
+                        account.refresh = false;
                         this.accounts.push(account);
                         resolve(account);
                     } catch (err) {
@@ -596,6 +598,7 @@ export class AccountsService {
                     account.unlock = true;
                     account.open = false;
                     account.hide = true;
+                    account.refresh = false;
                     self.accounts.push(account);
                     resolve(account);
                 } else {
@@ -644,6 +647,7 @@ export class AccountsService {
                 account.unlock = true;
                 account.open = false;
                 account.hide = true;
+                account.refresh = false;
                 self.accounts.push(account);
                 resolve(account);
             } catch (e) {

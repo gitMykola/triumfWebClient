@@ -9,6 +9,7 @@ export class Account {
     public open: boolean;
     public hide: boolean;
     public unlock: boolean;
+    public refresh: boolean;
     get key(): any {
         return this._pKey;
     }

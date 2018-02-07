@@ -116,28 +116,6 @@ P[name="next"] {
   padding-top: 40px;
   padding-bottom: 10px;
 }
-.t-tx .t-wait {
-  position: absolute;
-  text-align: center;
-  top: 45%;
-  left: 45%;
-}
-.t-tx .t-wait span {
-  font-size: 40px;
-  color: cornflowerblue;
-  animation-duration: 3s;
-  animation-timing-function: cubic-bezier(0.5, 0, 0, 1);
-  animation-direction: normal;
-  animation-iteration-count: infinite;
-  animation-fill-mode: forwards;
-}
-.t-tx .t-wait span:nth-child(1) {
-  animation-name: rotateRight;
-  margin-right: -5px;
-}
-.t-tx .t-wait span:nth-child(2) {
-  animation-name: rotateLeft;
-}
 .t-tx .t-close {
   cursor: pointer;
   position: absolute;
@@ -194,6 +172,39 @@ P[name="next"] {
 }
 .t-hidden {
   display: none;
+}
+.t-wait {
+  position: absolute;
+  text-align: center;
+  top: 45%;
+  left: 45%;
+}
+.t-wait span {
+  font-size: 40px;
+  color: cornflowerblue;
+  animation-duration: 3s;
+  animation-timing-function: cubic-bezier(0.5, 0, 0, 1);
+  animation-direction: normal;
+  animation-iteration-count: infinite;
+  animation-fill-mode: forwards;
+}
+.t-wait span:nth-child(1) {
+  animation-name: rotateRight;
+  margin-right: -5px;
+}
+.t-wait span:nth-child(2) {
+  animation-name: rotateLeft;
+}
+.t-refresh {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: #dddddd;
+  background: rgba(255, 255, 255, 0.6);
+}
+.t-refresh .t-wait {
+  top: 40px;
 }
 @media screen and (max-width: 768px) {
   .t-tx .row p:nth-child(2) {

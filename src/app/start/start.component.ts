@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import { config } from '../config';
 import { FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {TranslatorService} from '../translator';
 import {AccountsService} from '../_services/accounts.service';
+import * as $ from 'jquery';
 
 @Component({
     selector: 'app-t-start',
@@ -20,6 +21,7 @@ export class StartComponent implements OnInit {
     accounts: any;
     aForm: any;
     wait: boolean;
+    error: string;
     public addForm: FormGroup;
     constructor(
         public trans: TranslatorService,
@@ -78,14 +80,26 @@ export class StartComponent implements OnInit {
                 .filter(el => el.symbol === symbol && el.network === network);
         }
     }
-    get(account: any) {
+    openFirst(account: any) {
         const self = this;
-        self.aService.getAccountTransactions(account)
-            .then(() => self.aService.getAccountBalance(account))
-            .then((b) => {
-                console.dir(b);
-            })
-            .catch(err => console.dir(err));
+        if (!account.open) {
+            this.refreshAccount(account);
+            if (!account.open) { account.open = true; }
+        }
+    }
+    refreshAccount(account: any) {
+        const self = this;
+        account.refresh = true;
+            self.aService.getAccountTransactions(account)
+                .then(() => self.aService.getAccountBalance(account))
+                .then((b) => {
+                    console.dir(account);
+                    account.refresh = false;
+                })
+                .catch(err => {
+                    this.error = err;
+                    account.refresh = false;
+                });
     }
     addAccount(accSymbol: string, network: string) {
         this.aForm.enable = true;
@@ -446,5 +460,10 @@ export class StartComponent implements OnInit {
     }
     closeTx(ev: boolean) {
         this.selectedTx.hash = this.selectedTx.id = null;
+    }
+    errorClose(e: any) {
+        this.error = null;
+        const eDom = e.target;
+        console.dir(eDom);
     }
 }
