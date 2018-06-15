@@ -29,6 +29,8 @@
     "async": "^2.6.0",
     "async-parallel": "^1.2.3",
     "bignumber": "^1.1.0",
+    "bitcoincashjs": "^0.1.10",
+    "bitcoinjs-lib": "^3.3.2",
     "bitcore-lib": "^0.15.0",
     "bootstrap": "^4.0.0-alpha.6",
     "core-js": "^2.4.1",
@@ -44,8 +46,10 @@
     "jquery": "^3.3.1",
     "jsonfile": "^4.0.0",
     "keythereum": "^1.0.2",
+    "litecore-lib": "^0.13.22",
     "rxjs": "^5.5.6",
     "scryptsy": "^2.0.0",
+    "zcash-bitcore-lib": "^0.13.20-rc3",
     "zone.js": "^0.8.14"
   },
   "devDependencies": {

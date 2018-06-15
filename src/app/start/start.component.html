@@ -149,6 +149,10 @@
                         {{trans.translate('labels.gas')}}
                         <input class="col-sm-12" type="number" name="gas" formControlName="gas"/>
                     </label>
+                    <label class="col-sm-12" *ngIf="selectedCurrency === 'ETH'">
+                        {{trans.translate('labels.contract')}}
+                        <input class="col-sm-12" type="text" name="contract" formControlName="contract"/>
+                    </label>
                     <label class="col-12" *ngIf="selectedCurrency === 'BTC'">
                         {{trans.translate('labels.change')}}
                         <input class="col-12" type="text" name="change"

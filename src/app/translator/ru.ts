@@ -48,7 +48,8 @@ export const RU = {
         details: 'Детали',
         feeRate: 'Цена комиссии',
         confirmations: 'Подтверждения',
-        per: 'за'
+        per: 'за',
+        contract: 'Контракт'
     },
     app: {
         title_1: 'Триумф ',
@@ -115,6 +116,8 @@ export const RU = {
         BTG_name: 'Биткоин Голд',
         BTG_symbol: 'BTG',
         BCH_name: 'Биткоин Кэш',
-        BCH_symbol: 'BCH'
+        BCH_symbol: 'BCH',
+        ZEC_name: 'ZCash',
+        ZEC_symbol: 'ZEC'
     }
 };

@@ -49,6 +49,7 @@ export const EN = {
         feeRate: 'Fee Rate',
         confirmations: 'Confirmations',
         per: 'per',
+        contract: 'Contract'
     },
     app: {
         title_1: 'Triumf ',
@@ -69,6 +70,7 @@ export const EN = {
         local_storage_rror: 'Local Storage error.',
         local_storage_read_write_error: 'Read/write Local Storage error.',
         wrong_account_params_object: 'Wrong account parameters object.',
+        wrong_params_object: 'Wrong parameters object.',
         account_not_exists: 'Account not exists.',
         wrong_address: 'Wrong address.',
         wrong_passphrase: 'Wrong passphrase.',
@@ -116,6 +118,8 @@ export const EN = {
         BTG_name: 'Bitcoin Gold',
         BTG_symbol: 'BTG',
         BCH_name: 'Bitcoin Cash',
-        BCH_symbol: 'BCH'
+        BCH_symbol: 'BCH',
+        ZEC_name: 'ZCash',
+        ZEC_symbol: 'ZEC'
     }
 };

@@ -3,7 +3,6 @@ import { config } from '../config';
 import { FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {TranslatorService} from '../translator';
 import {AccountsService} from '../_services/accounts.service';
-import * as $ from 'jquery';
 
 @Component({
     selector: 'app-t-start',
@@ -62,6 +61,8 @@ export class StartComponent implements OnInit {
                 Validators.max(1e18)]],
             receiver: ['', [Validators.required, Validators.minLength(8),
                 Validators.maxLength(256)]],
+            contract: ['', [Validators.required, Validators.minLength(0),
+                Validators.maxLength(42)]],
             change: ['', [Validators.required, Validators.minLength(8),
                 Validators.maxLength(256)]]
         });
@@ -170,6 +171,12 @@ export class StartComponent implements OnInit {
                         if (self.selectedCurrency === 'ETH' &&
                             self.addForm.get('gas').status === 'INVALID') {
                             self.aForm.error = self.trans.translate('err.wrong_gas');
+                            return false;
+                        }
+                        if (self.selectedCurrency === 'ETH' &&
+                            self.addForm.get('contract').value.length > 0 &&
+                            self.addForm.get('contract').status === 'INVALID') {
+                            self.aForm.error = self.trans.translate('err.wrong_contract');
                             return false;
                         }
                         if (self.selectedCurrency === 'BTC' &&
@@ -314,10 +321,9 @@ export class StartComponent implements OnInit {
             if (account.symbol === 'ETH') {
                 self.aService.getGas()
                     .then(gas => {
-                        console.dir(gas);
                         self.addForm.get('gas').setValue(gas);
                     })
-                    .catch(err => {
+                    .catch(err => {console.dir(err);
                         self.aForm.error = err;
                     });
             }
@@ -332,6 +338,9 @@ export class StartComponent implements OnInit {
             opts.ammount = self.addForm.get('ammount').value;
             opts.gas = self.addForm.get('gas').value;
             opts.change = self.addForm.get('change').value;
+            if (self.addForm.controls['contract'].value.length > 0) {
+                opts.contract = self.addForm.controls['contract'].value;
+            }
             console.dir(opts);
             self.aService.createTx(opts, rawTx => {
                 self.wait = false;
@@ -355,7 +364,7 @@ export class StartComponent implements OnInit {
                     self.aForm.error = self.trans.translate('err.sending_transaction_error')
                     + ' ' + res.err;
                 } else {
-                    self.aForm.txHash = (self.aForm.sender.symbol === 'ETH') ? res.hash : res.txid;
+                    self.aForm.txHash = (self.aForm.sender.symbol === 'ETH') ? res.txid.hash : res.txid;
                 }
             });
         };

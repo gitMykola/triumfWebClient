@@ -8,7 +8,12 @@ import * as EthUtils from 'ethjs-util';
 import {Buffer} from 'buffer';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import * as Bitcore from 'bitcore-lib';
+import * as Litecore from 'litecore-lib';
+import * as Zeccore from 'zcash-bitcore-lib';
 import * as crypto from 'crypto-browserify';
+import * as blib from 'bitcoinjs-lib';
+import * as bitcash from 'bitcoincashjs';
+import * as Utils from '../lib/utils';
 
 @Injectable()
 export class AccountsService {
@@ -66,10 +71,13 @@ export class AccountsService {
         opts.method = 'getBalance';
         self.infoInit();
         return new Promise((resolve, reject) => {
-            self._verifyAccountParams(opts)
-                .then(() => this._getApi_P(opts))
+            Utils.utils.getApi({
+                method: 'getBalance',
+                symbol: opts.symbol,
+                address: opts.address
+            }, this.http)
                 .then(bs => {
-                    const bal: any = bs;
+                    const bal = bs.data || null;
                     if (!bal) {
                         reject(self.trans
                             .translate('err.server_connection_error'));
@@ -81,9 +89,11 @@ export class AccountsService {
                             el.balance = bal.balance ? bal.balance : '';
                             }
                         });
-                    resolve(bal);
+                    return resolve(bal);
                     })
-                .catch(err => reject(err));
+                .catch(err => {
+                    return reject(err);
+                });
         });
     }
     getAccountTransactions(params: any) {
@@ -93,23 +103,23 @@ export class AccountsService {
         opts.symbol = params.symbol || null;
         opts.network = params.network || null;
         return new Promise((resolve, reject) => {
-            this._verifyAccountParams(opts)
-                .then(() => {
-                    opts.method = 'getTransactions';
-                    return self._getApi_P(opts);
-                })
-                .then(res => {
-                    const txs: any = res;
+            Utils.utils.getApi({
+                        method: 'getTransactions',
+                        symbol: opts.symbol,
+                        address: opts.address
+                    }, this.http)
+                .then(data => {
+                    const txs = data.data || null;
                     if (!txs) { reject(this.trans
                         .translate('err.server_response_error')); }
                     if (opts.symbol === 'ETH') {
-                        const transactions = (txs.out && txs.in) ? txs.out.map(e => {
+                        const transactions = (txs['out'] && txs['in']) ? txs['out'].map(e => {
                             return {
                                 hash: e.hash,
                                 time: new Date(e.timestamp * 1000),
                                 value: '-' + e.value.toString()
                             };
-                        }).concat(txs.in.map(e => {
+                        }).concat(txs['in'].map(e => {
                             return {
                                 hash: e.hash,
                                 time: new Date(e.timestamp * 1000),
@@ -124,32 +134,40 @@ export class AccountsService {
                                     .sort((a, b) => b.time.getTime() - a.time.getTime());
                             }
                         });
-                        resolve(transactions.sort((a, b) =>
+                        return resolve(transactions.sort((a, b) =>
                             b.time.getTime() - a.time.getTime()));
                     } else {
-                        if (!txs.txs) { reject(this.trans
+                        if (!txs) { reject(this.trans
                             .translate('err.server_response_error')); }
                             try {
-                                const trx = JSON.parse(txs.txs);
-                                const trans = trx.txs;
+                                // const trx = JSON.parse(txs.txs);
+                                // const trans = trx.txs;
+                                const trans = Array (txs); console.dir(txs);
                                 const transactions = trans.map(e => {
                                     return {
-                                        blockheight: e.blockheight,
-                                        id: e.txid,
-                                        time: new Date(e.time * 1000),
-                                        vin: e.vin.map(el => {
+                                        blockheight: e['blockheight'],
+                                        id: e['txid'],
+                                        time: new Date(e['timestamp'] * 1000),
+                                        vin: e['vin'] ? e['vin'].map(el => {
                                             return {
-                                                adress: el.addr,
-                                                value: el.value,
+                                                adress: 'addr',
+                                                value: 0,
                                                 txid: el.txid
                                             };
-                                        }),
-                                        vout: e.vout.map(el => {
+                                        }) : [{
+                                            adress: 'addr',
+                                            value: 0,
+                                            txid: 'no tx id'
+                                        }],
+                                        vout: e['vout'] ? e['vout'].map(el => {
                                             return {
-                                                address: el.scriptPubKey.addresses,
+                                                scriptPubKey : {addresses: el.scriptPubKey.addresses},
                                                 value: el.value
                                             };
-                                        })
+                                        }) : [{
+                                            scriptPubKey : {addresses: ['no addresses']},
+                                            value: 0
+                                        }]
                                     };
                                 });
                                 const toTxs = transactions.sort((a, b) =>
@@ -161,13 +179,15 @@ export class AccountsService {
                                         el.transactions = toTxs;
                                     }
                                 });
-                                resolve(toTxs);
-                            } catch (err) {
-                            reject(this.trans
+                                return resolve(toTxs);
+                            } catch (err) {console.dir(err);
+                            return reject(this.trans
                                 .translate('err.server_response_error')); }
                     }
                 })
-                .catch(err => reject(err));
+                .catch(err => {
+                    return reject(err);
+                });
         });
     }
     getTx(params: any) {
@@ -189,33 +209,44 @@ export class AccountsService {
         this.infoInit();
         switch (params.symbol) {
             case 'ETH':
-                this._getApi({
+                Utils.utils.getApi({
                     method: 'getTransactionCount',
                     symbol: params.symbol,
                     network: params.network,
                     address: params.sender
-            }, txCount => {
+                }, this.http)
+                    .then(data => {
+                    const txCount = data.data || null;
                     if (!txCount) {
                         next({err: this.trans.translate('err.server_connection_error')});
                     } else {
-                        this._getApi({
+                        Utils.utils.getApi({
                             method: 'getPriceLimit',
                             symbol: params.symbol,
                             network: params.network
-                        }, gasPL => {
+                        }, this.http)
+                            .then(limit => {
+                            const gasPL = limit.data || null;
                             if (!gasPL) {
                                 next({err: this.trans.translate('err.server_connection_error')});
-                            } else {
+                            } else {console.dir(params);
+                                const templ = '0000000000000000000000000000000000000000000000000000000000000000';
                                 const txParams: any = {
-                                    nonce: '0x' + Number(txCount.TransationCount).toString(16),
+                                    nonce: '0x' + Number(txCount.TransactionCount).toString(16),
                                     gasPrice: EthUtils.intToHex(gasPL.gasPrice),
                                     gasLimit: EthUtils.intToHex(params.gas),
-                                    to: params.receiver,
-                                    value: '0x' + (params.ammount * 1e18).toString(16),
-                                    data: '',
+                                    to: params.contract ? params.contract : params.receiver,
+                                    value: params.contract ? '0x0' : '0x' + (params.ammount * 1e18).toString(16),
+                                    data: params.contract ? '0xa9059cbb000000000000000000000000'
+                                        + params.receiver.replace('0x', '')
+                                        + templ.substr(0, 64 - params.ammount.toString(16).length)
+                                        + params.ammount.toString(16) : '',
+                                    // '0xa9059cbb
+                                    // 000000000000000000000000db4d16ff5db0670c0f6e6a41d81a94353171fac
+                                    // 00000000000000000000000000000000000000000000000000000000000008613',
                                     chainId: params.network === 'livenet' ? 1 : 3
                                     };
-                                try {
+                                try {console.dir(txParams);
                                     const tx = new EthTx(txParams);
                                     console.dir(tx);
                                     const key = this.accounts
@@ -248,13 +279,13 @@ export class AccountsService {
                     network: params.network,
                     address: params.sender
                 }, ut => {
-                    if (!ut || !ut.utxos) {
+                    if (!ut) {
                         next({err: this.trans.translate('err.server_connection_error')});
-                    } else {
+                    } else {console.dir(ut.map);
                        // try {
                         console.dir(params);
                             const tx = Bitcore.Transaction();
-                            tx.from(JSON.parse(ut.utxos));
+                            tx.from(ut);
                             tx.to(params.receiver, params.ammount * 1e8);
                             tx.change(params.change);
                             console.dir(tx);
@@ -265,6 +296,104 @@ export class AccountsService {
                             tx.sign(key);
                             console.log(tx.serialize());
                             next({tx: tx.serialize()});
+                        /*} catch (e) {
+                            console.log(e.message);
+                            next({err: this.trans.translate('err.raw_tx_error')});
+                        }*/
+                    }
+                });
+                break;
+            case 'BTG':
+                this._getApi({
+                    method: 'getUTXOS',
+                    symbol: params.symbol,
+                    network: params.network,
+                    address: params.sender
+                }, ut => {
+                    if (!ut) {
+                        next({err: this.trans.translate('err.server_connection_error')});
+                    } else {
+                        // try {
+                        console.dir(params);
+                        console.dir(ut);
+                        const tx = Bitcore.Transaction();
+                        tx.from(ut);
+                        tx.to(params.receiver, params.ammount * 1e8);
+                        tx.change(params.change);
+                        console.dir(tx);
+                        const key = this.accounts
+                            .filter(el => el.address === params.sender
+                                && el.symbol === params.symbol
+                                && el.network === params.network)[0].key;
+                        tx.sign(key); console.dir(key);
+                        console.log(tx.serialize());
+                        next({tx: tx.serialize()});
+                        /*} catch (e) {
+                            console.log(e.message);
+                            next({err: this.trans.translate('err.raw_tx_error')});
+                        }*/
+                    }
+                });
+                break;
+            case 'BCH':
+                this._getApi({
+                    method: 'getUTXOS',
+                    symbol: params.symbol,
+                    network: params.network,
+                    address: params.sender
+                }, ut => {
+                    /*if (!ut || !ut.utxos) {
+                        next({err: this.trans.translate('err.server_connection_error')});
+                    } else
+ */{
+                         try {
+                        console.dir(ut);
+                        const tx = new bitcash.Transaction();
+                        tx.from(ut);
+                        /*const from = JSON.parse('[{"address":"13JUK6jdtshv6evj8giRaDgR5dw4WQM5jG","txid":"87329fae502377053b4d1f24daad70a94cf21cc4aa2f084ea584fe51104a4060","vout":1,"scriptPubKey":"76a914193e1f32ccc25ee0f225243492e24ab19e8ceacb88ac","amount":0.0128777}]');
+                        tx.from(from);*/
+                        tx.to(params.receiver, params.ammount * 1e8);
+                        tx.change(params.change);
+                        //tx.change('1KQ4GHZZkTavf1uZ9d7jT8wcpcF8o14FLE');
+                        console.dir(tx);
+                        const key = this.accounts
+                            .filter(el => el.address === params.sender
+                                && el.symbol === params.symbol
+                                && el.network === params.network)[0].key;
+                        tx.sign(new bitcash.PrivateKey(key));
+                        console.dir(tx)//(tx.serialize());
+                        next({tx: tx});
+                        } catch (e) {
+                            console.log(e.message);
+                            next({err: this.trans.translate('err.raw_tx_error')});
+                        }
+                    }
+                });
+                break;
+            case 'LTC':
+                this._getApi({
+                    method: 'getUTXOS',
+                    symbol: params.symbol,
+                    network: params.network,
+                    address: params.sender
+                }, ut => {
+                    if (!ut || !ut.utxos) {
+                        next({err: this.trans.translate('err.server_connection_error')});
+                    } else {
+                        // try {
+                        console.dir(params);
+                        const tx = Bitcore.Transaction();
+                        tx.from(ut.utxos);
+                        tx.to(params.receiver, params.ammount * 1e8);
+                        tx.change(params.change);
+                        console.dir(tx);
+                        const key = this.accounts
+                            .filter(el => el.address === params.sender
+                                && el.symbol === params.symbol
+                                && el.network === params.network)[0].key;
+                        tx.sign(key);
+                        console.log(tx.serialize());
+                        next({tx: tx.serialize()});
                         /*} catch (e) {
                             console.log(e.message);
                             next({err: this.trans.translate('err.raw_tx_error')});
@@ -286,10 +415,10 @@ export class AccountsService {
             hex: params.hex
         }, res => {console.dir(res);
         if (params.symbol === 'EHT') {
-            if (res.err || res.hash.hs.err) {
+            if (res.err || res.txid.hash) {
                 next({err: res.err});
             } else {
-                next({hash: res.hash.hs.hash});
+                next({hash: res.txid.hash});
             }
         } else {
             if (res.err) {
@@ -314,6 +443,12 @@ export class AccountsService {
                                  return self._createETHAccount(params);
                             case 'BTC':
                                 return self._createBTCAccount(params);
+                            case 'BCH':
+                                return self._createBTCAccount(params);
+                            case 'BTG':
+                                return self._createBTGAccount(params);
+                            case 'LTC':
+                                return self._createLTCAccount(params);
                             default:
                                 return self._createETHAccount(params);
                         }
@@ -340,6 +475,14 @@ export class AccountsService {
                                 return self._openETHAccount(params);
                             case 'BTC':
                                 return self._openBTCAccount(params);
+                            case 'BCH':
+                                return self._openBCHAccount(params);
+                            case 'BTG':
+                                return self._openBTGAccount(params);
+                            case 'LTC':
+                                return self._openLTCAccount(params);
+                            case 'ZEC':
+                                return self._openZECAccount(params);
                             default:
                                 return self._openETHAccount(params);
                         }
@@ -350,17 +493,21 @@ export class AccountsService {
     }
     getGas() {
         return new Promise((resolve, reject) => {
-            this._getApi({
+            Utils.utils.getApi({
                 method: 'getPriceLimit',
                 symbol: 'ETH',
                 network: 'ropsten'
-            }, gas => {
+            }, this.http).then(data => {
+                const gas = data.data || null;
                 if (!gas || !gas.gasLimit) {
-                    reject(this.trans.translate('err.server_connection_error'));
+                    return reject(this.trans.translate('err.server_connection_error'));
                 } else {
-                    resolve(gas.gasLimit);
+                    return resolve(gas.gasLimit);
                 }
-            });
+            })
+                .catch(error => {
+                    return reject(error);
+                });
         });
     }
     closeAcount(address: string, network: string): boolean {
@@ -487,7 +634,7 @@ export class AccountsService {
                 file.onload = (event: any) => {
                     try {
                         const keyFile: any = JSON.parse(event.target.result);
-                        Keythe.recover(params.passphrase, keyFile, (pKey) => {
+                        Keythe.recover(params.passphrase, keyFile, (pKey) => {console.dir(pKey.toString('hex'));
                             if (pKey) {
                                 const account = new Account();
                                 account.address = '0x' + keyFile.address;
@@ -528,6 +675,158 @@ export class AccountsService {
                         dKey += decifer.final('utf8');
                         const pKey = Bitcore.PrivateKey.fromWIF(dKey);
                         const account = new Account();
+                        account.address = keyFile.address;
+                        account.key = pKey;
+                        account.network = params.network;
+                        account.symbol = params.symbol;
+                        account.transactions = [];
+                        account.balance = '';
+                        account.unlock = true;
+                        account.open = false;
+                        account.hide = true;
+                        account.refresh = false;
+                        this.accounts.push(account);
+                        resolve(account);
+                    } catch (err) {
+                        reject(err.message);
+                    }
+                };
+            } catch (err) {
+                reject(err.message);
+            }
+        });
+    }
+    _openBCHAccount(params: any) {
+        return new Promise((resolve, reject) => {
+            const file = new FileReader();
+            try {
+                file.readAsText(params.keyFile);
+                file.onload = (event: any) => {
+                    try {
+                        const keyFile: any = JSON.parse(event.target.result);
+                        console.dir(keyFile);
+                        let dKey, decifer: any = {};
+                        decifer = crypto.createDecipher(
+                            keyFile.calg,
+                            params.passphrase);
+                        dKey = decifer.update(keyFile.cifertext, 'hex', 'utf8');
+                        dKey += decifer.final('utf8'); console.log(dKey);
+                        const pKey = dKey;//Bitcore.PrivateKey.fromWIF(dKey);
+                        const account = new Account();
+                        account.address = keyFile.address;
+                        account.key = pKey;
+                        account.network = params.network;
+                        account.symbol = params.symbol;
+                        account.transactions = [];
+                        account.balance = '';
+                        account.unlock = true;
+                        account.open = false;
+                        account.hide = true;
+                        account.refresh = false;
+                        this.accounts.push(account);
+                        resolve(account);
+                    } catch (err) {
+                        reject(err.message);
+                    }
+                };
+            } catch (err) {
+                reject(err.message);
+            }
+        });
+    }
+    _openBTGAccount(params: any) {
+        return new Promise((resolve, reject) => {
+            const file = new FileReader();
+            try {
+                file.readAsText(params.keyFile);
+                file.onload = (event: any) => {
+                    try {
+                        const keyFile: any = JSON.parse(event.target.result);
+                        console.dir(keyFile);
+                        let dKey, decifer: any = {};
+                        /*decifer = crypto.createDecipher(
+                            keyFile.calg,
+                            params.passphrase);
+                        dKey = decifer.update(keyFile.cifertext, 'hex', 'utf8');
+                        dKey += decifer.final('utf8');*/
+                        const pKey = keyFile.cifertext; console.log(pKey); // blib.ECPair.fromWIF(dKey);
+                        const account = new Account();
+                        account.address = keyFile.address;
+                        account.key = pKey;
+                        account.network = params.network;
+                        account.symbol = params.symbol;
+                        account.transactions = [];
+                        account.balance = '';
+                        account.unlock = true;
+                        account.open = false;
+                        account.hide = true;
+                        account.refresh = false;
+                        this.accounts.push(account);
+                        resolve(account);
+                    } catch (err) {
+                        reject(err.message);
+                    }
+                };
+            } catch (err) {
+                reject(err.message);
+            }
+        });
+    }
+    _openLTCAccount(params: any) {
+        return new Promise((resolve, reject) => {
+            const file = new FileReader();
+            try {
+                file.readAsText(params.keyFile);
+                file.onload = (event: any) => {
+                    try {
+                        const keyFile: any = JSON.parse(event.target.result);
+                        console.dir(keyFile);
+                        let dKey, decifer: any = {};
+                        decifer = crypto.createDecipher(
+                            keyFile.calg,
+                            params.passphrase);
+                        dKey = decifer.update(keyFile.cifertext, 'hex', 'utf8');
+                        dKey += decifer.final('utf8'); console.log(dKey);
+                        const pKey = Litecore.PrivateKey.fromWIF(dKey);
+                        const account = new Account();
+                        account.address = keyFile.address;
+                        account.key = pKey; console.dir(pKey);
+                        account.network = params.network;
+                        account.symbol = params.symbol;
+                        account.transactions = [];
+                        account.balance = '';
+                        account.unlock = true;
+                        account.open = false;
+                        account.hide = true;
+                        account.refresh = false;
+                        this.accounts.push(account);
+                        resolve(account);
+                    } catch (err) {console.dir(err);
+                        reject(err.message);
+                    }
+                };
+            } catch (err) {
+                reject(err.message);
+            }
+        });
+    }
+    _openZECAccount(params: any) {
+        return new Promise((resolve, reject) => {
+            const file = new FileReader();
+            try {
+                file.readAsText(params.keyFile);
+                file.onload = (event: any) => {
+                    try {
+                        const keyFile: any = JSON.parse(event.target.result);
+                        console.dir(keyFile);
+                        /*let dKey, decifer: any = {};
+                        decifer = crypto.createDecipher(
+                            keyFile.calg,
+                            params.passphrase);
+                        dKey = decifer.update(keyFile.cifertext, 'hex', 'utf8');
+                        dKey += decifer.final('utf8');*/
+                        const pKey = keyFile.cifertext; // Zeccore.PrivateKey.fromWIF(dKey);
+                        const account = new Account(); console.log(pKey);
                         account.address = keyFile.address;
                         account.key = pKey;
                         account.network = params.network;
@@ -655,6 +954,216 @@ export class AccountsService {
             }
         });
     }
+    _createBCHAccount(params: any) {
+        const self = this;
+        return new Promise((resolve, reject) => {
+            try {
+                const pkey = new Bitcore.PrivateKey(params.network),
+                    key = pkey.toWIF(),
+                    cifer = crypto.createCipher('aes256', params.passphrase);
+                let cifertext = cifer.update(Buffer.from(key),
+                    'utf8', 'hex');
+                cifertext += cifer.final('hex');
+                const keyFile = {
+                    address: pkey.toAddress().toString(),
+                    calg: 'aes256',
+                    cifertext: cifertext
+                };
+                const blob = new Blob([JSON.stringify(keyFile)],
+                    {type: 'text/json'});
+                const e = document.createEvent('MouseEvent');
+                const a = document.createElement('a');
+                a.download = self._keyFileName(keyFile.address);
+                a.href = window.URL.createObjectURL(blob);
+                a.dataset.downloadurl = ['text/json', a.download, a.href]
+                    .join(':');
+                e.initMouseEvent('click', true,
+                    false, window,
+                    0, 0, 0,
+                    0, 0, false,
+                    false, false, false,
+                    0, null);
+                a.dispatchEvent(e);
+                const account = new Account();
+                account.address = keyFile.address;
+                account.key = pkey;
+                account.network = params.network;
+                account.symbol = params.symbol;
+                account.transactions = [];
+                account.balance = '';
+                account.unlock = true;
+                account.open = false;
+                account.hide = true;
+                account.refresh = false;
+                self.accounts.push(account);
+                resolve(account);
+            } catch (e) {
+                reject(e.message);
+            }
+        });
+    }
+    _createBTGAccount(params: any) {
+        const self = this;
+        return new Promise((resolve, reject) => {
+            try {
+                /*const key = Bitcore.crypto.BN.fromBuffer(
+                    Bitcore.crypto.Hash.sha256(
+                        Buffer.from(params.passphrase)
+                    )
+                );*/
+                const key = blib.ECPair.makeRandom({
+                    rng: () => Buffer.from(crypto.randomBytes(32)),
+                    network: {
+                        messagePrefix: '\x1DBitcoin Gold Signed Message:\n',
+                        bech32: 'btg',
+                        bip32: {
+                            public: 0x0488b21e,
+                            private: 0x0488ade4
+                        },
+                        pubKeyHash: 0x26,
+                        scriptHash: 0x17,
+                        wif: 0x80
+                    }
+                });
+                const address = key.getAddress(); // new Bitcore.PrivateKey(key).toAddress(); console.log(address);
+                const cifer = crypto.createCipher('aes256', params.passphrase);
+                let cifertext = cifer.update(Buffer.from(address.toString()),
+                    'utf8', 'hex');
+                cifertext += cifer.final('hex');
+                const keyFile = {
+                    address: address.toString(), // key.getAddress(), // pkey.toAddress().toString(),
+                    calg: 'aes256',
+                    cifertext: key.toWIF() // cifertext
+                };
+                const blob = new Blob([JSON.stringify(keyFile)],
+                    {type: 'text/json'});
+                const e = document.createEvent('MouseEvent');
+                const a = document.createElement('a');
+                a.download = self._keyFileName(keyFile.address);
+                a.href = window.URL.createObjectURL(blob);
+                a.dataset.downloadurl = ['text/json', a.download, a.href]
+                    .join(':');
+                e.initMouseEvent('click', true,
+                    false, window,
+                    0, 0, 0,
+                    0, 0, false,
+                    false, false, false,
+                    0, null);
+                a.dispatchEvent(e);
+                const account = new Account();
+                account.address = keyFile.address;
+                account.key = key.toString(); // Bitcore.PrivateKey(key).toString();
+                account.network = params.network;
+                account.symbol = params.symbol;
+                account.transactions = [];
+                account.balance = '';
+                account.unlock = true;
+                account.open = false;
+                account.hide = true;
+                account.refresh = false;
+                self.accounts.push(account);
+                resolve(account);
+            } catch (e) {console.log(e);
+                reject(e.message);
+            }
+        });
+    }
+    _createLTCAccount(params: any) {
+        const self = this;
+        return new Promise((resolve, reject) => {
+            try {
+                const pkey = new Litecore.PrivateKey(params.network),
+                    key = pkey.toWIF();
+                const cifer = crypto.createCipher('aes256', params.passphrase);
+                let cifertext = cifer.update(Buffer.from(key),
+                    'utf8', 'hex');
+                cifertext += cifer.final('hex');
+                const keyFile = {
+                    address: pkey.toAddress().toString(),
+                    calg: 'aes256',
+                    cifertext: cifertext
+                };
+                const blob = new Blob([JSON.stringify(keyFile)],
+                    {type: 'text/json'});
+                const e = document.createEvent('MouseEvent');
+                const a = document.createElement('a');
+                a.download = self._keyFileName(keyFile.address);
+                a.href = window.URL.createObjectURL(blob);
+                a.dataset.downloadurl = ['text/json', a.download, a.href]
+                    .join(':');
+                e.initMouseEvent('click', true,
+                    false, window,
+                    0, 0, 0,
+                    0, 0, false,
+                    false, false, false,
+                    0, null);
+                a.dispatchEvent(e);
+                const account = new Account();
+                account.address = keyFile.address;
+                account.key = pkey;
+                account.network = params.network;
+                account.symbol = params.symbol;
+                account.transactions = [];
+                account.balance = '';
+                account.unlock = true;
+                account.open = false;
+                account.hide = true;
+                account.refresh = false;
+                self.accounts.push(account);
+                resolve(account);
+            } catch (e) {
+                reject(e.message);
+            }
+        });
+    }
+    _createZECAccount(params: any) {
+        const self = this;
+        return new Promise((resolve, reject) => {
+            try {
+                const pkey = new Zeccore.PrivateKey(params.network),
+                    key = pkey.toWIF(),
+                    cifer = crypto.createCipher('aes256', params.passphrase);
+                let cifertext = cifer.update(Buffer.from(key),
+                    'utf8', 'hex');
+                cifertext += cifer.final('hex');
+                const keyFile = {
+                    address: pkey.toAddress().toString(),
+                    calg: 'aes256',
+                    cifertext: cifertext
+                };
+                const blob = new Blob([JSON.stringify(keyFile)],
+                    {type: 'text/json'});
+                const e = document.createEvent('MouseEvent');
+                const a = document.createElement('a');
+                a.download = self._keyFileName(keyFile.address);
+                a.href = window.URL.createObjectURL(blob);
+                a.dataset.downloadurl = ['text/json', a.download, a.href]
+                    .join(':');
+                e.initMouseEvent('click', true,
+                    false, window,
+                    0, 0, 0,
+                    0, 0, false,
+                    false, false, false,
+                    0, null);
+                a.dispatchEvent(e);
+                const account = new Account();
+                account.address = keyFile.address;
+                account.key = key.toWIF();
+                account.network = params.network;
+                account.symbol = params.symbol;
+                account.transactions = [];
+                account.balance = '';
+                account.unlock = true;
+                account.open = false;
+                account.hide = true;
+                account.refresh = false;
+                self.accounts.push(account);
+                resolve(account);
+            } catch (e) {console.dir(e);
+                reject(e.message);
+            }
+        });
+    }
     _keyFileName (address: string): string {
         const cd = new Date();
         const month = ((cd.getMonth() + 1).toString().length === 1) ?
@@ -692,20 +1201,18 @@ export class AccountsService {
                         const url = opts.symbol === 'ETH' ? opts.url + opts.symbol +
                             '/getBalance/' + opts.address :
                             opts.url + opts.symbol +
-                            '/balance/' + opts.address;
+                            '/getBalance/' + opts.address;
                         self.http.get(url,
                             opts)
                             .subscribe(response => {console.dir(response);
-                            const bs: any = response;
-                                next(response ?
-                                    (opts.symbol === 'ETH') ? response : {balance: bs.b} : null);
+                                next(response ? {balance: response['balance']} : null);
                             });
                         break;
                     }
                     case 'getTransactions': {
                         console.log('step11');
                         self.http.get(opts.url + opts.symbol +
-                            '/getTransactionsList/' + opts.address,
+                            '/getTxList/' + opts.address,
                             opts)
                             .subscribe(response => {console.dir(response);
                                 next(response ? response : null);
@@ -784,10 +1291,11 @@ export class AccountsService {
                     case 'getUTXOS':
                         console.log(opts.url + opts.symbol + '/UTXOs/' +
                         opts.address);
-                        self.http.get(opts.url + opts.symbol + '/UTXOs/' +
+                        self.http.get(opts.url + opts.symbol + '/getUTXOs/' +
                             opts.address, opts)
-                            .subscribe(response => {console.dir(response);
-                                next(response ? response : null);
+                            .subscribe(response => {
+                                console.dir(response['utxos']);
+                                next(response['utxos']);
                             });
                         break;
                     default: next(null);
@@ -803,7 +1311,7 @@ export class AccountsService {
         opts.url = this._config.app.apiURL;
         opts.headers = {
             headers: new HttpHeaders()
-                .set('Content-Type', 'application/json')
+                .append('Content-Type', 'application/json')
         };
         return new Promise((resolve, reject) => {
             if (!opts.method) {reject('Error method.'); }
@@ -811,24 +1319,22 @@ export class AccountsService {
             if (!opts.network) {reject('Error network.'); }
             switch (opts.method) {
                 case 'getBalance': {
-                    const url = opts.symbol === 'ETH' ? opts.url + opts.symbol +
-                        '/getBalance/' + opts.address :
-                        opts.url + opts.symbol +
-                        '/balance/' + opts.address;
+                    const url = opts.url + opts.symbol +
+                        '/getBalance/' + opts.address;
                         self.http.get(url, opts)
                             .subscribe(response => {
-                                const bs: any = response;
                                 response ?
-                                        resolve((opts.symbol === 'ETH') ? response : {balance: bs.b})
+                                        resolve({balance: response['balance']})
                                     : reject(null);
                                 });
                             break;
                         }
                 case 'getTransactions': {
-                    console.log('step11');
+                    console.log(opts.url + opts.symbol +
+                        (opts.symbol === 'ETH' ? '/getTransactionsList/' : '/getTxList/') + opts.address);
                     self.http.get(opts.url + opts.symbol +
-                    '/getTransactionsList/' + opts.address, opts)
-                    .subscribe(response => {
+                        (opts.symbol === 'ETH' ? '/getTransactionsList/' : '/getTxList/') + opts.address, opts)
+                    .subscribe(response => {console.dir(response);
                     response ? resolve(response)
                         : reject(null);
                         });
@@ -921,7 +1427,7 @@ export class AccountsService {
                     self.http
                         .get(opts.url +
                                 opts.symbol +
-                                '/UTXOs/' +
+                                '/getUTXOs/' +
                                 opts.address,
                                 opts)
                         .subscribe(response => {console.dir(response);
