@@ -1,0 +1,25 @@
+{
+  "code": "ETH",
+  "network": "testnet",
+  "passphrase": "somePass1Wf",
+  "address": "0x90bc1fbd5ae171d5f7a41d63d7451b1024909348",
+  "keyObject": {
+    "address":"90bc1fbd5ae171d5f7a41d63d7451b1024909348",
+    "crypto":{
+      "cipher":"aes-128-ctr",
+      "ciphertext":"1a9ca336faf5824e354f3d39ec539324e910876fa878bc9211eda448a7e0388c",
+      "cipherparams":{"iv":"6f2bc8e3bf2f13fed0459d3ab40267d5"},
+      "mac":"af762851015a12b5b5a98fab0964deee49ee17e296c021139f873f1fa963723e",
+      "kdf":"scrypt",
+      "kdfparams":{
+        "dklen":32,
+        "n":262144,
+        "r":1,
+        "p":8,
+        "salt":"bce08eb08e727a9e41e89e1179f031c480e2dd30e2b528560833779c785c7f70"}
+    },
+    "id":"ac84c675-4260-4f85-b222-034cb706c722",
+    "version":3
+  },
+  "contract": "0x4c3f9408f77ca93eb528ca0ae3c99d72434466e2"
+}

@@ -4,7 +4,7 @@ export class Account {
     public network: string;
     public address: string;
     private _pKey: string;
-    public transactions: Transaction[];
+    public transactions: any;
     public balance: string;
     public open: boolean;
     public hide: boolean;

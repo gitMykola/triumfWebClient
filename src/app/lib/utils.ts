@@ -1,12 +1,12 @@
 import { config } from '../config';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 
-export const utils = {
+export default {
     config: config(),
-    // http: HttpClient,
+    http: HttpClient,
     verifyParams: function (params) {
         if (typeof params !== 'object') {
-            return {status: false, error: 'wrong_params_object'};
+            return {status: false, error: 'params'};
         }
         const verifySet = {
             symbol: value => {
@@ -59,12 +59,12 @@ export const utils = {
         };
         for (const field in params) {
             if (!verifySet[field] || !verifySet[field](params[field])) {
-                return {status: false, error: 'wrong_field_' + field};
+                return {status: false, error: field};
             }
         }
         return {status: true};
     },
-    getApi: async function (params, http) {
+    getApi: async function (params, http: HttpClient) {
         try {
             const verify = this.verifyParams(params);
             if (!verify.status) {
@@ -175,6 +175,59 @@ export const utils = {
             return await apis[params.method](params);
         } catch (error) {
             return error;
+        }
+    },
+    keyFileName: function (address: string) {
+        try {
+            const cd = new Date();
+            const month = ((cd.getMonth() + 1).toString().length === 1) ?
+                '0' + (cd.getMonth() + 1).toString() : (cd.getMonth() + 1).toString();
+            const days = (cd.getDate().toString().length === 1) ?
+                '0' + cd.getDate().toString() : cd.getDate().toString();
+            const hours = (cd.getHours().toString().length === 1) ?
+                '0' + cd.getHours().toString() : cd.getHours().toString();
+            const mins = (cd.getMinutes().toString().length === 1) ?
+                '0' + cd.getMinutes().toString() : cd.getMinutes().toString();
+            const seconds = (cd.getSeconds().toString().length === 1) ?
+                '0' + cd.getSeconds().toString() : cd.getSeconds().toString();
+            const mseconds = (cd.getMilliseconds().toString().length === 1) ?
+                '00' + cd.getMilliseconds().toString() :
+                ((cd.getMilliseconds().toString().length === 2) ? '0' + cd.getMilliseconds().toString()
+                    : cd.getMilliseconds().toString());
+            const filename = 'UTC--' + cd.getFullYear() + '-'
+                + month + '- ' + days + 'T' + hours + ':' + mins + ':' + seconds + '.' + mseconds +
+                'Z--' + address;
+            return {status: true, fileName: filename};
+        } catch (error) {
+            return {
+                status: false,
+                error: error.message
+            };
+        }
+    },
+    uploadFile: function (data: any, fileName: string) {
+        try {
+            const blob = new Blob([JSON.stringify(data)],
+                {type: 'text/json'});
+            const e = document.createEvent('MouseEvent');
+            const a = document.createElement('a');
+            const fn = this.keyFileName(data.address);
+            if (!fn.status) {
+                return fn;
+            }
+            a.download = fn.fileName;
+            a.href = window.URL.createObjectURL(blob);
+            a.dataset.downloadurl = ['text/json', a.download, a.href]
+                .join(':');
+            e.initMouseEvent('click', true,
+                false, window,
+                0, 0, 0, 0,
+                0, false, false,
+                false, false, 0,
+                null);
+            a.dispatchEvent(e);
+        } catch (error) {
+            return {status: false, error: error.message};
         }
     }
 };

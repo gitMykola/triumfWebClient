@@ -13,7 +13,8 @@ import * as Zeccore from 'zcash-bitcore-lib';
 import * as crypto from 'crypto-browserify';
 import * as blib from 'bitcoinjs-lib';
 import * as bitcash from 'bitcoincashjs';
-import * as Utils from '../lib/utils';
+import Utils from '../lib/utils';
+import AccountETH from '../lib/accountETH';
 
 @Injectable()
 export class AccountsService {
@@ -71,7 +72,7 @@ export class AccountsService {
         opts.method = 'getBalance';
         self.infoInit();
         return new Promise((resolve, reject) => {
-            Utils.utils.getApi({
+            Utils.getApi({
                 method: 'getBalance',
                 symbol: opts.symbol,
                 address: opts.address
@@ -103,7 +104,7 @@ export class AccountsService {
         opts.symbol = params.symbol || null;
         opts.network = params.network || null;
         return new Promise((resolve, reject) => {
-            Utils.utils.getApi({
+            Utils.getApi({
                         method: 'getTransactions',
                         symbol: opts.symbol,
                         address: opts.address
@@ -209,7 +210,7 @@ export class AccountsService {
         this.infoInit();
         switch (params.symbol) {
             case 'ETH':
-                Utils.utils.getApi({
+                Utils.getApi({
                     method: 'getTransactionCount',
                     symbol: params.symbol,
                     network: params.network,
@@ -220,7 +221,7 @@ export class AccountsService {
                     if (!txCount) {
                         next({err: this.trans.translate('err.server_connection_error')});
                     } else {
-                        Utils.utils.getApi({
+                        Utils.getApi({
                             method: 'getPriceLimit',
                             symbol: params.symbol,
                             network: params.network
@@ -273,12 +274,13 @@ export class AccountsService {
                 });
                 break;
             case 'BTC':
-                this._getApi({
+                Utils.getApi({
                     method: 'getUTXOS',
                     symbol: params.symbol,
                     network: params.network,
                     address: params.sender
-                }, ut => {
+                }, this.http).then(resp => {
+                    const ut = resp.data || null;
                     if (!ut) {
                         next({err: this.trans.translate('err.server_connection_error')});
                     } else {console.dir(ut.map);
@@ -301,7 +303,10 @@ export class AccountsService {
                             next({err: this.trans.translate('err.raw_tx_error')});
                         }*/
                     }
-                });
+                })
+                    .catch(err => {
+                        next({err: this.trans.translate('err.server_connection_error')}); // TODO to refatoring
+                    });
                 break;
             case 'BTG':
                 this._getApi({
@@ -415,7 +420,7 @@ export class AccountsService {
             hex: params.hex
         }, res => {console.dir(res);
         if (params.symbol === 'EHT') {
-            if (res.err || res.txid.hash) {
+            if (res.err || !res.txid) {
                 next({err: res.err});
             } else {
                 next({hash: res.txid.hash});
@@ -435,27 +440,45 @@ export class AccountsService {
         params.symbol = params.symbol || null;
         params.network = params.network || null;
         return new Promise((resolve, reject) => {
-            self._verifyAccountParams(params)
-                .then(() => {
-                    {
-                        switch (params.symbol) {
-                            case 'ETH':
-                                 return self._createETHAccount(params);
-                            case 'BTC':
-                                return self._createBTCAccount(params);
-                            case 'BCH':
-                                return self._createBTCAccount(params);
-                            case 'BTG':
-                                return self._createBTGAccount(params);
-                            case 'LTC':
-                                return self._createLTCAccount(params);
-                            default:
-                                return self._createETHAccount(params);
+            const verify = Utils.verifyParams(params);
+            if (!verify['status']) {
+                return reject(this.trans.translate(verify['error'] !== 'params' ?
+                    'err.wrong_field_' + verify['error']
+                    : 'err.wrong_params'));
+            }
+            let newAccount = null;
+            if (params.symbols === 'ETH') {
+                newAccount = new AccountETH(params.symbol, params.network);
+            }
+            newAccount.generateKeys(params.passphrase)
+                .then(resp => {
+                    if (!resp) {
+                        return reject(this
+                            .trans.translate('err.eth_account_create_error'));
+                    } else {
+                        this.accounts.push(newAccount);
+                        const fileName = Utils.keyFileName(newAccount.address);
+                        if (!fileName['status']) {
+                            console.log(fileName['error']);
+                            return reject(this
+                                .trans.translate('err.eth_account_create_error'));
+                        } else {
+                            const download = Utils
+                                .uploadFile(newAccount, fileName['fileName']);
+                            if (!download['status']) {
+                                console.log(download['error']);
+                                return reject(this
+                                    .trans.translate('err.eth_account_create_error'));
+                            } else {
+                                this.accounts.push(newAccount);
+                                return reject(newAccount);
+                            }
                         }
                     }
                 })
-                .then(acc => resolve(acc))
-                .catch(err => reject(err));
+                .catch(err => {
+                    return reject(err);
+                });
         });
     }
     openAccount(params: any) {
@@ -493,7 +516,7 @@ export class AccountsService {
     }
     getGas() {
         return new Promise((resolve, reject) => {
-            Utils.utils.getApi({
+            Utils.getApi({
                 method: 'getPriceLimit',
                 symbol: 'ETH',
                 network: 'ropsten'

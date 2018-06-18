@@ -3,8 +3,11 @@
 
 module.exports = function (config) {
   config.set({
-    basePath: '',
+    basePath: '/tests',
     frameworks: ['jasmine', '@angular/cli'],
+      files: [
+          {pattern: 'test/*.spec.ts'}
+      ],
     plugins: [
       require('karma-jasmine'),
       require('karma-chrome-launcher'),
@@ -27,7 +30,7 @@ module.exports = function (config) {
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: true,
-    browsers: ['Chrome'],
+    browsers: ['Chromium'],
     singleRun: false
   });
 };

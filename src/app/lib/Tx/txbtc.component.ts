@@ -1,7 +1,7 @@
 import {Component, Input, SimpleChange, OnChanges, Output, EventEmitter} from '@angular/core';
 import {TranslatorService} from '../../translator';
 import {AccountsService} from '../../_services/accounts.service';
-import {BTCTransaction} from '../transaction';
+import {TransactionBTC} from '../transaction';
 import * as Big from 'bignumber.js';
 
 @Component({
@@ -14,7 +14,7 @@ export class TxBTCComponent implements OnChanges {
     @Input() network: string;
     @Input() symbol: string;
     @Output() onClose = new EventEmitter<boolean>();
-    public tx: BTCTransaction;
+    public tx: any;
     public wait: boolean;
     public dom: any;
     public error: boolean;
@@ -22,7 +22,7 @@ export class TxBTCComponent implements OnChanges {
     constructor(public trans: TranslatorService,
                 private aService: AccountsService) {
         this.wait = false;
-        this.tx = new BTCTransaction();
+        this.tx = Object.create(TransactionBTC);
     }
     ngOnChanges(changes: {[chtx: string]: SimpleChange}) {
         const self = this;

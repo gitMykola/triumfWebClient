@@ -1,7 +1,7 @@
 import {Component, Input, SimpleChange, OnChanges, EventEmitter, Output} from '@angular/core';
 import {TranslatorService} from '../../translator';
 import {AccountsService} from '../../_services/accounts.service';
-import {ETHTransaction} from '../transaction';
+import {TransactionETH} from '../transaction';
 
 @Component({
     selector: 'app-tx-eth',
@@ -13,7 +13,7 @@ export class TxETHComponent implements OnChanges {
     @Input() network: string;
     @Input() symbol: string;
     @Output() onClose = new EventEmitter<boolean>();
-    public tx: ETHTransaction;
+    public tx: any;
     public wait: boolean;
     public dom: any;
     public error: boolean;
@@ -21,7 +21,7 @@ export class TxETHComponent implements OnChanges {
     constructor(public trans: TranslatorService,
                 private aService: AccountsService) {
         this.wait = false;
-        this.tx = new ETHTransaction();
+        this.tx = Object.create(TransactionETH);
     }
     ngOnChanges(changes: {[chtx: string]: SimpleChange}) {
         if (changes.hash && changes.hash.currentValue) {
