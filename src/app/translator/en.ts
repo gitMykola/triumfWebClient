@@ -64,7 +64,7 @@ export const EN = {
     },
     err: {
         account_open_error: 'Error open account process.',
-        account_create_error: 'Errir create account process.',
+        account_create_error: 'Error create account process.',
         server_connection_error: 'Server connection error.',
         server_response_error: 'Server response error.',
         local_storage_rror: 'Local Storage error.',

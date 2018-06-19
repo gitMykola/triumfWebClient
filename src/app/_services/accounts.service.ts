@@ -15,10 +15,12 @@ import * as blib from 'bitcoinjs-lib';
 import * as bitcash from 'bitcoincashjs';
 import Utils from '../lib/utils';
 import AccountETH from '../lib/accountETH';
+import AccountBTC from '../lib/accountBTC';
 
 @Injectable()
 export class AccountsService {
     private _config: any;
+    public currentAccount: any;
     public accounts: any;
     public infoMessage: string;
     public errorMessage: string;
@@ -137,7 +139,8 @@ export class AccountsService {
                         });
                         return resolve(transactions.sort((a, b) =>
                             b.time.getTime() - a.time.getTime()));
-                    } else {
+                    }
+                    else {
                         if (!txs) { reject(this.trans
                             .translate('err.server_response_error')); }
                             try {
@@ -210,102 +213,21 @@ export class AccountsService {
         this.infoInit();
         switch (params.symbol) {
             case 'ETH':
-                Utils.getApi({
-                    method: 'getTransactionCount',
-                    symbol: params.symbol,
-                    network: params.network,
-                    address: params.sender
-                }, this.http)
-                    .then(data => {
-                    const txCount = data.data || null;
-                    if (!txCount) {
-                        next({err: this.trans.translate('err.server_connection_error')});
-                    } else {
-                        Utils.getApi({
-                            method: 'getPriceLimit',
-                            symbol: params.symbol,
-                            network: params.network
-                        }, this.http)
-                            .then(limit => {
-                            const gasPL = limit.data || null;
-                            if (!gasPL) {
-                                next({err: this.trans.translate('err.server_connection_error')});
-                            } else {console.dir(params);
-                                const templ = '0000000000000000000000000000000000000000000000000000000000000000';
-                                const txParams: any = {
-                                    nonce: '0x' + Number(txCount.TransactionCount).toString(16),
-                                    gasPrice: EthUtils.intToHex(gasPL.gasPrice),
-                                    gasLimit: EthUtils.intToHex(params.gas),
-                                    to: params.contract ? params.contract : params.receiver,
-                                    value: params.contract ? '0x0' : '0x' + (params.ammount * 1e18).toString(16),
-                                    data: params.contract ? '0xa9059cbb000000000000000000000000'
-                                        + params.receiver.replace('0x', '')
-                                        + templ.substr(0, 64 - params.ammount.toString(16).length)
-                                        + params.ammount.toString(16) : '',
-                                    // '0xa9059cbb
-                                    // 000000000000000000000000db4d16ff5db0670c0f6e6a41d81a94353171fac
-                                    // 00000000000000000000000000000000000000000000000000000000000008613',
-                                    chainId: params.network === 'livenet' ? 1 : 3
-                                    };
-                                try {console.dir(txParams);
-                                    const tx = new EthTx(txParams);
-                                    console.dir(tx);
-                                    const key = this.accounts
-                                        .filter(el => el.address === params.sender
-                                        && el.symbol === params.symbol
-                                        && el.network === params.network)[0].key;
-                                    tx.sign(key);
-                                    console.dir(tx.nonce.toString('hex'));
-                                    console.dir(tx.from.toString('hex'));
-                                    console.dir(tx.to.toString('hex'));
-                                    console.dir(tx.gasPrice.toString('hex'));
-                                    console.dir(tx.gasLimit.toString('hex'));
-                                    console.dir(tx.data.toString('hex'));
-                                    console.log('Value ' + tx.value.toString('hex'));
-                                    const raw = tx.serialize();
-                                    next({tx: '0x' + raw.toString('hex')});
-                                } catch (e) {
-                                    console.log(e.message);
-                                    next({err: this.trans.translate('err.raw_tx_error')});
-                                }
-                            }
-                        });
-                    }
-                });
+                this._createETHRawTransaction(params)
+                    .then(rawTx => {
+                        next({tx: rawTx});
+                    })
+                    .catch(error => {
+                        next({err: error});
+                    });
                 break;
             case 'BTC':
-                Utils.getApi({
-                    method: 'getUTXOS',
-                    symbol: params.symbol,
-                    network: params.network,
-                    address: params.sender
-                }, this.http).then(resp => {
-                    const ut = resp.data || null;
-                    if (!ut) {
-                        next({err: this.trans.translate('err.server_connection_error')});
-                    } else {console.dir(ut.map);
-                       // try {
-                        console.dir(params);
-                            const tx = Bitcore.Transaction();
-                            tx.from(ut);
-                            tx.to(params.receiver, params.ammount * 1e8);
-                            tx.change(params.change);
-                            console.dir(tx);
-                            const key = this.accounts
-                                .filter(el => el.address === params.sender
-                                    && el.symbol === params.symbol
-                                    && el.network === params.network)[0].key;
-                            tx.sign(key);
-                            console.log(tx.serialize());
-                            next({tx: tx.serialize()});
-                        /*} catch (e) {
-                            console.log(e.message);
-                            next({err: this.trans.translate('err.raw_tx_error')});
-                        }*/
-                    }
-                })
-                    .catch(err => {
-                        next({err: this.trans.translate('err.server_connection_error')}); // TODO to refatoring
+                this._createBTCRawTransaction(params)
+                    .then(rawTx => {
+                        next({tx: rawTx});
+                    })
+                    .catch(error => {
+                        next({err: error});
                     });
                 break;
             case 'BTG':
@@ -323,7 +245,7 @@ export class AccountsService {
                         console.dir(ut);
                         const tx = Bitcore.Transaction();
                         tx.from(ut);
-                        tx.to(params.receiver, params.ammount * 1e8);
+                        tx.to(params.receiver, params.amount * 1e8);
                         tx.change(params.change);
                         console.dir(tx);
                         const key = this.accounts
@@ -357,7 +279,7 @@ export class AccountsService {
                         tx.from(ut);
                         /*const from = JSON.parse('[{"address":"13JUK6jdtshv6evj8giRaDgR5dw4WQM5jG","txid":"87329fae502377053b4d1f24daad70a94cf21cc4aa2f084ea584fe51104a4060","vout":1,"scriptPubKey":"76a914193e1f32ccc25ee0f225243492e24ab19e8ceacb88ac","amount":0.0128777}]');
                         tx.from(from);*/
-                        tx.to(params.receiver, params.ammount * 1e8);
+                        tx.to(params.receiver, params.amount * 1e8);
                         tx.change(params.change);
                         //tx.change('1KQ4GHZZkTavf1uZ9d7jT8wcpcF8o14FLE');
                         console.dir(tx);
@@ -389,7 +311,7 @@ export class AccountsService {
                         console.dir(params);
                         const tx = Bitcore.Transaction();
                         tx.from(ut.utxos);
-                        tx.to(params.receiver, params.ammount * 1e8);
+                        tx.to(params.receiver, params.amount * 1e8);
                         tx.change(params.change);
                         console.dir(tx);
                         const key = this.accounts
@@ -413,25 +335,28 @@ export class AccountsService {
         return '';
     }
     sendTx(params: any, next: any) {
-        this._getApi({
+        Utils.getApi({
             method: 'sendRawTransaction',
             symbol: params.symbol,
             network: params.network,
             hex: params.hex
-        }, res => {console.dir(res);
-        if (params.symbol === 'EHT') {
-            if (res.err || !res.txid) {
-                next({err: res.err});
+        }, this.http)
+        .then(res => {
+            if (params.symbol === 'ETH') {
+                if (res.err) {
+                    next({err: res.err});
+                } else {
+                    next({hash: res['data']['hash']});
+                }
             } else {
-                next({hash: res.txid.hash});
+                if (res.err) {
+                    next({err: res.err});
+                } else {
+                    next({txid: res.txid});
+                }
             }
-        } else {
-            if (res.err) {
-                next({err: res.err});
-            } else {
-                next({txid: res.txid});
-            }
-        }
+        }).catch(err => {
+            next({err: err.message});
         });
     }
     createAccount(params: any) {
@@ -446,32 +371,28 @@ export class AccountsService {
                     'err.wrong_field_' + verify['error']
                     : 'err.wrong_params'));
             }
-            let newAccount = null;
-            if (params.symbols === 'ETH') {
-                newAccount = new AccountETH(params.symbol, params.network);
-            }
-            newAccount.generateKeys(params.passphrase)
-                .then(resp => {
-                    if (!resp) {
+            this._createAccount(params)
+                .then(account => {
+                    if (!account) {
                         return reject(this
-                            .trans.translate('err.eth_account_create_error'));
+                            .trans.translate('err.account_create_error'));
                     } else {
-                        this.accounts.push(newAccount);
-                        const fileName = Utils.keyFileName(newAccount.address);
+                        this.accounts.push(account);
+                        this.currentAccount = account;
+                        const fileName = Utils.keyFileName(this.currentAccount.address);
                         if (!fileName['status']) {
                             console.log(fileName['error']);
                             return reject(this
-                                .trans.translate('err.eth_account_create_error'));
+                                .trans.translate('err.account_create_error'));
                         } else {
                             const download = Utils
-                                .uploadFile(newAccount, fileName['fileName']);
+                                .uploadFile(this.currentAccount.keyObject, fileName['fileName']);
                             if (!download['status']) {
                                 console.log(download['error']);
                                 return reject(this
-                                    .trans.translate('err.eth_account_create_error'));
+                                    .trans.translate('err.account_create_error'));
                             } else {
-                                this.accounts.push(newAccount);
-                                return reject(newAccount);
+                                return resolve(true);
                             }
                         }
                     }
@@ -483,35 +404,40 @@ export class AccountsService {
     }
     openAccount(params: any) {
         const self = this,
-            opts: any = {};
+        opts: any = {};
         opts.symbol = params.symbol || null;
         opts.keyFile = params.keyFile || null;
         opts.passphrase = params.passphrase || null;
         opts.network = params.network || null;
         return new Promise((resolve, reject) => {
-            self._verifyAccountParams(opts)
-                .then(() => {
-                    const account = self.isOpen(params);
-                    if (account) { return account; }
-                    switch (params.symbol) {
-                            case 'ETH':
-                                return self._openETHAccount(params);
-                            case 'BTC':
-                                return self._openBTCAccount(params);
-                            case 'BCH':
-                                return self._openBCHAccount(params);
-                            case 'BTG':
-                                return self._openBTGAccount(params);
-                            case 'LTC':
-                                return self._openLTCAccount(params);
-                            case 'ZEC':
-                                return self._openZECAccount(params);
-                            default:
-                                return self._openETHAccount(params);
+            const verify = Utils.verifyParams(opts);
+            if (! verify['status']) {
+                return reject(verify);
+            } else {
+                let newAccount: any = {};
+                if (opts.symbol === 'ETH') {
+                    newAccount = new AccountETH(opts.symbol, opts.network);
+                }
+                if (opts.symbol === 'BTC') {
+                    newAccount = new AccountBTC(opts.symbol, opts.network);
+                }
+                Utils.readKeyFile(opts.keyFile)
+                    .then(keyFile => {
+                        if (!keyFile) {
+                            return reject('err.account_open_error');
+                        } else {
+                            return newAccount.recoveryFromKeyObject(opts.passphrase, keyFile);
                         }
+                    })
+                .then(() => {
+                    self.accounts.push(newAccount);
+                    self.currentAccount = newAccount;
+                    return resolve(self.currentAccount);
                 })
-                .then(acc => resolve(acc))
-                .catch(err => reject(err));
+                .catch(err => {console.dir(err);
+                    return reject(err.message);
+                });
+            }
         });
     }
     getGas() {
@@ -532,6 +458,35 @@ export class AccountsService {
                     return reject(error);
                 });
         });
+    }
+    async refreshAccount() {
+        const params = {
+            method: 'getBalance',
+            address: this.currentAccount.address,
+            network: this.currentAccount.network,
+            symbol: this.currentAccount.code
+        };
+        const verify = Utils.verifyParams(params);
+        if (!verify['status']) {
+            throw new Error(verify['error']);
+        } else {
+            const balance = await Utils.getApi(params, this.http);
+            this.currentAccount.balance = balance['data']['balance']
+                / this.currentAccount.decimals;
+            params.method = 'getTransactions';
+            const txs = await Utils.getApi(params, this.http);
+            if (this.currentAccount.code === 'ETH') {
+                this.currentAccount.transactions = txs['data']['in']
+                    .concat(txs['data']['out'])
+                    .concat(txs['data']['pending_in'])
+                    .concat(txs['data']['pending_out']);
+            }
+            if (this.currentAccount.code === 'BTC') {
+                this.currentAccount.transactions = txs['data']['txs'];
+            }
+            console.dir(this.currentAccount);
+            return true;
+        }
     }
     closeAcount(address: string, network: string): boolean {
         const acc = this.accounts.
@@ -652,32 +607,21 @@ export class AccountsService {
     _openETHAccount(params: any) {
         return new Promise((resolve, reject) => {
             try {
-                const file = new FileReader();
-                file.readAsText(params.keyFile);
-                file.onload = (event: any) => {
-                    try {
-                        const keyFile: any = JSON.parse(event.target.result);
-                        Keythe.recover(params.passphrase, keyFile, (pKey) => {console.dir(pKey.toString('hex'));
-                            if (pKey) {
-                                const account = new Account();
-                                account.address = '0x' + keyFile.address;
-                                account.key = pKey;
-                                account.network = params.network;
-                                account.symbol = params.symbol;
-                                account.transactions = [];
-                                account.balance = '';
-                                account.unlock = true;
-                                account.open = false;
-                                account.hide = true;
-                                account.refresh = false;
-                                this.accounts.push(account);
-                                resolve(account);
-                            } else { reject(this.trans
-                                .translate('err.eth_account_open_error')); }
-                        });
-                    } catch (e) { reject(e.message); }
-
-                };
+                 Utils.readKeyFile(params.keyFile)
+                     .then(keyFile => {
+                         return this.currentAccount
+                             .recoveryFromKeyObject(params['passphrase'], keyFile);
+                     })
+                     .then(rec => {
+                         if (!rec) {
+                             return reject('err.account_recovery_error');
+                         } else {
+                             return resolve(true);
+                         }
+                     })
+                     .catch(err => {
+                         return reject(err.message);
+                     });
             } catch (err) { reject(err.message); }
         });
     }
@@ -871,63 +815,16 @@ export class AccountsService {
             }
         });
     }
-    _createETHAccount(params: any) {
-        const self = this;
-        return new Promise((resolve, reject) => {
-            try {
-                const opts = { keyBytes: 32, ivBytes: 16 },
-                    dk = Keythe.create(opts),
-                    options = {
-                        kdf: 'scrypt', // ,'pbkdf2',
-                        cipher: 'aes-128-ctr',
-                        kdfparams: {
-                            n: 262144,
-                            dklen: 32,
-                            p: 8,
-                            r: 1
-                            // prf: 'hmac-sha256' somePass1Wf
-                        }
-                    },
-                    keyFile = Keythe.dump(
-                        params.passphrase,
-                        dk.privateKey,
-                        dk.salt,
-                        dk.iv,
-                        options);
-                if (keyFile) {
-                    const blob = new Blob([JSON.stringify(keyFile)],
-                        {type: 'text/json'});
-                    const e = document.createEvent('MouseEvent');
-                    const a = document.createElement('a');
-                    a.download = self._keyFileName(keyFile.address);
-                    a.href = window.URL.createObjectURL(blob);
-                    a.dataset.downloadurl = ['text/json', a.download, a.href]
-                        .join(':');
-                    e.initMouseEvent('click', true,
-                        false, window,
-                        0, 0, 0, 0,
-                        0, false, false,
-                        false, false, 0,
-                        null);
-                    a.dispatchEvent(e);
-                    const account = new Account();
-                    account.address = '0x' + keyFile.address;
-                    account.key = dk;
-                    account.network = params.network;
-                    account.symbol = params.symbol;
-                    account.transactions = [];
-                    account.balance = '';
-                    account.unlock = true;
-                    account.open = false;
-                    account.hide = true;
-                    account.refresh = false;
-                    self.accounts.push(account);
-                    resolve(account);
-                } else {
-                    reject(self.trans
-                        .translate('err.eth_account_create_error')); }
-            } catch (err) { reject(err.message); }
-        });
+    async _createAccount(params: any) {
+        let account: any = {};
+        if (params.symbol === 'ETH') {
+            account = new AccountETH(params['symbol'], params['network']);
+        }
+        if (params.symbol === 'BTC') {
+            account = new AccountBTC(params['symbol'], params['network']);
+        }
+        await account.generateKeys(params['passphrase']);
+        return account;
     }
     _createBTCAccount(params: any) {
         const self = this;
@@ -1186,6 +1083,65 @@ export class AccountsService {
                 reject(e.message);
             }
         });
+    }
+    async _createETHRawTransaction(params) {
+        const verify = Utils.verifyParams(params);
+        if (!verify['status']) {
+            throw new Error(verify['error']);
+        } else {
+            const txCount = await Utils.getApi(
+                {
+                    method: 'getTransactionCount',
+                    address: this.currentAccount.address,
+                    network: this.currentAccount.network,
+                    symbol: this.currentAccount.code
+                },
+                this.http
+            );
+            const gasPriceHex = await Utils.getApi(
+                {
+                    method: 'getGasPrice',
+                    address: this.currentAccount.address,
+                    network: this.currentAccount.network,
+                    symbol: this.currentAccount.code
+                },
+                this.http
+            );
+            params.nonce = Number(txCount['data']);
+            params.gasPrice = gasPriceHex['data']['gasPrice'];
+            params.gasLimit = params['gasLimit'];
+            params.to = params['receiver'];
+            params.value = params['amount'];
+            // params.chainId = this.currentAccount.chainId;
+            return params['contract'] && params['contract'].length > 0
+                ? await this.currentAccount.createTokensERC20Transaction(params)
+                : await this.currentAccount.createSendMoneyTransaction(params);
+        }
+    }
+    async _createBTCRawTransaction(params) {
+        const opts = Object.assign({}, {
+            receiver: params['receiver'],
+            amount: params['amount'],
+            change: params['change'],
+            utxo: []
+        });
+        const verify = Utils.verifyParams(opts);
+        if (!verify['status']) {
+            throw new Error(verify['error']);
+        } else {
+            const utxo = await Utils.getApi(
+                {
+                    method: 'getUTXOS',
+                    address: this.currentAccount.address,
+                    network: this.currentAccount.network,
+                    symbol: this.currentAccount.code
+                },
+                this.http
+            );
+            opts.utxo.concat(utxo['data']);
+            // params.chainId = this.currentAccount.chainId;
+            return await this.currentAccount.createSendMoneyTransaction(opts);
+        }
     }
     _keyFileName (address: string): string {
         const cd = new Date();

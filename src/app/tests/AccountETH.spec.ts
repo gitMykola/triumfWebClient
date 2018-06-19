@@ -1,19 +1,5 @@
 import AccountETH from '../lib/accountETH';
-// import {async} from 'rxjs/scheduler/async';
-import Utils from '../lib/utils';
-import { async, TestBed } from '@angular/core/testing';
 import * as testData from '../tests/testDataETH.json';
-import {BrowserDynamicTestingModule, platformBrowserDynamicTesting} from '@angular/platform-browser-dynamic/testing';
-import {HttpClient, HttpClientModule} from '@angular/common/http';
-
-beforeEach(async(() => {
-    TestBed.resetTestEnvironment();
-    TestBed
-        .initTestEnvironment(BrowserDynamicTestingModule, platformBrowserDynamicTesting())
-        .configureTestingModule({
-            imports: [ HttpClientModule ]
-        });
-}));
 
 describe('TransactionETH Object', () => {
     it('generateKeys', async () => {

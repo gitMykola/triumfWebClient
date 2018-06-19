@@ -19,6 +19,9 @@ const AccountETH = function(currencyCode: string, network: string) {
     this.transactionCommonCount = 0;
     this.transactions = [TransactionETH];
     this.transfersERC20 = [TransfersERC20];
+    this.open = false;
+    this.refresh = false;
+    this.decimals = 1e18;
 };
 /****************************************************************************************
  * @summary Generate account private & public keys, create public address & etc...
@@ -46,7 +49,7 @@ AccountETH.prototype.generateKeys = async function(passphrase: string) {
  * */
 AccountETH.prototype.recoveryFromKeyObject = async function(passphrase: string, keyObject: any) {
     this.keys.private = await Keythe.recover(passphrase, keyObject);
-    this.address = keyObject.address;
+    this.address = '0x' + keyObject.address;
     return true;
 };
 /****************************************************************************************

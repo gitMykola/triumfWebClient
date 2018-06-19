@@ -55,7 +55,7 @@ export class StartComponent implements OnInit {
                 Validators.maxLength(256)]],
             keyfile: ['', [Validators.required]],
             advanced: false,
-            ammount: ['', [Validators.required, Validators.min(0),
+            amount: ['', [Validators.required, Validators.min(0),
                 Validators.max(1e18)]],
             gas: ['', [Validators.required, Validators.min(0),
                 Validators.max(1e18)]],
@@ -82,24 +82,22 @@ export class StartComponent implements OnInit {
         }
     }
     openFirst(account: any) {
-        const self = this;
+        this.aService.currentAccount = account;
+        account.open = !account.open;
         if (!account.open) {
+            this.wait = true;
             this.refreshAccount(account);
-            if (!account.open) { account.open = true; }
         }
     }
     refreshAccount(account: any) {
-        const self = this;
         account.refresh = true;
-            self.aService.getAccountTransactions(account)
-                .then(() => self.aService.getAccountBalance(account))
-                .then((b) => {
-                    console.dir(account);
+            this.aService.refreshAccount()
+                .then(() => {
                     account.refresh = false;
                 })
                 .catch(err => {
-                    this.error = err;
                     account.refresh = false;
+                    this.error = err.message;
                 });
     }
     addAccount(accSymbol: string, network: string) {
@@ -164,7 +162,7 @@ export class StartComponent implements OnInit {
                             self.aForm.error = self.trans.translate('err.wrong_receiver');
                             return false;
                         }
-                        if (self.addForm.get('ammount').status === 'INVALID') {
+                        if (self.addForm.get('amount').status === 'INVALID') {
                             self.aForm.error = self.trans.translate('err.wrong_ammount');
                             return false;
                         }
@@ -172,10 +170,11 @@ export class StartComponent implements OnInit {
                             self.addForm.get('gas').status === 'INVALID') {
                             self.aForm.error = self.trans.translate('err.wrong_gas');
                             return false;
-                        }
+                        } console.dir(self.addForm.controls);
                         if (self.selectedCurrency === 'ETH' &&
-                            self.addForm.get('contract').value.length > 0 &&
-                            self.addForm.get('contract').status === 'INVALID') {
+                            self.addForm.controls.contract.value &&
+                            self.addForm.controls.contract.value.length > 0 &&
+                            self.addForm.controls.contract.status === 'INVALID') {
                             self.aForm.error = self.trans.translate('err.wrong_contract');
                             return false;
                         }
@@ -267,7 +266,7 @@ export class StartComponent implements OnInit {
             console.dir(self.aForm.next);
         };
         self.aForm.open = function (files) {
-            self.wait = true;
+            self.wait = true; console.dir(files.target.files[0]);
             const params = {
                 passphrase: self.addForm.get('passphrase').value,
                 symbol: self.selectedCurrency,
@@ -278,13 +277,14 @@ export class StartComponent implements OnInit {
                     .then(account => {
                         self.wait = false;
                         self.aForm.error = null;
-                        const acc: any = account;
-                        if (acc.address) {
-                            self.accounts[params.symbol].push(acc);
-                        }
+                        // const acc: any = account;
+                        // if (acc.address) {
+                        console.dir(account);
+                            self.accounts[params.symbol].push(account);
+                        // }
                         self.aForm.close();
                     })
-                    .catch(err => {
+                    .catch(err => {console.dir(err);
                         self.wait = false;
                         self.aForm.error = self.trans
                             .translate('err.account_open_error') + ' ' + err;
@@ -331,14 +331,15 @@ export class StartComponent implements OnInit {
         self.aForm.createRawTx = function () {
             self.aForm.rawTx = null;
             const opts: any = {};
-            opts.symbol = self.aForm.sender.symbol;
-            opts.network = self.aForm.sender.network;
-            opts.sender = self.aForm.sender.address;
+            opts.symbol = self.aService.currentAccount.code;
+            opts.network = self.aService.currentAccount.network;
+            opts.sender = self.aService.currentAccount.address;
             opts.receiver = self.addForm.get('receiver').value;
-            opts.ammount = self.addForm.get('ammount').value;
-            opts.gas = self.addForm.get('gas').value;
+            opts.amount = self.addForm.get('amount').value;
+            opts.gasLimit = self.addForm.get('gas').value;
             opts.change = self.addForm.get('change').value;
-            if (self.addForm.controls['contract'].value.length > 0) {
+            if (self.addForm.controls['contract'].value
+                && self.addForm.controls['contract'].value.length > 0) {
                 opts.contract = self.addForm.controls['contract'].value;
             }
             console.dir(opts);
@@ -354,29 +355,30 @@ export class StartComponent implements OnInit {
         self.aForm.sendRawTx = function () {
             self.aForm.txHash = null;
             self.aService.sendTx({
-                symbol: self.aForm.sender.symbol,
-                network: self.aForm.sender.network,
+                symbol: self.aService.currentAccount.code,
+                network: self.aService.currentAccount.network,
                 hex: self.aForm.rawTx,
             }, res => {
                 self.wait = false;
-                console.dir(res);
                 if (res.err) {
                     self.aForm.error = self.trans.translate('err.sending_transaction_error')
                     + ' ' + res.err;
                 } else {
-                    self.aForm.txHash = (self.aForm.sender.symbol === 'ETH') ? res.txid.hash : res.txid;
+                    self.aForm.txHash = res.hash || res.txid;
                 }
             });
         };
     }
-    toDateString(date: Date): string {
+    toDateString(data: any): string {
+        const date = new Date(data);
         const days = (date.getDate().toString().length < 2) ? '0' + date.getDate()
                 : date.getDate(),
             month = ((date.getMonth() + 1).toString().length < 2) ? '0' + (date.getMonth() + 1)
                 : (date.getMonth() + 1);
         return days + '.' + month + '.' + date.getFullYear();
     }
-    toTimeString(date: Date): string {
+    toTimeString(data: any): string {
+        const date = new Date(data);
         const hours = (date.getHours().toString().length < 2) ? '0' + date.getHours()
             : date.getHours(),
             minutes = (date.getMinutes().toString().length < 2) ? '0' + date.getMinutes()
