@@ -1,5 +1,6 @@
 import { config } from '../config';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
+import {Account} from './account';
 
 export default {
     config: config(),
@@ -21,6 +22,18 @@ export default {
                 return (typeof value === 'string'
                     && value.length >= 32 && value.length <= 128);
             },
+            sender: value => {
+                return (typeof value === 'string'
+                    && value.length >= 32 && value.length <= 128);
+            },
+            receiver: value => {
+                return (typeof value === 'string'
+                    && value.length >= 32 && value.length <= 128);
+            },
+            contract: value => {
+                return (typeof value === 'string'
+                    && value.length >= 32 && value.length <= 128);
+            },
             hash: value => {
                 return (typeof value === 'string');
             },
@@ -32,6 +45,14 @@ export default {
             },
             value: value => {
                 return (typeof value === 'string');
+            },
+            amount: value => {
+                return (typeof value === 'number'
+                && value > 0);
+            },
+            gasLimit: value => {
+                return (typeof value === 'number'
+                    && value > 0);
             },
             short_hash: value => {
                 return (typeof value === 'string');
@@ -55,11 +76,22 @@ export default {
             },
             method: value => {
                 return (typeof value === 'string');
+            },
+            change: value => {
+                return (typeof value === 'string'
+                    && value.length >= 32 && value.length <= 128);
+            },
+            hex: value => {
+                return (typeof value === 'string'
+                    && value.length > 0 && value.length <= 65000);
+            },
+            utxo: value => {
+                return (typeof value === 'object');
             }
         };
         for (const field in params) {
             if (!verifySet[field] || !verifySet[field](params[field])) {
-                return {status: false, error: field};
+                return {status: false, error: 'Error field: ' + field};
             }
         }
         return {status: true};
@@ -117,6 +149,19 @@ export default {
                         }
                     });
                 },
+                getGasPrice: async opts => {
+                    return new Promise(resolve => {
+                        try {
+                            const url = self.config.app.apiURL + opts.symbol +
+                                '/getGasPrice';
+                            http.get(url, httpOptions).subscribe(response => {
+                                return resolve({status: true, data: response});
+                            });
+                        } catch (err) {
+                            return resolve({status: false, error: err.message});
+                        }
+                    });
+                },
                 getPriceLimit: async opts => {
                     return new Promise(resolve => {
                         try {
@@ -138,7 +183,7 @@ export default {
                             http.get(url, httpOptions).subscribe(response => {
                                 return resolve({status: true, data: response});
                             });
-                        } catch (err) {
+                        } catch (err) {console.dir(err);
                             return resolve({status: false, error: err.message});
                         }
                     });
@@ -149,7 +194,7 @@ export default {
                             const url = self.config.app.apiURL + opts.symbol +
                                 '/getTransactionCount/' + opts.address;
                             http.get(url, httpOptions).subscribe(response => {
-                                return resolve({status: true, data: response});
+                                return resolve({status: true, data: response['TransactionCount']});
                             });
                         } catch (err) {
                             return resolve({status: false, error: err.message});
@@ -195,7 +240,7 @@ export default {
                 ((cd.getMilliseconds().toString().length === 2) ? '0' + cd.getMilliseconds().toString()
                     : cd.getMilliseconds().toString());
             const filename = 'UTC--' + cd.getFullYear() + '-'
-                + month + '- ' + days + 'T' + hours + ':' + mins + ':' + seconds + '.' + mseconds +
+                + month + '-' + days + 'T' + hours + ':' + mins + ':' + seconds + '.' + mseconds +
                 'Z--' + address;
             return {status: true, fileName: filename};
         } catch (error) {
@@ -226,8 +271,26 @@ export default {
                 false, false, 0,
                 null);
             a.dispatchEvent(e);
+            return fn;
         } catch (error) {
             return {status: false, error: error.message};
         }
+    },
+    readKeyFile: function (file: File) {
+        return new Promise((resolve, reject) => {
+            try {
+                const reader = new FileReader();
+                reader.readAsText(file);
+                reader.onload = (event) => {
+                    try {
+                        const keyFile = JSON.parse(event['target']['result']);
+                        return resolve(keyFile);
+                    } catch (err) { reject(err.message); }
+
+                };
+            } catch (error) {
+                return reject(error.message);
+            }
+        });
     }
 };

@@ -29,8 +29,8 @@ const TransactionBTC = Object.assign({
     feeRate: Big.ZERO,
     timestamp: Date,
     blockheight: 0,
-    vin: {},
-    vout: {},
+    vin: [],
+    vout: [],
     sumVout: Big.ZERO
 }, Transaction);
 

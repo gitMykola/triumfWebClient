@@ -34,7 +34,7 @@
             </button>
             <ngb-accordion>
                 <ngb-panel *ngFor="let acc of accounts[curr.symbol]">
-                    <ng-template *ngIf="acc.symbol === curr.symbol" ngbPanelTitle>
+                    <ng-template *ngIf="acc.code === curr.symbol" ngbPanelTitle>
                         <div class="row" (click)="openFirst(acc)">
                         <p class="t-long-string col-sm-8" title="{{acc.address}}">
                             {{acc.address}}
@@ -48,7 +48,7 @@
                         </div>
                         </div>
                     </ng-template>
-                    <ng-template *ngIf="acc.symbol === curr.symbol" ngbPanelContent>
+                    <ng-template *ngIf="acc.code === curr.symbol" ngbPanelContent>
                         <div class="btn-group col-sm-12 t-txpanel">
                             <button (click)="aForm.openSend(acc)" class="btn fa" title="{{trans.translate('labels.send_money')}}">
                                 <span>{{trans.translate('labels.send_money')}}</span>
@@ -63,26 +63,26 @@
                             </button>
                         </div>
                             <div class="txs-header row">
-                                <p *ngIf="acc.symbol === 'ETH'"
+                                <p *ngIf="acc.code === 'ETH'"
                                    class="col-12 col-md-4 t-hash">{{trans.translate('labels.hash')}}</p>
-                                <p *ngIf="acc.symbol !== 'ETH'"
+                                <p *ngIf="acc.code !== 'ETH'"
                                    class="col-12 col-md-4 t-id">{{trans.translate('labels.id')}}</p>
                                 <p class="col-3 col-md-2 t-date">{{trans.translate('labels.date')}}</p>
                                 <p class="col-3 col-md-2 t-time">{{trans.translate('labels.time')}}</p>
                                 <p class="col-6 col-md-4 t-ammount">{{trans.translate('labels.ammount')}}</p>
                             </div>
                             <div class="txs-row row" *ngFor="let tx of acc.transactions">
-                                <p *ngIf="acc.symbol === 'ETH'" class="col-12 col-md-4 t-long-string t-hash"
+                                <p *ngIf="acc.code === 'ETH'" class="col-12 col-md-4 t-long-string t-hash"
                                    title={{tx.hash}} (click)="openTx(tx)">
                                     {{tx.hash}}</p>
-                                <p *ngIf="acc.symbol !== 'ETH'" class="col-12 col-md-4 t-long-string t-id"
+                                <p *ngIf="acc.code !== 'ETH'" class="col-12 col-md-4 t-long-string t-id"
                                    title={{tx.id}} (click)="openTx(tx)">{{tx.id}}</p>
-                                <p class="col-3 col-md-2 t-date">{{toDateString(tx.time)}}</p>
-                                <p class="col-3 col-md-2 t-time">{{toTimeString(tx.time)}}</p>
-                                <p *ngIf="acc.symbol === 'ETH'"
+                                <p class="col-3 col-md-2 t-date">{{toDateString(tx.timestamp)}}</p>
+                                <p class="col-3 col-md-2 t-time">{{toTimeString(tx.timestamp)}}</p>
+                                <p *ngIf="acc.code === 'ETH'"
                                         class="col-6 col-md-4 t-long-string t-ammount">{{tx.value}}</p>
-                                <p *ngIf="acc.symbol !== 'ETH'"
-                                   class="col-6 col-md-4 t-long-string t-ammount">{{tx.vout[0].value}}</p>
+                                <p *ngIf="acc.code !== 'ETH'"
+                                   class="col-6 col-md-4 t-long-string t-ammount">{{tx.vout[0] && tx.vout[0]['value']}}</p>
                             </div>
                     </ng-template>
                 </ngb-panel>
@@ -136,8 +136,8 @@
                                formControlName="receiver"/>
                     </label>
                     <label class="col-6 offset-6">{{trans.translate('labels.ammount')}}
-                        <input class="col-sm-12" type="number" name="ammount"
-                               formControlName="ammount"/>
+                        <input class="col-sm-12" type="number" name="amount"
+                               formControlName="amount"/>
                     </label>
 
                 <label class="col-sm-12">{{trans.translate('labels.advanced')}}
