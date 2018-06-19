@@ -3,6 +3,7 @@ import Utils from '../lib/utils';
 import * as Bitcore from 'bitcore-lib';
 import {Buffer} from 'buffer';
 import * as crypto from 'crypto-browserify';
+import * as Big from 'bignumber.js';
 
 const AccountBTC = function(currencyCode: string, network: string) {
     this.code = currencyCode;
@@ -48,7 +49,7 @@ AccountBTC.prototype.generateKeys = async function(passphrase: string) {
  *                       )
  * */
 AccountBTC.prototype.recoveryFromKeyObject = async function(passphrase: string, keyObject: any) {
-    let dKey, decifer: any = {};console.dir(keyObject);
+    let dKey, decifer: any = {};
     decifer = crypto.createDecipher(
         keyObject.calg,
         passphrase);
@@ -92,12 +93,27 @@ AccountBTC.prototype.saveToKeyObject = function(passphrase: string) {
  *               reject - error - Object, unsuccess recovering
  *                       )
  * */
-AccountBTC.prototype.createSendMoneyTransaction = async function(params) {
+AccountBTC.prototype.createSendMoneyTransaction = async function(params) {console.dir(params);
+    console.dir(this);
     const tx = Bitcore.Transaction();
-    tx.from(params['utxo']);
-    tx.to(params['receiver'], params['amount'] * this.decimals);
-    tx.change(params['change']);console.dir(tx);
-    tx.sign(Bitcore.PrivateKey.fromWIF(this.keys.private));
+    const dec = new Big(this.decimals);
+    const utxos = [];
+    params['utxo'].forEach(utxo => {
+        const uAmount = new Big(utxo.amount);
+        utxos.push({
+            txId : utxo.txid,
+            outputIndex : utxo.vout,
+            address : utxo.address,
+            script : utxo.scriptPubKey,
+            satoshis : parseInt(uAmount.mul(dec).toString(), 10)
+        });
+    });
+    const amount = new Big(params['amount']);
+    tx.from(utxos);
+    tx.to(params['receiver'], parseInt(amount.mul(dec).toString(), 10));
+    tx.change(params['change']);
+    const pKey = Bitcore.PrivateKey.fromWIF(this.keys.private);
+    tx.sign(pKey);
     return tx.serialize();
 };
 

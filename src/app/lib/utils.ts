@@ -203,22 +203,23 @@ export default {
                 },
                 getUTXOS: async opts => {
                     return new Promise(resolve => {
-                    try {
-                        const url = self.config.app.apiURL + opts.symbol +
-                            '/getUTXOs/' + opts.address;
-                        http.get(url, httpOptions).subscribe(response => {
-                            return resolve({status: true, data: response});
-                        });
-                    } catch (err) {
-                        return resolve({status: false, error: err.message});
-                    }
-                });}
+                        try {
+                            const url = self.config.app.apiURL + opts.symbol +
+                                '/getUTXOs/' + opts.address;
+                            http.get(url, httpOptions).subscribe(response => {
+                                return resolve({status: true, data: response});
+                            });
+                        } catch (err) {
+                            return resolve({status: false, error: err.message});
+                        }
+                    });
+                }
             };
             if (typeof apis[params.method] !== 'function') {
                 return {status: false, error: 'method_not_found'};
             }
             return await apis[params.method](params);
-        } catch (error) {
+        } catch (error) {console.dir(error);
             return error;
         }
     },

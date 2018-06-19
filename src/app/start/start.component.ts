@@ -226,9 +226,14 @@ export class StartComponent implements OnInit {
                         }
                         break;
                     case 5:
-                        self.aForm.step += 1;
-                        self.wait = true;
-                        self.aForm.sendRawTx();
+                        try {
+                            self.aForm.step += 1;
+                            self.wait = true;
+                            self.aForm.sendRawTx();
+                        } catch (error) {
+                            self.wait = false;
+                            console.dir(error);
+                        }
                         break;
                     case 6:
                         self.aForm.next = false;
@@ -277,11 +282,8 @@ export class StartComponent implements OnInit {
                     .then(account => {
                         self.wait = false;
                         self.aForm.error = null;
-                        // const acc: any = account;
-                        // if (acc.address) {
                         console.dir(account);
                             self.accounts[params.symbol].push(account);
-                        // }
                         self.aForm.close();
                     })
                     .catch(err => {console.dir(err);
@@ -354,19 +356,23 @@ export class StartComponent implements OnInit {
         };
         self.aForm.sendRawTx = function () {
             self.aForm.txHash = null;
-            self.aService.sendTx({
-                symbol: self.aService.currentAccount.code,
-                network: self.aService.currentAccount.network,
-                hex: self.aForm.rawTx,
-            }, res => {
-                self.wait = false;
-                if (res.err) {
-                    self.aForm.error = self.trans.translate('err.sending_transaction_error')
-                    + ' ' + res.err;
-                } else {
-                    self.aForm.txHash = res.hash || res.txid;
-                }
-            });
+            try {
+                self.aService.sendTx({
+                    symbol: self.aService.currentAccount.code,
+                    network: self.aService.currentAccount.network,
+                    hex: self.aForm.rawTx,
+                }, res => {
+                    self.wait = false;
+                    if (res.err) {
+                        self.aForm.error = self.trans.translate('err.sending_transaction_error')
+                            + ' ' + res.err;
+                    } else {
+                        self.aForm.txHash = res.hash || res.txid;
+                    }
+                });
+            } catch (error) {
+                console.dir(error);
+            }
         };
     }
     toDateString(data: any): string {
