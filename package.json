@@ -47,6 +47,7 @@
     "jsonfile": "^4.0.0",
     "keythereum": "^1.0.2",
     "litecore-lib": "^0.13.22",
+    "npm": "^6.1.0",
     "rxjs": "^5.5.6",
     "scryptsy": "^2.0.0",
     "zcash-bitcore-lib": "^0.13.20-rc3",
