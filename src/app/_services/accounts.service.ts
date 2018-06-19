@@ -2,9 +2,6 @@ import { Injectable } from '@angular/core';
 import { Account } from '../lib/account';
 import { config } from '../config';
 import {TranslatorService} from '../translator';
-import * as Keythe from '../../../node_modules/keythereum';
-import * as EthTx from '../../../node_modules/ethereumjs-tx';
-import * as EthUtils from 'ethjs-util';
 import {Buffer} from 'buffer';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import * as Bitcore from 'bitcore-lib';
@@ -204,8 +201,10 @@ export class AccountsService {
             opts.network = params.network || null;
             opts.method = 'getTransaction';
             self._verifyAccountParams(opts)
-                .then(() => self._getApi_P(opts))
-                .then(tx => resolve(tx))
+                .then(() => {
+                    return Utils.getApi(opts, this.http);
+                })
+                .then(tx => resolve(tx['data']))
                 .catch(err => reject(err));
         });
     }
@@ -230,7 +229,7 @@ export class AccountsService {
                         next({err: error});
                     });
                 break;
-            case 'BTG':
+            /*case 'BTG':
                 this._getApi({
                     method: 'getUTXOS',
                     symbol: params.symbol,
@@ -255,10 +254,6 @@ export class AccountsService {
                         tx.sign(key); console.dir(key);
                         console.log(tx.serialize());
                         next({tx: tx.serialize()});
-                        /*} catch (e) {
-                            console.log(e.message);
-                            next({err: this.trans.translate('err.raw_tx_error')});
-                        }*/
                     }
                 });
                 break;
@@ -269,16 +264,11 @@ export class AccountsService {
                     network: params.network,
                     address: params.sender
                 }, ut => {
-                    /*if (!ut || !ut.utxos) {
-                        next({err: this.trans.translate('err.server_connection_error')});
-                    } else
- */{
+                    {
                          try {
                         console.dir(ut);
                         const tx = new bitcash.Transaction();
                         tx.from(ut);
-                        /*const from = JSON.parse('[{"address":"13JUK6jdtshv6evj8giRaDgR5dw4WQM5jG","txid":"87329fae502377053b4d1f24daad70a94cf21cc4aa2f084ea584fe51104a4060","vout":1,"scriptPubKey":"76a914193e1f32ccc25ee0f225243492e24ab19e8ceacb88ac","amount":0.0128777}]');
-                        tx.from(from);*/
                         tx.to(params.receiver, params.amount * 1e8);
                         tx.change(params.change);
                         //tx.change('1KQ4GHZZkTavf1uZ9d7jT8wcpcF8o14FLE');
@@ -321,13 +311,9 @@ export class AccountsService {
                         tx.sign(key);
                         console.log(tx.serialize());
                         next({tx: tx.serialize()});
-                        /*} catch (e) {
-                            console.log(e.message);
-                            next({err: this.trans.translate('err.raw_tx_error')});
-                        }*/
                     }
                 });
-                break;
+                break;*/
             default:
                 next({err: this.trans.translate('err.raw_tx_error')});
                 break;
@@ -352,10 +338,10 @@ export class AccountsService {
                 if (res.err) {
                     next({err: res.err});
                 } else {
-                    next({txid: res.txid});
+                    next({txid: res['data']['txid']});
                 }
             }
-        }).catch(err => {
+        }).catch(err => {console.dir(err);
             next({err: err.message});
         });
     }
@@ -826,7 +812,7 @@ export class AccountsService {
         await account.generateKeys(params['passphrase']);
         return account;
     }
-    _createBTCAccount(params: any) {
+    /*_createBTCAccount(params: any) {
         const self = this;
         return new Promise((resolve, reject) => {
             try {
@@ -926,11 +912,6 @@ export class AccountsService {
         const self = this;
         return new Promise((resolve, reject) => {
             try {
-                /*const key = Bitcore.crypto.BN.fromBuffer(
-                    Bitcore.crypto.Hash.sha256(
-                        Buffer.from(params.passphrase)
-                    )
-                );*/
                 const key = blib.ECPair.makeRandom({
                     rng: () => Buffer.from(crypto.randomBytes(32)),
                     network: {
@@ -1083,7 +1064,7 @@ export class AccountsService {
                 reject(e.message);
             }
         });
-    }
+    }*/
     async _createETHRawTransaction(params) {
         const verify = Utils.verifyParams(params);
         if (!verify['status']) {
@@ -1137,285 +1118,10 @@ export class AccountsService {
                     symbol: this.currentAccount.code
                 },
                 this.http
-            );
-            opts.utxo.concat(utxo['data']);
+            );console.dir(utxo);
+            opts.utxo = utxo['data']['utxos'];
             // params.chainId = this.currentAccount.chainId;
             return await this.currentAccount.createSendMoneyTransaction(opts);
         }
-    }
-    _keyFileName (address: string): string {
-        const cd = new Date();
-        const month = ((cd.getMonth() + 1).toString().length === 1) ?
-            '0' + (cd.getMonth() + 1).toString() : (cd.getMonth() + 1).toString();
-        const days = (cd.getDate().toString().length === 1) ?
-            '0' + cd.getDate().toString() : cd.getDate().toString();
-        const hours = (cd.getHours().toString().length === 1) ?
-            '0' + cd.getHours().toString() : cd.getHours().toString();
-        const mins = (cd.getMinutes().toString().length === 1) ?
-            '0' + cd.getMinutes().toString() : cd.getMinutes().toString();
-        const seconds = (cd.getSeconds().toString().length === 1) ?
-            '0' + cd.getSeconds().toString() : cd.getSeconds().toString();
-        const mseconds = (cd.getMilliseconds().toString().length === 1) ?
-            '00' + cd.getMilliseconds().toString() :
-            ((cd.getMilliseconds().toString().length === 2) ? '0' + cd.getMilliseconds().toString()
-                : cd.getMilliseconds().toString());
-        const filename = 'UTC--' + cd.getFullYear() + '-'
-            + month + '- ' + days + 'T' + hours + ':' + mins + ':' + seconds + '.' + mseconds +
-            'Z--' + address;
-        return filename;
-    }
-    _getApi(opts: any, next: any) {
-        const self = this;
-        opts.url = this._config.app.apiURL;
-        opts.headers = {
-            headers: new HttpHeaders()
-                .set('Content-Type', 'application/json')
-        };
-        if (!opts.method || !opts.symbol || !opts.network) {
-            next(null);
-        } else {
-            try {
-                switch (opts.method) {
-                    case 'getBalance': {
-                        const url = opts.symbol === 'ETH' ? opts.url + opts.symbol +
-                            '/getBalance/' + opts.address :
-                            opts.url + opts.symbol +
-                            '/getBalance/' + opts.address;
-                        self.http.get(url,
-                            opts)
-                            .subscribe(response => {console.dir(response);
-                                next(response ? {balance: response['balance']} : null);
-                            });
-                        break;
-                    }
-                    case 'getTransactions': {
-                        console.log('step11');
-                        self.http.get(opts.url + opts.symbol +
-                            '/getTxList/' + opts.address,
-                            opts)
-                            .subscribe(response => {console.dir(response);
-                                next(response ? response : null);
-                            });
-                        break;
-                    }
-                    case 'getTransaction': {
-                        switch (opts.symbol) {
-                            case 'ETH':
-                                self.http.get(opts.url + opts.symbol +
-                                    '/getTransactionByHash/' + opts.hash,
-                                    opts)
-                                    .subscribe(response => {console.dir(response);
-                                        next(response ? response : null);
-                                    });
-                                break;
-                            case 'BTC':
-                                self.http.get(opts.url + opts.symbol +
-                                    '/getTransactionById/' + opts.id,
-                                    opts)
-                                    .subscribe(response => {console.dir(response);
-                                        next(response ? response : null);
-                                    });
-                                break;
-                            default:
-                                next(null);
-                                break;
-                        }
-                        break;
-                    }
-                    case 'getPriceLimit': {
-                        self.http.get(opts.url + opts.symbol + '/getPriceLimit',
-                            opts)
-                            .subscribe(response => {console.dir(response);
-                                next(response ? response : null);
-                            });
-                        break;
-                    }
-                    case 'sendRawTransaction': {
-                        if (opts.symbol === 'EHT') {
-                            self.http.get(opts.url + opts.symbol + '/sendRawTransaction/' +
-                                opts.hex,
-                                opts)
-                                .subscribe(response => { console.dir(response);
-                                    next({hash: response ? response : null, err: null});
-                                }, err => {
-                                    if (err.error && err.error.hs && err.error.hs.err) {
-                                        next({hash: null, err: err.error.hs.err});
-                                    }
-                                });
-                        } else {
-                            self.http.get(opts.url + opts.symbol + '/sendRawTransaction/' +
-                                opts.hex,
-                                opts)
-                                .subscribe(response => { console.dir(response);
-                                    next({txid: response ? response : null, err: null});
-                                }, err => {
-                                    if (err.error && err.error.hs && err.error.hs.err) { // TODO check error response
-                                        next({txid: null, err: err.error.hs.err});
-                                    }
-                                });
-                        }
-                        break;
-                    }
-                    case 'getTransactionCount': {
-                        console.log(opts.url + opts.symbol + '/getTransactionCount/' +
-                            opts.address);
-                        self.http.get(opts.url + opts.symbol + '/getTransactionCount/' +
-                            opts.address,
-                            opts)
-                            .subscribe(response => {console.dir(response);
-                                next(response ? response : null);
-                            });
-                        break;
-                    }
-                    case 'getUTXOS':
-                        console.log(opts.url + opts.symbol + '/UTXOs/' +
-                        opts.address);
-                        self.http.get(opts.url + opts.symbol + '/getUTXOs/' +
-                            opts.address, opts)
-                            .subscribe(response => {
-                                console.dir(response['utxos']);
-                                next(response['utxos']);
-                            });
-                        break;
-                    default: next(null);
-                }
-            } catch (err) {
-                this.error(err.message);
-                next(null);
-            }
-        }
-    }
-    _getApi_P(opts: any) {
-        const self = this;
-        opts.url = this._config.app.apiURL;
-        opts.headers = {
-            headers: new HttpHeaders()
-                .append('Content-Type', 'application/json')
-        };
-        return new Promise((resolve, reject) => {
-            if (!opts.method) {reject('Error method.'); }
-            if (!opts.symbol) {reject('Error symbol.'); }
-            if (!opts.network) {reject('Error network.'); }
-            switch (opts.method) {
-                case 'getBalance': {
-                    const url = opts.url + opts.symbol +
-                        '/getBalance/' + opts.address;
-                        self.http.get(url, opts)
-                            .subscribe(response => {
-                                response ?
-                                        resolve({balance: response['balance']})
-                                    : reject(null);
-                                });
-                            break;
-                        }
-                case 'getTransactions': {
-                    console.log(opts.url + opts.symbol +
-                        (opts.symbol === 'ETH' ? '/getTransactionsList/' : '/getTxList/') + opts.address);
-                    self.http.get(opts.url + opts.symbol +
-                        (opts.symbol === 'ETH' ? '/getTransactionsList/' : '/getTxList/') + opts.address, opts)
-                    .subscribe(response => {console.dir(response);
-                    response ? resolve(response)
-                        : reject(null);
-                        });
-                    break;
-                    }
-                case 'getTransaction': {
-                    switch (opts.symbol) {
-                        case 'ETH':
-                            self.http.get(opts.url + opts.symbol +
-                            '/getTransactionByHash/' + opts.hash, opts)
-                            .subscribe(response => {console.dir(response);
-                                response ? resolve(response)
-                                    : reject(null);
-                                });
-                            break;
-                        case 'BTC':
-                            self.http.get(opts.url + opts.symbol +
-                            '/getTransactionById/' + opts.id, opts)
-                            .subscribe(response => {console.dir(response);
-                                response ? resolve(response)
-                                    : reject(null);
-                                });
-                            break;
-                        default:
-                            reject(null);
-                            break;
-                            }
-                            break;
-                        }
-                case 'getPriceLimit': {
-                    self.http.get(opts.url + opts.symbol + '/getPriceLimit', opts)
-                    .subscribe(response => {console.dir(response);
-                        response ? resolve(response)
-                            : reject(null);
-                        });
-                    break;
-                        }
-                case 'sendRawTransaction': {
-                    if (opts.symbol === 'EHT') {
-                        self.http
-                            .get(opts.url +
-                                    opts.symbol +
-                                    '/sendRawTransaction/' +
-                                    opts.hex,
-                                    opts)
-                            .subscribe(response => {
-                                resolve({hash: response ? response : null});
-                                    },
-                                    err => {
-                                        if (err.error && err.error.hs && err.error.hs.err) {
-                                            reject({err: err.error.hs.err});
-                                        } else { reject({err: null}); }
-                                    });
-                    } else {
-                        self.http
-                            .get(opts.url +
-                                    opts.symbol +
-                                    '/sendRawTransaction/' +
-                                    opts.hex,
-                                    opts)
-                            .subscribe(response => { console.dir(response);
-                                resolve({txid: response ? response : null});
-                                    },
-                                    err => {
-                                        if (err.error && err.error.hs && err.error.hs.err) { // TODO check error response
-                                            reject({ err: err.error.hs.err});
-                                        } else { reject({err: null}); }
-                                    });
-                            }
-                            break;
-                        }
-                case 'getTransactionCount': {
-                    console.log(opts.url + opts.symbol + '/getTransactionCount/' +
-                                opts.address);
-                    self.http
-                        .get(opts.url +
-                                opts.symbol +
-                                '/getTransactionCount/' +
-                                opts.address,
-                                opts)
-                        .subscribe(response => {console.dir(response);
-                            response ? resolve(response)
-                                : reject(null);
-                                });
-                            break;
-                        }
-                case 'getUTXOS':
-                    console.log(opts.url + opts.symbol + '/UTXOs/' +
-                                opts.address);
-                    self.http
-                        .get(opts.url +
-                                opts.symbol +
-                                '/getUTXOs/' +
-                                opts.address,
-                                opts)
-                        .subscribe(response => {console.dir(response);
-                            response ? resolve(response)
-                                : reject(null);
-                                });
-                            break;
-                default: reject(null);
-                    }
-        });
     }
 }
