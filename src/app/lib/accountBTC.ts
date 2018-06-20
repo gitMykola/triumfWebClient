@@ -1,5 +1,4 @@
 import {TransactionBTC} from './transaction';
-import Utils from '../lib/utils';
 import * as Bitcore from 'bitcore-lib';
 import {Buffer} from 'buffer';
 import * as crypto from 'crypto-browserify';
@@ -93,8 +92,7 @@ AccountBTC.prototype.saveToKeyObject = function(passphrase: string) {
  *               reject - error - Object, unsuccess recovering
  *                       )
  * */
-AccountBTC.prototype.createSendMoneyTransaction = async function(params) {console.dir(params);
-    console.dir(this);
+AccountBTC.prototype.createSendMoneyTransaction = async function(params) {// console.dir(params);
     const tx = Bitcore.Transaction();
     const dec = new Big(this.decimals);
     const utxos = [];

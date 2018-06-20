@@ -1,6 +1,5 @@
 import { config } from '../config';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
-import {Account} from './account';
 
 export default {
     config: config(),
@@ -135,7 +134,7 @@ export default {
                         }
                     });
                 },
-                getTransaction: async opts => {
+                getTransaction: opts => {
                     return new Promise(resolve => {
                         try {
                             const url = self.config.app.apiURL + opts.symbol +
@@ -149,7 +148,7 @@ export default {
                         }
                     });
                 },
-                getGasPrice: async opts => {
+                getGasPrice: opts => {
                     return new Promise(resolve => {
                         try {
                             const url = self.config.app.apiURL + opts.symbol +
@@ -162,7 +161,7 @@ export default {
                         }
                     });
                 },
-                getPriceLimit: async opts => {
+                getPriceLimit: opts => {
                     return new Promise(resolve => {
                         try {
                             const url = self.config.app.apiURL + opts.symbol +
@@ -175,7 +174,7 @@ export default {
                         }
                     });
                 },
-                sendRawTransaction: async opts => {
+                sendRawTransaction: opts => {
                     return new Promise(resolve => {
                         try {
                             const url = self.config.app.apiURL + opts.symbol +
@@ -188,7 +187,7 @@ export default {
                         }
                     });
                 },
-                getTransactionCount: async opts => {
+                getTransactionCount: opts => {
                     return new Promise(resolve => {
                         try {
                             const url = self.config.app.apiURL + opts.symbol +
@@ -201,18 +200,38 @@ export default {
                         }
                     });
                 },
-                getUTXOS: async opts => {
-                    return new Promise(resolve => {
+                getUTXOS: opts => {
+                    return new Promise((resolve, reject) => {
                         try {
+                            opts.page = opts.page || 0;
                             const url = self.config.app.apiURL + opts.symbol +
-                                '/getUTXOs/' + opts.address;
+                                '/getUTXOs/' + opts.address + '/' + opts.page;
                             http.get(url, httpOptions).subscribe(response => {
-                                return resolve({status: true, data: response});
+                                return resolve(response);
                             });
                         } catch (err) {
-                            return resolve({status: false, error: err.message});
+                            return reject(err.message);
                         }
                     });
+                },
+                getAllUTXOs: async opts => {
+                    try {
+                        let utxos = [];
+                        let result = await apis.getUTXOS(opts);
+                        utxos = utxos.concat(result['utxos']);
+                        if (result['pages'] > 0) {
+                            let page = 0;
+                            while ( page <= result['pages'] ) {
+                                page++;
+                                result = await apis
+                                    .getUTXOS(Object.assign(opts, {page: page}));
+                                utxos = utxos.concat(result['utxos']);
+                            }
+                        }console.dir(utxos);
+                        return {status: true, data: utxos};
+                    } catch (error) {console.dir(error);
+                        return {status: false, error: error.message};
+                    }
                 }
             };
             if (typeof apis[params.method] !== 'function') {
