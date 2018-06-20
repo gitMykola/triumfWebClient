@@ -62,135 +62,6 @@ export class AccountsService {
             && el.symbol === opts.symbol);
         return acc.length ? acc[0] : null;
     }
-    getAccountBalance(params: any) {
-        const self = this;
-        const opts: any = {};
-        opts.address = params.address || null;
-        opts.symbol = params.symbol || null;
-        opts.network = params.network || null;
-        opts.method = 'getBalance';
-        self.infoInit();
-        return new Promise((resolve, reject) => {
-            Utils.getApi({
-                method: 'getBalance',
-                symbol: opts.symbol,
-                address: opts.address
-            }, this.http)
-                .then(bs => {
-                    const bal = bs.data || null;
-                    if (!bal) {
-                        reject(self.trans
-                            .translate('err.server_connection_error'));
-                    }
-                    this.accounts.forEach(el => {
-                        if (el.address === opts.address
-                            && el.network === opts.network
-                            && el.symbol === opts.symbol) {
-                            el.balance = bal.balance ? bal.balance : '';
-                            }
-                        });
-                    return resolve(bal);
-                    })
-                .catch(err => {
-                    return reject(err);
-                });
-        });
-    }
-    getAccountTransactions(params: any) {
-        const self = this;
-        const opts: any = {};
-        opts.address = params.address || null;
-        opts.symbol = params.symbol || null;
-        opts.network = params.network || null;
-        return new Promise((resolve, reject) => {
-            Utils.getApi({
-                        method: 'getTransactions',
-                        symbol: opts.symbol,
-                        address: opts.address
-                    }, this.http)
-                .then(data => {
-                    const txs = data.data || null;
-                    if (!txs) { reject(this.trans
-                        .translate('err.server_response_error')); }
-                    if (opts.symbol === 'ETH') {
-                        const transactions = (txs['out'] && txs['in']) ? txs['out'].map(e => {
-                            return {
-                                hash: e.hash,
-                                time: new Date(e.timestamp * 1000),
-                                value: '-' + e.value.toString()
-                            };
-                        }).concat(txs['in'].map(e => {
-                            return {
-                                hash: e.hash,
-                                time: new Date(e.timestamp * 1000),
-                                value: '+' + e.value.toString()
-                            };
-                        })) : [];
-                        this.accounts.forEach(el => {
-                            if (el.address === opts.address
-                                && el.network === opts.network
-                                && el.symbol === opts.symbol) {
-                                el.transactions = transactions
-                                    .sort((a, b) => b.time.getTime() - a.time.getTime());
-                            }
-                        });
-                        return resolve(transactions.sort((a, b) =>
-                            b.time.getTime() - a.time.getTime()));
-                    }
-                    else {
-                        if (!txs) { reject(this.trans
-                            .translate('err.server_response_error')); }
-                            try {
-                                // const trx = JSON.parse(txs.txs);
-                                // const trans = trx.txs;
-                                const trans = Array (txs); console.dir(txs);
-                                const transactions = trans.map(e => {
-                                    return {
-                                        blockheight: e['blockheight'],
-                                        id: e['txid'],
-                                        time: new Date(e['timestamp'] * 1000),
-                                        vin: e['vin'] ? e['vin'].map(el => {
-                                            return {
-                                                adress: 'addr',
-                                                value: 0,
-                                                txid: el.txid
-                                            };
-                                        }) : [{
-                                            adress: 'addr',
-                                            value: 0,
-                                            txid: 'no tx id'
-                                        }],
-                                        vout: e['vout'] ? e['vout'].map(el => {
-                                            return {
-                                                scriptPubKey : {addresses: el.scriptPubKey.addresses},
-                                                value: el.value
-                                            };
-                                        }) : [{
-                                            scriptPubKey : {addresses: ['no addresses']},
-                                            value: 0
-                                        }]
-                                    };
-                                });
-                                const toTxs = transactions.sort((a, b) =>
-                                    b.time.getTime() - a.time.getTime());
-                                self.accounts.forEach(el => {
-                                    if (el.address === opts.address
-                                        && el.network === opts.network
-                                        && el.symbol === opts.symbol) {
-                                        el.transactions = toTxs;
-                                    }
-                                });
-                                return resolve(toTxs);
-                            } catch (err) {console.dir(err);
-                            return reject(this.trans
-                                .translate('err.server_response_error')); }
-                    }
-                })
-                .catch(err => {
-                    return reject(err);
-                });
-        });
-    }
     getTx(params: any) {
         const self = this;
         return new Promise( (resolve, reject) => {
@@ -328,19 +199,13 @@ export class AccountsService {
             hex: params.hex
         }, this.http)
         .then(res => {
-            if (params.symbol === 'ETH') {
-                if (res.err) {
+            if (res.err) {
                     next({err: res.err});
                 } else {
-                    next({hash: res['data']['hash']});
+                    next( params.symbol === 'ETH'
+                        ? {hash: res['data']['hash']}
+                        : {txid: res['data']['txid']});
                 }
-            } else {
-                if (res.err) {
-                    next({err: res.err});
-                } else {
-                    next({txid: res['data']['txid']});
-                }
-            }
         }).catch(err => {console.dir(err);
             next({err: err.message});
         });
@@ -456,19 +321,20 @@ export class AccountsService {
         if (!verify['status']) {
             throw new Error(verify['error']);
         } else {
+            const eth = (this.currentAccount.code === 'ETH');
             const balance = await Utils.getApi(params, this.http);
             this.currentAccount.balance = balance['data']['balance']
-                / this.currentAccount.decimals;
+                / (eth ? this.currentAccount.decimals : 1 );
             params.method = 'getTransactions';
             const txs = await Utils.getApi(params, this.http);
-            if (this.currentAccount.code === 'ETH') {
+            if (eth) {
                 this.currentAccount.transactions = txs['data']['in']
                     .concat(txs['data']['out'])
                     .concat(txs['data']['pending_in'])
                     .concat(txs['data']['pending_out']);
             }
-            if (this.currentAccount.code === 'BTC') {
-                this.currentAccount.transactions = txs['data']['txs'];
+            if (this.currentAccount.code === 'BTC') {console.dir(txs);
+                this.currentAccount.transactions = txs['data'];
             }
             console.dir(this.currentAccount);
             return true;
@@ -1112,16 +978,19 @@ export class AccountsService {
         } else {
             const utxo = await Utils.getApi(
                 {
-                    method: 'getUTXOS',
+                    method: 'getAllUTXOs',
                     address: this.currentAccount.address,
                     network: this.currentAccount.network,
                     symbol: this.currentAccount.code
                 },
                 this.http
-            );console.dir(utxo);
-            opts.utxo = utxo['data']['utxos'];
-            // params.chainId = this.currentAccount.chainId;
-            return await this.currentAccount.createSendMoneyTransaction(opts);
+            );
+            if (!utxo['status']) {
+                throw new Error(utxo['error']);
+            } else {
+                opts.utxo = utxo['data'];
+                return await this.currentAccount.createSendMoneyTransaction(opts);
+            }
         }
     }
 }

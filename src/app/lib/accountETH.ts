@@ -1,6 +1,5 @@
 import * as Keythe from '../../../node_modules/keythereum';
 import {TransactionETH, TransfersERC20} from './transaction';
-import Utils from '../lib/utils';
 import * as EthTx from '../../../node_modules/ethereumjs-tx';
 
 const AccountETH = function(currencyCode: string, network: string) {
