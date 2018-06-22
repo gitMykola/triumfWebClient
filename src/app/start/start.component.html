@@ -153,7 +153,7 @@
                         {{trans.translate('labels.contract')}}
                         <input class="col-sm-12" type="text" name="contract" formControlName="contract"/>
                     </label>
-                    <label class="col-12" *ngIf="selectedCurrency === 'BTC'">
+                    <label class="col-12" *ngIf="selectedCurrency !== 'ETH'">
                         {{trans.translate('labels.change')}}
                         <input class="col-12" type="text" name="change"
                                formControlName="change"/>

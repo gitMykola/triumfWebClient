@@ -368,6 +368,13 @@ export class StartComponent implements OnInit {
                             + ' ' + res.err;
                     } else {
                         self.aForm.txHash = res.hash || res.txid;
+                        self.aService.getTransaction({
+                            symbol: self.aService.currentAccount.code,
+                            txid: res.txid,
+                            hash: res.hash
+                        })
+                            .then(tx => console.dir(tx))
+                            .catch(error => console.dir(error));
                     }
                 });
             } catch (error) {
