@@ -383,7 +383,7 @@ export class StartComponent implements OnInit {
         };
     }
     toDateString(data: any): string {
-        const date = new Date(data);
+        const date = new Date(data * 1000);
         const days = (date.getDate().toString().length < 2) ? '0' + date.getDate()
                 : date.getDate(),
             month = ((date.getMonth() + 1).toString().length < 2) ? '0' + (date.getMonth() + 1)
@@ -391,7 +391,7 @@ export class StartComponent implements OnInit {
         return days + '.' + month + '.' + date.getFullYear();
     }
     toTimeString(data: any): string {
-        const date = new Date(data);
+        const date = new Date(data * 1000   );
         const hours = (date.getHours().toString().length < 2) ? '0' + date.getHours()
             : date.getHours(),
             minutes = (date.getMinutes().toString().length < 2) ? '0' + date.getMinutes()

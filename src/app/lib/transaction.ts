@@ -43,7 +43,35 @@ const TransactionBCH = Object.assign({
     vout: [],
     sumVout: Big.ZERO
 }, Transaction);
+const TransactionBTG = Object.assign({
+    txid: '',
+    size: Big.ZERO,
+    feeRate: Big.ZERO,
+    timestamp: Date,
+    blockheight: 0,
+    vin: [],
+    vout: [],
+    sumVout: Big.ZERO
+}, Transaction);
+const TransactionLTC = Object.assign({
+    txid: '',
+    size: Big.ZERO,
+    feeRate: Big.ZERO,
+    timestamp: Date,
+    blockheight: 0,
+    vin: [],
+    vout: [],
+    sumVout: Big.ZERO
+}, Transaction);
 
-export { TransactionETH, TransactionBTC, Transaction, TransfersERC20, TransactionBCH };
+export {
+    TransactionETH,
+    TransactionBTC,
+    Transaction,
+    TransfersERC20,
+    TransactionBCH,
+    TransactionBTG,
+    TransactionLTC
+    };
 
 

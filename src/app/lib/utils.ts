@@ -39,6 +39,9 @@ export default {
             id: value => {
                 return (typeof value === 'string');
             },
+            txid: value => {
+                return (typeof value === 'string');
+            },
             time: value => {
                 return (typeof value === 'object');
             },

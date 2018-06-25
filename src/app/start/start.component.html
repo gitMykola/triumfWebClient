@@ -76,13 +76,15 @@
                                    title={{tx.hash}} (click)="openTx(tx)">
                                     {{tx.hash}}</p>
                                 <p *ngIf="acc.code !== 'ETH'" class="col-12 col-md-4 t-long-string t-id"
-                                   title={{tx.id}} (click)="openTx(tx)">{{tx.id}}</p>
+                                   title={{tx.txid}} (click)="openTx(tx)">{{tx.txid}}</p>
                                 <p class="col-3 col-md-2 t-date">{{toDateString(tx.timestamp)}}</p>
                                 <p class="col-3 col-md-2 t-time">{{toTimeString(tx.timestamp)}}</p>
                                 <p *ngIf="acc.code === 'ETH'"
                                         class="col-6 col-md-4 t-long-string t-ammount">{{tx.value}}</p>
-                                <p *ngIf="acc.code !== 'ETH'"
-                                   class="col-6 col-md-4 t-long-string t-ammount">{{tx.vout[0] && tx.vout[0]['value']}}</p>
+                                <span class="col-6 col-md-4" *ngIf="acc.code !== 'ETH'">
+                                    <p class="col-12 t-long-string t-ammount">{{tx.vout[0] && tx.vout[0]['value']}}</p>
+                                    <p class="col-12 t-long-string t-ammount">{{tx.vout[1] && tx.vout[1]['value']}}</p>
+                                </span>
                             </div>
                     </ng-template>
                 </ngb-panel>
@@ -198,6 +200,11 @@
                 [symbol]="selectedCurrency"
                 (onClose)="closeTx($event)"
                 *ngIf="selectedCurrency === 'BTC'"></app-tx-btc>
+    <app-tx-btc [id]="selectedTx.id"
+                [network]="networks[selectedCurrency]"
+                [symbol]="selectedCurrency"
+                (onClose)="closeTx($event)"
+                *ngIf="selectedCurrency === 'BCH'"></app-tx-btc>
     <div class="error" *ngIf="error" (click)="errorClose($event)">{{error}}</div>
 </div>
 

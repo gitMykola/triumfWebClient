@@ -14,6 +14,9 @@ import Utils from '../lib/utils';
 import AccountETH from '../lib/accountETH';
 import AccountBTC from '../lib/accountBTC';
 import AccountBCH from '../lib/accountBCH';
+import AccountBTG from '../lib/accountBTG';
+import AccountLTC from '../lib/accountLTC';
+import * as Transactions from '../lib/transaction';
 
 @Injectable()
 export class AccountsService {
@@ -264,6 +267,12 @@ export class AccountsService {
                 if (opts.symbol === 'BCH') {
                     newAccount = new AccountBCH(opts.symbol, opts.network);
                 }
+                if (opts.symbol === 'BTG') {
+                    newAccount = new AccountBTG(opts.symbol, opts.network);
+                }
+                if (opts.symbol === 'LTC') {
+                    newAccount = new AccountLTC(opts.symbol, opts.network);
+                }
                 Utils.readKeyFile(opts.keyFile)
                     .then(keyFile => {
                         if (!keyFile) {
@@ -326,7 +335,14 @@ export class AccountsService {
                     .concat(txs['data']['pending_out'])*/;
             } else
             /*if (this.currentAccount.code === 'BTC') */ { console.dir(txs);
-                this.currentAccount.transactions = txs['data']['transactions'];
+                this.currentAccount.transactions = [];
+                txs['data']['transactions'].forEach(
+                    tx => {
+                        this.currentAccount.transactions
+                            .push(Object
+                                .assign({}, Transactions['Transaction' + this
+                            .currentAccount.code], tx));
+                });
             }
             console.dir(this.currentAccount);
             return true;
@@ -682,6 +698,12 @@ export class AccountsService {
         }
         if (params.symbol === 'BCH') {
             account = new AccountBCH(params['symbol'], params['network']);
+        }
+        if (params.symbol === 'BTG') {
+            account = new AccountBTG(params['symbol'], params['network']);
+        }
+        if (params.symbol === 'LTC') {
+            account = new AccountLTC(params['symbol'], params['network']);
         }
         await account.generateKeys(params['passphrase']);
         return account;
