@@ -1,10 +1,10 @@
-import {TransactionBTC} from './transaction';
-import * as Bitcore from 'bitcore-lib';
+import {TransactionBCH} from './transaction';
+import * as Bitcash from 'bitcoincashjs';
 import {Buffer} from 'buffer';
 import * as crypto from 'crypto-browserify';
 import * as Big from 'bignumber.js';
 
-const AccountBTC = function(currencyCode: string, network: string) {
+const AccountBCH = function(currencyCode: string, network: string) {
     this.code = currencyCode;
     this.network = network;
     this.chainId = network === 'livenet' ? 1 : 2;
@@ -15,9 +15,10 @@ const AccountBTC = function(currencyCode: string, network: string) {
     };
     this.keyObject = {};
     this.balance = 0;
+    this.transactionsCount = 0;
     this.transactionsPage = 0;
     this.transactionCommonCount = 0;
-    this.transactions = [TransactionBTC];
+    this.transactions = [TransactionBCH];
     this.open = false;
     this.refresh = false;
     this.decimals = 1e8;
@@ -30,8 +31,8 @@ const AccountBTC = function(currencyCode: string, network: string) {
  *               reject - error object, unsuccess generation
  *                       )
  * */
-AccountBTC.prototype.generateKeys = async function(passphrase: string) {
-    const pKey = new Bitcore.PrivateKey(this.network);
+AccountBCH.prototype.generateKeys = async function(passphrase: string) {
+    const pKey = new Bitcash.PrivateKey(this.network);
     this.keys.private = pKey.toWIF();
     this.address = pKey.toAddress().toString();
     this.keyObject = this.saveToKeyObject(passphrase);
@@ -46,7 +47,7 @@ AccountBTC.prototype.generateKeys = async function(passphrase: string) {
  *               reject - error object, unsuccess recovering
  *                       )
  * */
-AccountBTC.prototype.recoveryFromKeyObject = async function(passphrase: string, keyObject: any) {
+AccountBCH.prototype.recoveryFromKeyObject = async function(passphrase: string, keyObject: any) {
     let dKey, decifer: any = {};
     decifer = crypto.createDecipher(
         keyObject.calg,
@@ -65,12 +66,12 @@ AccountBTC.prototype.recoveryFromKeyObject = async function(passphrase: string, 
  *               reject - error - Object, unsuccess recovering
  *                       )
  * */
-AccountBTC.prototype.saveToKeyObject = function(passphrase: string) {
+AccountBCH.prototype.saveToKeyObject = function(passphrase: string) {
     const cifer = crypto.createCipher('aes256', passphrase);
     let cifertext = cifer.update(Buffer.from(this.keys.private),
         'utf8', 'hex');
     cifertext += cifer.final('hex');
-    const pKey = Bitcore.PrivateKey.fromWIF(this.keys.private);
+    const pKey = new Bitcash.PrivateKey(this.keys.private);
     return {
         address: pKey.toAddress().toString(),
         calg: 'aes256',
@@ -91,8 +92,8 @@ AccountBTC.prototype.saveToKeyObject = function(passphrase: string) {
  *               reject - error - Object, unsuccess recovering
  *                       )
  * */
-AccountBTC.prototype.createSendMoneyTransaction = async function(params) {// console.dir(params);
-    const tx = Bitcore.Transaction();
+AccountBCH.prototype.createSendMoneyTransaction = async function(params) {// console.dir(params);
+    const tx = new Bitcash.Transaction();
     const dec = new Big(this.decimals);
     const utxos = [];
     params['utxo'].forEach(utxo => {
@@ -109,9 +110,9 @@ AccountBTC.prototype.createSendMoneyTransaction = async function(params) {// con
     tx.from(utxos);
     tx.to(params['receiver'], parseInt(amount.mul(dec).toString(), 10));
     tx.change(params['change']);
-    const pKey = Bitcore.PrivateKey.fromWIF(this.keys.private);
+    const pKey = new Bitcash.PrivateKey(this.keys.private);
     tx.sign(pKey);
-    return tx.serialize();
+    return tx.toString();
 };
 
-export default AccountBTC;
+export default AccountBCH;

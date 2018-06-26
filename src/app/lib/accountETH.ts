@@ -13,7 +13,7 @@ const AccountETH = function(currencyCode: string, network: string) {
     };
     this.keyObject = {};
     this.balance = 0;
-    this.transactionsCount = 0;
+    this.transactionsSpentCount = 0;
     this.transactionsPage = 0;
     this.transactionCommonCount = 0;
     this.transactions = [TransactionETH];

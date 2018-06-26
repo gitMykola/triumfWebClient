@@ -29,6 +29,7 @@
     "async": "^2.6.0",
     "async-parallel": "^1.2.3",
     "bignumber": "^1.1.0",
+    "bignumber.js": "^2.0.7",
     "bitcoincashjs": "^0.1.10",
     "bitcoinjs-lib": "^3.3.2",
     "bitcore-lib": "^0.15.0",

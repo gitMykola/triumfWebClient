@@ -39,6 +39,9 @@ export default {
             id: value => {
                 return (typeof value === 'string');
             },
+            txid: value => {
+                return (typeof value === 'string');
+            },
             time: value => {
                 return (typeof value === 'object');
             },
@@ -139,7 +142,7 @@ export default {
                         try {
                             const url = self.config.app.apiURL + opts.symbol +
                                 (opts.symbol === 'ETH' ? '/getTransactionByHash/' + opts.hash
-                                    : '/getTransactionById/' + opts.id);
+                                    : '/getTransactionById/' + opts.txid);
                             http.get(url, httpOptions).subscribe(response => {
                                 return resolve({status: true, data: response});
                             });
@@ -219,13 +222,13 @@ export default {
                         let utxos = [];
                         let result = await apis.getUTXOS(opts);
                         utxos = utxos.concat(result['utxos']);
-                        if (result['pages'] > 0) {
-                            let page = 0;
-                            while ( page <= result['pages'] ) {
-                                page++;
+                        if (result['pages'] > 1) {
+                            let page = 1;
+                            while ( page < result['pages'] ) {
                                 result = await apis
                                     .getUTXOS(Object.assign(opts, {page: page}));
                                 utxos = utxos.concat(result['utxos']);
+                                page++;
                             }
                         }console.dir(utxos);
                         return {status: true, data: utxos};

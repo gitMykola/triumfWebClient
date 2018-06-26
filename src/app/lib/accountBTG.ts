@@ -1,10 +1,11 @@
-import {TransactionBTC} from './transaction';
+import {TransactionBTG} from './transaction';
+import * as Bitgold from 'bitcoinjs-lib';
 import * as Bitcore from 'bitcore-lib';
 import {Buffer} from 'buffer';
 import * as crypto from 'crypto-browserify';
 import * as Big from 'bignumber.js';
 
-const AccountBTC = function(currencyCode: string, network: string) {
+const AccountBTG = function(currencyCode: string, network: string) {
     this.code = currencyCode;
     this.network = network;
     this.chainId = network === 'livenet' ? 1 : 2;
@@ -17,7 +18,7 @@ const AccountBTC = function(currencyCode: string, network: string) {
     this.balance = 0;
     this.transactionsPage = 0;
     this.transactionCommonCount = 0;
-    this.transactions = [TransactionBTC];
+    this.transactions = [TransactionBTG];
     this.open = false;
     this.refresh = false;
     this.decimals = 1e8;
@@ -30,10 +31,23 @@ const AccountBTC = function(currencyCode: string, network: string) {
  *               reject - error object, unsuccess generation
  *                       )
  * */
-AccountBTC.prototype.generateKeys = async function(passphrase: string) {
-    const pKey = new Bitcore.PrivateKey(this.network);
+AccountBTG.prototype.generateKeys = async function(passphrase: string) {
+    const pKey = Bitgold.ECPair.makeRandom({
+        rng: () => Buffer.from(crypto.randomBytes(32)),
+        network: this.chainId === 1 ? {
+            messagePrefix: '\x1DBitcoin Gold Signed Message:\n',
+            bech32: 'btg',
+            bip32: {
+                public: 0x0488b21e,
+                private: 0x0488ade4
+            },
+            pubKeyHash: 0x26,
+            scriptHash: 0x17,
+            wif: 0x80
+        } : Bitgold.networks.testnet
+    });
     this.keys.private = pKey.toWIF();
-    this.address = pKey.toAddress().toString();
+    this.address = pKey.getAddress();
     this.keyObject = this.saveToKeyObject(passphrase);
     return true;
 };
@@ -46,7 +60,7 @@ AccountBTC.prototype.generateKeys = async function(passphrase: string) {
  *               reject - error object, unsuccess recovering
  *                       )
  * */
-AccountBTC.prototype.recoveryFromKeyObject = async function(passphrase: string, keyObject: any) {
+AccountBTG.prototype.recoveryFromKeyObject = async function(passphrase: string, keyObject: any) {
     let dKey, decifer: any = {};
     decifer = crypto.createDecipher(
         keyObject.calg,
@@ -65,14 +79,13 @@ AccountBTC.prototype.recoveryFromKeyObject = async function(passphrase: string, 
  *               reject - error - Object, unsuccess recovering
  *                       )
  * */
-AccountBTC.prototype.saveToKeyObject = function(passphrase: string) {
+AccountBTG.prototype.saveToKeyObject = function(passphrase: string) {
     const cifer = crypto.createCipher('aes256', passphrase);
     let cifertext = cifer.update(Buffer.from(this.keys.private),
         'utf8', 'hex');
     cifertext += cifer.final('hex');
-    const pKey = Bitcore.PrivateKey.fromWIF(this.keys.private);
     return {
-        address: pKey.toAddress().toString(),
+        address: this.address,
         calg: 'aes256',
         cifertext: cifertext
     };
@@ -91,7 +104,7 @@ AccountBTC.prototype.saveToKeyObject = function(passphrase: string) {
  *               reject - error - Object, unsuccess recovering
  *                       )
  * */
-AccountBTC.prototype.createSendMoneyTransaction = async function(params) {// console.dir(params);
+AccountBTG.prototype.createSendMoneyTransaction = async function(params) {// console.dir(params);
     const tx = Bitcore.Transaction();
     const dec = new Big(this.decimals);
     const utxos = [];
@@ -109,9 +122,9 @@ AccountBTC.prototype.createSendMoneyTransaction = async function(params) {// con
     tx.from(utxos);
     tx.to(params['receiver'], parseInt(amount.mul(dec).toString(), 10));
     tx.change(params['change']);
-    const pKey = Bitcore.PrivateKey.fromWIF(this.keys.private);
+    const pKey = Bitgold.ECPair.fromWIF(this.keys.private);
     tx.sign(pKey);
     return tx.serialize();
 };
 
-export default AccountBTC;
+export default AccountBTG;

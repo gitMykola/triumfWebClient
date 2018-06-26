@@ -13,6 +13,10 @@ import * as bitcash from 'bitcoincashjs';
 import Utils from '../lib/utils';
 import AccountETH from '../lib/accountETH';
 import AccountBTC from '../lib/accountBTC';
+import AccountBCH from '../lib/accountBCH';
+import AccountBTG from '../lib/accountBTG';
+import AccountLTC from '../lib/accountLTC';
+import * as Transactions from '../lib/transaction';
 
 @Injectable()
 export class AccountsService {
@@ -81,26 +85,19 @@ export class AccountsService {
     }
     createTx(params: any, next: any) {
         this.infoInit();
-        switch (params.symbol) {
-            case 'ETH':
-                this._createETHRawTransaction(params)
-                    .then(rawTx => {
-                        next({tx: rawTx});
-                    })
-                    .catch(error => {
-                        next({err: error});
-                    });
-                break;
-            case 'BTC':
-                this._createBTCRawTransaction(params)
-                    .then(rawTx => {
-                        next({tx: rawTx});
-                    })
-                    .catch(error => {
-                        next({err: error});
-                    });
-                break;
-            /*case 'BTG':
+        const createRawTxMethod = '_create' + params.symbol + 'RawTransaction';
+        if (typeof this[createRawTxMethod] === 'function') {
+            this[createRawTxMethod](params)
+                .then(rawTx => {
+                    next({tx: rawTx});
+                })
+                .catch(error => {
+                    next({err: error});
+                });
+        } else {
+            next({err: this.trans.translate('err.raw_tx_error')});
+        }
+        /*case 'BTG':
                 this._getApi({
                     method: 'getUTXOS',
                     symbol: params.symbol,
@@ -185,11 +182,6 @@ export class AccountsService {
                     }
                 });
                 break;*/
-            default:
-                next({err: this.trans.translate('err.raw_tx_error')});
-                break;
-        }
-        return '';
     }
     sendTx(params: any, next: any) {
         Utils.getApi({
@@ -272,6 +264,15 @@ export class AccountsService {
                 if (opts.symbol === 'BTC') {
                     newAccount = new AccountBTC(opts.symbol, opts.network);
                 }
+                if (opts.symbol === 'BCH') {
+                    newAccount = new AccountBCH(opts.symbol, opts.network);
+                }
+                if (opts.symbol === 'BTG') {
+                    newAccount = new AccountBTG(opts.symbol, opts.network);
+                }
+                if (opts.symbol === 'LTC') {
+                    newAccount = new AccountLTC(opts.symbol, opts.network);
+                }
                 Utils.readKeyFile(opts.keyFile)
                     .then(keyFile => {
                         if (!keyFile) {
@@ -327,17 +328,37 @@ export class AccountsService {
                 / (eth ? this.currentAccount.decimals : 1 );
             params.method = 'getTransactions';
             const txs = await Utils.getApi(params, this.http);
-            if (eth) {
-                this.currentAccount.transactions = txs['data']['in']
+            if (eth) {console.dir(txs);
+                this.currentAccount.transactions = txs['data']/*['in']
                     .concat(txs['data']['out'])
                     .concat(txs['data']['pending_in'])
-                    .concat(txs['data']['pending_out']);
-            }
-            if (this.currentAccount.code === 'BTC') {console.dir(txs);
-                this.currentAccount.transactions = txs['data'];
+                    .concat(txs['data']['pending_out'])*/;
+            } else
+            /*if (this.currentAccount.code === 'BTC') */ { console.dir(txs);
+                this.currentAccount.transactions = [];
+                txs['data']['transactions'].forEach(
+                    tx => {
+                        this.currentAccount.transactions
+                            .push(Object
+                                .assign({}, Transactions['Transaction' + this
+                            .currentAccount.code], tx));
+                });
             }
             console.dir(this.currentAccount);
             return true;
+        }
+    }
+    async getTransaction(opts) {
+        const params = {};
+        params['method'] = 'getTransaction';
+        params['symbol'] = opts.symbol;
+        if (typeof opts['hash'] === 'string') { params['hash'] = opts.hash; }
+        if (typeof opts['txid'] === 'string') { params['txid'] = opts.txid; } console.dir(params);
+        const tx = await Utils.getApi(params, this.http);
+        if (!tx['status']) {
+            throw new Error(tx['error']);
+        } else {
+            return tx['data'];
         }
     }
     closeAcount(address: string, network: string): boolean {
@@ -675,6 +696,15 @@ export class AccountsService {
         if (params.symbol === 'BTC') {
             account = new AccountBTC(params['symbol'], params['network']);
         }
+        if (params.symbol === 'BCH') {
+            account = new AccountBCH(params['symbol'], params['network']);
+        }
+        if (params.symbol === 'BTG') {
+            account = new AccountBTG(params['symbol'], params['network']);
+        }
+        if (params.symbol === 'LTC') {
+            account = new AccountLTC(params['symbol'], params['network']);
+        }
         await account.generateKeys(params['passphrase']);
         return account;
     }
@@ -966,6 +996,34 @@ export class AccountsService {
         }
     }
     async _createBTCRawTransaction(params) {
+        const opts = Object.assign({}, {
+            receiver: params['receiver'],
+            amount: params['amount'],
+            change: params['change'],
+            utxo: []
+        });
+        const verify = Utils.verifyParams(opts);
+        if (!verify['status']) {
+            throw new Error(verify['error']);
+        } else {
+            const utxo = await Utils.getApi(
+                {
+                    method: 'getAllUTXOs',
+                    address: this.currentAccount.address,
+                    network: this.currentAccount.network,
+                    symbol: this.currentAccount.code
+                },
+                this.http
+            );
+            if (!utxo['status']) {
+                throw new Error(utxo['error']);
+            } else {
+                opts.utxo = utxo['data'];
+                return await this.currentAccount.createSendMoneyTransaction(opts);
+            }
+        }
+    }
+    async _createBCHRawTransaction(params) {
         const opts = Object.assign({}, {
             receiver: params['receiver'],
             amount: params['amount'],
