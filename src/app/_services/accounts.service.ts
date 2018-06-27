@@ -477,217 +477,6 @@ export class AccountsService {
             }
         });
     }
-    _openETHAccount(params: any) {
-        return new Promise((resolve, reject) => {
-            try {
-                 Utils.readKeyFile(params.keyFile)
-                     .then(keyFile => {
-                         return this.currentAccount
-                             .recoveryFromKeyObject(params['passphrase'], keyFile);
-                     })
-                     .then(rec => {
-                         if (!rec) {
-                             return reject('err.account_recovery_error');
-                         } else {
-                             return resolve(true);
-                         }
-                     })
-                     .catch(err => {
-                         return reject(err.message);
-                     });
-            } catch (err) { reject(err.message); }
-        });
-    }
-    _openBTCAccount(params: any) {
-        return new Promise((resolve, reject) => {
-            const file = new FileReader();
-            try {
-                file.readAsText(params.keyFile);
-                file.onload = (event: any) => {
-                    try {
-                        const keyFile: any = JSON.parse(event.target.result);
-                        console.dir(keyFile);
-                        let dKey, decifer: any = {};
-                        decifer = crypto.createDecipher(
-                                keyFile.calg,
-                                params.passphrase);
-                        dKey = decifer.update(keyFile.cifertext, 'hex', 'utf8');
-                        dKey += decifer.final('utf8');
-                        const pKey = Bitcore.PrivateKey.fromWIF(dKey);
-                        const account = new Account();
-                        account.address = keyFile.address;
-                        account.key = pKey;
-                        account.network = params.network;
-                        account.symbol = params.symbol;
-                        account.transactions = [];
-                        account.balance = '';
-                        account.unlock = true;
-                        account.open = false;
-                        account.hide = true;
-                        account.refresh = false;
-                        this.accounts.push(account);
-                        resolve(account);
-                    } catch (err) {
-                        reject(err.message);
-                    }
-                };
-            } catch (err) {
-                reject(err.message);
-            }
-        });
-    }
-    _openBCHAccount(params: any) {
-        return new Promise((resolve, reject) => {
-            const file = new FileReader();
-            try {
-                file.readAsText(params.keyFile);
-                file.onload = (event: any) => {
-                    try {
-                        const keyFile: any = JSON.parse(event.target.result);
-                        console.dir(keyFile);
-                        let dKey, decifer: any = {};
-                        decifer = crypto.createDecipher(
-                            keyFile.calg,
-                            params.passphrase);
-                        dKey = decifer.update(keyFile.cifertext, 'hex', 'utf8');
-                        dKey += decifer.final('utf8'); console.log(dKey);
-                        const pKey = dKey;//Bitcore.PrivateKey.fromWIF(dKey);
-                        const account = new Account();
-                        account.address = keyFile.address;
-                        account.key = pKey;
-                        account.network = params.network;
-                        account.symbol = params.symbol;
-                        account.transactions = [];
-                        account.balance = '';
-                        account.unlock = true;
-                        account.open = false;
-                        account.hide = true;
-                        account.refresh = false;
-                        this.accounts.push(account);
-                        resolve(account);
-                    } catch (err) {
-                        reject(err.message);
-                    }
-                };
-            } catch (err) {
-                reject(err.message);
-            }
-        });
-    }
-    _openBTGAccount(params: any) {
-        return new Promise((resolve, reject) => {
-            const file = new FileReader();
-            try {
-                file.readAsText(params.keyFile);
-                file.onload = (event: any) => {
-                    try {
-                        const keyFile: any = JSON.parse(event.target.result);
-                        console.dir(keyFile);
-                        let dKey, decifer: any = {};
-                        /*decifer = crypto.createDecipher(
-                            keyFile.calg,
-                            params.passphrase);
-                        dKey = decifer.update(keyFile.cifertext, 'hex', 'utf8');
-                        dKey += decifer.final('utf8');*/
-                        const pKey = keyFile.cifertext; console.log(pKey); // blib.ECPair.fromWIF(dKey);
-                        const account = new Account();
-                        account.address = keyFile.address;
-                        account.key = pKey;
-                        account.network = params.network;
-                        account.symbol = params.symbol;
-                        account.transactions = [];
-                        account.balance = '';
-                        account.unlock = true;
-                        account.open = false;
-                        account.hide = true;
-                        account.refresh = false;
-                        this.accounts.push(account);
-                        resolve(account);
-                    } catch (err) {
-                        reject(err.message);
-                    }
-                };
-            } catch (err) {
-                reject(err.message);
-            }
-        });
-    }
-    _openLTCAccount(params: any) {
-        return new Promise((resolve, reject) => {
-            const file = new FileReader();
-            try {
-                file.readAsText(params.keyFile);
-                file.onload = (event: any) => {
-                    try {
-                        const keyFile: any = JSON.parse(event.target.result);
-                        console.dir(keyFile);
-                        let dKey, decifer: any = {};
-                        decifer = crypto.createDecipher(
-                            keyFile.calg,
-                            params.passphrase);
-                        dKey = decifer.update(keyFile.cifertext, 'hex', 'utf8');
-                        dKey += decifer.final('utf8'); console.log(dKey);
-                        const pKey = Litecore.PrivateKey.fromWIF(dKey);
-                        const account = new Account();
-                        account.address = keyFile.address;
-                        account.key = pKey; console.dir(pKey);
-                        account.network = params.network;
-                        account.symbol = params.symbol;
-                        account.transactions = [];
-                        account.balance = '';
-                        account.unlock = true;
-                        account.open = false;
-                        account.hide = true;
-                        account.refresh = false;
-                        this.accounts.push(account);
-                        resolve(account);
-                    } catch (err) {console.dir(err);
-                        reject(err.message);
-                    }
-                };
-            } catch (err) {
-                reject(err.message);
-            }
-        });
-    }
-    _openZECAccount(params: any) {
-        return new Promise((resolve, reject) => {
-            const file = new FileReader();
-            try {
-                file.readAsText(params.keyFile);
-                file.onload = (event: any) => {
-                    try {
-                        const keyFile: any = JSON.parse(event.target.result);
-                        console.dir(keyFile);
-                        /*let dKey, decifer: any = {};
-                        decifer = crypto.createDecipher(
-                            keyFile.calg,
-                            params.passphrase);
-                        dKey = decifer.update(keyFile.cifertext, 'hex', 'utf8');
-                        dKey += decifer.final('utf8');*/
-                        const pKey = keyFile.cifertext; // Zeccore.PrivateKey.fromWIF(dKey);
-                        const account = new Account(); console.log(pKey);
-                        account.address = keyFile.address;
-                        account.key = pKey;
-                        account.network = params.network;
-                        account.symbol = params.symbol;
-                        account.transactions = [];
-                        account.balance = '';
-                        account.unlock = true;
-                        account.open = false;
-                        account.hide = true;
-                        account.refresh = false;
-                        this.accounts.push(account);
-                        resolve(account);
-                    } catch (err) {
-                        reject(err.message);
-                    }
-                };
-            } catch (err) {
-                reject(err.message);
-            }
-        });
-    }
     async _createAccount(params: any) {
         let account: any = {};
         if (params.symbol === 'ETH') {
@@ -708,259 +497,6 @@ export class AccountsService {
         await account.generateKeys(params['passphrase']);
         return account;
     }
-    /*_createBTCAccount(params: any) {
-        const self = this;
-        return new Promise((resolve, reject) => {
-            try {
-                const pkey = new Bitcore.PrivateKey(params.network),
-                    key = pkey.toWIF(),
-                    cifer = crypto.createCipher('aes256', params.passphrase);
-                let cifertext = cifer.update(Buffer.from(key),
-                    'utf8', 'hex');
-                cifertext += cifer.final('hex');
-                const keyFile = {
-                    address: pkey.toAddress().toString(),
-                    calg: 'aes256',
-                    cifertext: cifertext
-                };
-                const blob = new Blob([JSON.stringify(keyFile)],
-                    {type: 'text/json'});
-                const e = document.createEvent('MouseEvent');
-                const a = document.createElement('a');
-                a.download = self._keyFileName(keyFile.address);
-                a.href = window.URL.createObjectURL(blob);
-                a.dataset.downloadurl = ['text/json', a.download, a.href]
-                    .join(':');
-                e.initMouseEvent('click', true,
-                    false, window,
-                    0, 0, 0,
-                    0, 0, false,
-                    false, false, false,
-                    0, null);
-                a.dispatchEvent(e);
-                const account = new Account();
-                account.address = keyFile.address;
-                account.key = pkey;
-                account.network = params.network;
-                account.symbol = params.symbol;
-                account.transactions = [];
-                account.balance = '';
-                account.unlock = true;
-                account.open = false;
-                account.hide = true;
-                account.refresh = false;
-                self.accounts.push(account);
-                resolve(account);
-            } catch (e) {
-                reject(e.message);
-            }
-        });
-    }
-    _createBCHAccount(params: any) {
-        const self = this;
-        return new Promise((resolve, reject) => {
-            try {
-                const pkey = new Bitcore.PrivateKey(params.network),
-                    key = pkey.toWIF(),
-                    cifer = crypto.createCipher('aes256', params.passphrase);
-                let cifertext = cifer.update(Buffer.from(key),
-                    'utf8', 'hex');
-                cifertext += cifer.final('hex');
-                const keyFile = {
-                    address: pkey.toAddress().toString(),
-                    calg: 'aes256',
-                    cifertext: cifertext
-                };
-                const blob = new Blob([JSON.stringify(keyFile)],
-                    {type: 'text/json'});
-                const e = document.createEvent('MouseEvent');
-                const a = document.createElement('a');
-                a.download = self._keyFileName(keyFile.address);
-                a.href = window.URL.createObjectURL(blob);
-                a.dataset.downloadurl = ['text/json', a.download, a.href]
-                    .join(':');
-                e.initMouseEvent('click', true,
-                    false, window,
-                    0, 0, 0,
-                    0, 0, false,
-                    false, false, false,
-                    0, null);
-                a.dispatchEvent(e);
-                const account = new Account();
-                account.address = keyFile.address;
-                account.key = pkey;
-                account.network = params.network;
-                account.symbol = params.symbol;
-                account.transactions = [];
-                account.balance = '';
-                account.unlock = true;
-                account.open = false;
-                account.hide = true;
-                account.refresh = false;
-                self.accounts.push(account);
-                resolve(account);
-            } catch (e) {
-                reject(e.message);
-            }
-        });
-    }
-    _createBTGAccount(params: any) {
-        const self = this;
-        return new Promise((resolve, reject) => {
-            try {
-                const key = blib.ECPair.makeRandom({
-                    rng: () => Buffer.from(crypto.randomBytes(32)),
-                    network: {
-                        messagePrefix: '\x1DBitcoin Gold Signed Message:\n',
-                        bech32: 'btg',
-                        bip32: {
-                            public: 0x0488b21e,
-                            private: 0x0488ade4
-                        },
-                        pubKeyHash: 0x26,
-                        scriptHash: 0x17,
-                        wif: 0x80
-                    }
-                });
-                const address = key.getAddress(); // new Bitcore.PrivateKey(key).toAddress(); console.log(address);
-                const cifer = crypto.createCipher('aes256', params.passphrase);
-                let cifertext = cifer.update(Buffer.from(address.toString()),
-                    'utf8', 'hex');
-                cifertext += cifer.final('hex');
-                const keyFile = {
-                    address: address.toString(), // key.getAddress(), // pkey.toAddress().toString(),
-                    calg: 'aes256',
-                    cifertext: key.toWIF() // cifertext
-                };
-                const blob = new Blob([JSON.stringify(keyFile)],
-                    {type: 'text/json'});
-                const e = document.createEvent('MouseEvent');
-                const a = document.createElement('a');
-                a.download = self._keyFileName(keyFile.address);
-                a.href = window.URL.createObjectURL(blob);
-                a.dataset.downloadurl = ['text/json', a.download, a.href]
-                    .join(':');
-                e.initMouseEvent('click', true,
-                    false, window,
-                    0, 0, 0,
-                    0, 0, false,
-                    false, false, false,
-                    0, null);
-                a.dispatchEvent(e);
-                const account = new Account();
-                account.address = keyFile.address;
-                account.key = key.toString(); // Bitcore.PrivateKey(key).toString();
-                account.network = params.network;
-                account.symbol = params.symbol;
-                account.transactions = [];
-                account.balance = '';
-                account.unlock = true;
-                account.open = false;
-                account.hide = true;
-                account.refresh = false;
-                self.accounts.push(account);
-                resolve(account);
-            } catch (e) {console.log(e);
-                reject(e.message);
-            }
-        });
-    }
-    _createLTCAccount(params: any) {
-        const self = this;
-        return new Promise((resolve, reject) => {
-            try {
-                const pkey = new Litecore.PrivateKey(params.network),
-                    key = pkey.toWIF();
-                const cifer = crypto.createCipher('aes256', params.passphrase);
-                let cifertext = cifer.update(Buffer.from(key),
-                    'utf8', 'hex');
-                cifertext += cifer.final('hex');
-                const keyFile = {
-                    address: pkey.toAddress().toString(),
-                    calg: 'aes256',
-                    cifertext: cifertext
-                };
-                const blob = new Blob([JSON.stringify(keyFile)],
-                    {type: 'text/json'});
-                const e = document.createEvent('MouseEvent');
-                const a = document.createElement('a');
-                a.download = self._keyFileName(keyFile.address);
-                a.href = window.URL.createObjectURL(blob);
-                a.dataset.downloadurl = ['text/json', a.download, a.href]
-                    .join(':');
-                e.initMouseEvent('click', true,
-                    false, window,
-                    0, 0, 0,
-                    0, 0, false,
-                    false, false, false,
-                    0, null);
-                a.dispatchEvent(e);
-                const account = new Account();
-                account.address = keyFile.address;
-                account.key = pkey;
-                account.network = params.network;
-                account.symbol = params.symbol;
-                account.transactions = [];
-                account.balance = '';
-                account.unlock = true;
-                account.open = false;
-                account.hide = true;
-                account.refresh = false;
-                self.accounts.push(account);
-                resolve(account);
-            } catch (e) {
-                reject(e.message);
-            }
-        });
-    }
-    _createZECAccount(params: any) {
-        const self = this;
-        return new Promise((resolve, reject) => {
-            try {
-                const pkey = new Zeccore.PrivateKey(params.network),
-                    key = pkey.toWIF(),
-                    cifer = crypto.createCipher('aes256', params.passphrase);
-                let cifertext = cifer.update(Buffer.from(key),
-                    'utf8', 'hex');
-                cifertext += cifer.final('hex');
-                const keyFile = {
-                    address: pkey.toAddress().toString(),
-                    calg: 'aes256',
-                    cifertext: cifertext
-                };
-                const blob = new Blob([JSON.stringify(keyFile)],
-                    {type: 'text/json'});
-                const e = document.createEvent('MouseEvent');
-                const a = document.createElement('a');
-                a.download = self._keyFileName(keyFile.address);
-                a.href = window.URL.createObjectURL(blob);
-                a.dataset.downloadurl = ['text/json', a.download, a.href]
-                    .join(':');
-                e.initMouseEvent('click', true,
-                    false, window,
-                    0, 0, 0,
-                    0, 0, false,
-                    false, false, false,
-                    0, null);
-                a.dispatchEvent(e);
-                const account = new Account();
-                account.address = keyFile.address;
-                account.key = key.toWIF();
-                account.network = params.network;
-                account.symbol = params.symbol;
-                account.transactions = [];
-                account.balance = '';
-                account.unlock = true;
-                account.open = false;
-                account.hide = true;
-                account.refresh = false;
-                self.accounts.push(account);
-                resolve(account);
-            } catch (e) {console.dir(e);
-                reject(e.message);
-            }
-        });
-    }*/
     async _createETHRawTransaction(params) {
         const verify = Utils.verifyParams(params);
         if (!verify['status']) {
@@ -1024,6 +560,62 @@ export class AccountsService {
         }
     }
     async _createBCHRawTransaction(params) {
+        const opts = Object.assign({}, {
+            receiver: params['receiver'],
+            amount: params['amount'],
+            change: params['change'],
+            utxo: []
+        });
+        const verify = Utils.verifyParams(opts);
+        if (!verify['status']) {
+            throw new Error(verify['error']);
+        } else {
+            const utxo = await Utils.getApi(
+                {
+                    method: 'getAllUTXOs',
+                    address: this.currentAccount.address,
+                    network: this.currentAccount.network,
+                    symbol: this.currentAccount.code
+                },
+                this.http
+            );
+            if (!utxo['status']) {
+                throw new Error(utxo['error']);
+            } else {
+                opts.utxo = utxo['data'];
+                return await this.currentAccount.createSendMoneyTransaction(opts);
+            }
+        }
+    }
+    async _createLTCRawTransaction(params) {
+        const opts = Object.assign({}, {
+            receiver: params['receiver'],
+            amount: params['amount'],
+            change: params['change'],
+            utxo: []
+        });
+        const verify = Utils.verifyParams(opts);
+        if (!verify['status']) {
+            throw new Error(verify['error']);
+        } else {
+            const utxo = await Utils.getApi(
+                {
+                    method: 'getAllUTXOs',
+                    address: this.currentAccount.address,
+                    network: this.currentAccount.network,
+                    symbol: this.currentAccount.code
+                },
+                this.http
+            );
+            if (!utxo['status']) {
+                throw new Error(utxo['error']);
+            } else {
+                opts.utxo = utxo['data'];
+                return await this.currentAccount.createSendMoneyTransaction(opts);
+            }
+        }
+    }
+    async _createBTGRawTransaction(params) {
         const opts = Object.assign({}, {
             receiver: params['receiver'],
             amount: params['amount'],
