@@ -28,6 +28,7 @@
     "angular4-files-upload": "^1.0.2",
     "async": "^2.6.0",
     "async-parallel": "^1.2.3",
+    "bgoldjs-lib": "^3.3.2",
     "bignumber": "^1.1.0",
     "bitcoincashjs": "^0.1.10",
     "bitcoinjs-lib": "^3.3.2",
