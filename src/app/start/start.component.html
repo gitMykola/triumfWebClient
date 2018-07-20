@@ -160,6 +160,11 @@
                         <input class="col-12" type="text" name="change"
                                formControlName="change"/>
                     </label>
+                    <label class="col-12" *ngIf="selectedCurrency === 'BTG'">
+                        {{trans.translate('labels.fees')}}
+                        <input class="col-12" type="number" step="0.0001" name="fees"
+                               formControlName="fees"/>
+                    </label>
                 </div>
             </div>
             <div id="step5" class="col-sm-12 t-step-item" *ngIf="aForm.step === 5 && !wait">

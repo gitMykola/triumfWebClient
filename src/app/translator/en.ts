@@ -49,7 +49,8 @@ export const EN = {
         feeRate: 'Fee Rate',
         confirmations: 'Confirmations',
         per: 'per',
-        contract: 'Contract'
+        contract: 'Contract',
+        fees: 'Net fees'
     },
     app: {
         title_1: 'Triumf ',

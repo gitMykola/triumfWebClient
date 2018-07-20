@@ -89,6 +89,10 @@ export default {
             },
             utxo: value => {
                 return (typeof value === 'object');
+            },
+            fees: value => {
+                return (typeof value === 'number'
+                    && value > 0);
             }
         };
         for (const field in params) {
@@ -127,8 +131,7 @@ export default {
                     return new Promise(resolve => {
                         try {
                             const url = self.config.app.apiURL + opts.symbol +
-                                (opts.symbol === 'ETH' ? '/getTransactionsList/'
-                                    : '/getTxList/') + opts.address;
+                                 '/getTransactionsList/' + opts.address;
                             http.get(url, httpOptions).subscribe(response => {
                                 return resolve({status: true, data: response});
                             });

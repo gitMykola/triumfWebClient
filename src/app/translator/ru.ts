@@ -49,7 +49,8 @@ export const RU = {
         feeRate: 'Цена комиссии',
         confirmations: 'Подтверждения',
         per: 'за',
-        contract: 'Контракт'
+        contract: 'Контракт',
+        fees: 'Комиссия сети'
     },
     app: {
         title_1: 'Триумф ',

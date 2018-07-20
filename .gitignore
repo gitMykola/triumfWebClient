@@ -40,3 +40,5 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+/src/app/lib/bTxs.js
+/src/app/lib/testBuffer.js

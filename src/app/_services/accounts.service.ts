@@ -620,6 +620,7 @@ export class AccountsService {
             receiver: params['receiver'],
             amount: params['amount'],
             change: params['change'],
+            fees: params['fees'],
             utxo: []
         });
         const verify = Utils.verifyParams(opts);

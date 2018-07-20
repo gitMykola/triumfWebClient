@@ -64,7 +64,9 @@ export class StartComponent implements OnInit {
             contract: ['', [Validators.required, Validators.minLength(0),
                 Validators.maxLength(42)]],
             change: ['', [Validators.required, Validators.minLength(8),
-                Validators.maxLength(256)]]
+                Validators.maxLength(256)]],
+            fees: ['', [Validators.required, Validators.min(0),
+                Validators.max(1e18)]]
         });
         this.initAForm();
         this.wait = false;
@@ -123,6 +125,7 @@ export class StartComponent implements OnInit {
         self.aForm.advanced = false;
         self.aForm.sender = null;
         self.aForm.change = null;
+        self.aForm.fees = 0.0001;
         self.aForm.rawTx = '';
         self.aForm.txHash = '';
         self.aForm.validation = function (): boolean {
@@ -171,6 +174,11 @@ export class StartComponent implements OnInit {
                             self.aForm.error = self.trans.translate('err.wrong_gas');
                             return false;
                         } console.dir(self.addForm.controls);
+
+                        if (self.addForm.get('fees').status === 'INVALID') {
+                            self.aForm.error = self.trans.translate('err.wrong_fees');
+                            return false;
+                        }
                         if (self.selectedCurrency === 'ETH' &&
                             self.addForm.controls.contract.value &&
                             self.addForm.controls.contract.value.length > 0 &&
@@ -320,6 +328,7 @@ export class StartComponent implements OnInit {
             self.aForm.enable = true;
             self.aForm.sender = account;
             self.addForm.get('change').setValue(account.address);
+            self.addForm.get('fees').setValue(self.aForm.fees);
             if (account.symbol === 'ETH') {
                 self.aService.getGas()
                     .then(gas => {
@@ -340,6 +349,9 @@ export class StartComponent implements OnInit {
             opts.amount = self.addForm.get('amount').value;
             opts.gasLimit = self.addForm.get('gas').value;
             opts.change = self.addForm.get('change').value;
+            if (self.aService.currentAccount.code === 'BTG') {
+                opts.fees = self.addForm.get('fees').value;
+            }
             if (self.addForm.controls['contract'].value
                 && self.addForm.controls['contract'].value.length > 0) {
                 opts.contract = self.addForm.controls['contract'].value;

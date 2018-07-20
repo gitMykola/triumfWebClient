@@ -26,7 +26,7 @@ export function config () { return {
         },
         {
             symbol: 'BTG',
-            networks: ['testnet', 'livenet']
+            networks: ['testnet', 'btgnet']
         },
         {
             symbol: 'BCH',
@@ -42,6 +42,6 @@ export function config () { return {
         }
     ],
     symbols: ['ETH', 'BTC', 'LTC', 'BTG', 'BCH', 'ZEC', 'XMR'],
-    networks: ['livenet', 'testnet', 'ropsten']
+    networks: ['livenet', 'testnet', 'ropsten', 'btgnet']
 };
 }
