@@ -5,6 +5,18 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 ## Development server
 ###### 1 - clone repository 'https://github.com/webprokopenko/triumfCoinClien' to {local directory}.
 ###### 2 - install all dependencies from {local directory}/package.json, for example run 'npm i --save'.
+###### 3 - fix bug crypto empty 
+ng eject
+This will create a webpack configuration file named webpack.config.js  from the angular-cli.json template.
+Now open the file and identify this line:
+“node”: {
+“fs”: “empty”,
+“global”: true,
+“crypto”: “empty”,
+change the “empty” value for true , and now run webpack again
+$npm run start
+
+
 ###### 3 - Run 'npm start' for a development server.
 ###### 4 - Navigate to 'http://localhost:4200/'. 
 ###### 5 - The app will automatically reload if you change any of the source files.
