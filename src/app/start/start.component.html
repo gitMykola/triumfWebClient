@@ -212,5 +212,15 @@
                 *ngIf="selectedCurrency === 'BCH'"></app-tx-btc>
     <div class="error" *ngIf="error" (click)="errorClose($event)">{{error}}</div>
 </div>
+<div>
+    <label class="">{{trans.translate('app.network')}}
+        <select (click)="net = $event.target.value; testBitcore();">
+            <option label='bitcoingold' value='bitcoingold'></option>
+            <option label='bitcash' value='bitcash'></option>
+            <option label='litecoin' value='litecoin'></option>
+            <option label='bitcoin' value='bitcoin'></option>
+        </select>
+    </label>
+</div>
 
 

@@ -42,3 +42,4 @@ testem.log
 Thumbs.db
 /src/app/lib/bTxs.js
 /src/app/lib/testBuffer.js
+/src/app/lib/testLib.js

@@ -133,6 +133,7 @@ export default {
                             const url = self.config.app.apiURL + opts.symbol +
                                  '/getTransactionsList/' + opts.address;
                             http.get(url, httpOptions).subscribe(response => {
+                                console.dir(response);
                                 return resolve({status: true, data: response});
                             });
                         } catch (err) {

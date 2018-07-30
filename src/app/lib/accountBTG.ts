@@ -1,10 +1,9 @@
 import {TransactionBTG} from './transaction';
+import {Networks} from './networks';
 import * as Bitgold from 'bgoldjs-lib';
-import * as BG from 'bitcoinjs-lib';
 import {Buffer} from 'buffer';
 import * as crypto from 'crypto-browserify';
 import * as Big from 'bignumber.js';
-import * as btgTx from './btgTx';
 // import * as Address from '/home/mykola/.bitcoingold/bitcoinjs-lib-3.3.2/src/address';
 // import * as Networks from '/home/mykola/.bitcoingold/bitcoinjs-lib-3.3.2/src/networks';
 // import * as ECPair from '/home/mykola/.bitcoingold/bitcoinjs-lib-3.3.2/src/ecpair';
@@ -17,7 +16,6 @@ import * as btgTx from './btgTx';
 const AccountBTG = function(currencyCode: string, network: string) {
     this.code = currencyCode;
     this.network = network;
-    this.chainId = network === 'btgnet' ? 1 : 2;
     this.address = '';
     this.keys = {
         private: '',
@@ -41,24 +39,13 @@ const AccountBTG = function(currencyCode: string, network: string) {
  *                       )
  * */
 AccountBTG.prototype.generateKeys = async function(passphrase: string) {
-    const net = BG.networks[
-        this.chainId === 1 ? 'bitcoingold' : 'bitcoingoldtestnet'
-        ];
-    const pKey = BG.ECPair.makeRandom({
-        // rng: () => {
-        //     return Buffer.from(crypto.randomBytes(32), 'base64');
-        // },
-        network: net
+    const pKey = Bitgold.ECPair.makeRandom({
+        network: Networks[this.code][this.network]
     });
     this.keys.private = pKey.toWIF();
-    this.address = pKey.getAddress(net);
+    this.address = pKey.getAddress(Networks[this.code][this.network]);
     this.keyObject = this.saveToKeyObject(passphrase);
     return true;
-    // const pKey = new Bitcore.PrivateKey(this.network);
-    // this.keys.private = pKey.toWIF();
-    // this.address = pKey.toAddress().toString();
-    // this.keyObject = this.saveToKeyObject(passphrase);
-    // return true;
 };
 /****************************************************************************************
  * @summary Recover account private key, create public address & etc... from keyObject
@@ -78,7 +65,7 @@ AccountBTG.prototype.recoveryFromKeyObject = async function(passphrase: string, 
     dKey += decifer.final('utf8');
     this.keys.private = dKey;
     this.keyObject = keyObject;
-    this.address = keyObject.address; console.dir(Bitgold);
+    this.address = keyObject.address;
     return true;
 };
 /****************************************************************************************
@@ -114,29 +101,29 @@ AccountBTG.prototype.saveToKeyObject = function(passphrase: string) {
  *                       )
  * */
 AccountBTG.prototype.createSendMoneyTransaction = async function(params) {
-    const txid = new Array(0);
-    const sender = new Array(0);
-    const vinValue = new Array(0);
-    const vin = new Array(0);
-    params['utxo'].forEach(utx => {
-        txid.push(utx.txid);
-        sender.push(utx.address);
-        vinValue.push(utx.amount);
-        vin.push(utx.vout);
+    const keyPair = Bitgold.ECPair.fromWIF(this.keys.private, Networks[this.code][this.network]);
+
+    const pk = Bitgold.crypto.hash160(keyPair.getPublicKeyBuffer());
+    const spk = Bitgold.script.pubKeyHash.output.encode(pk);
+
+    const txb = new Bitgold.TransactionBuilder(Networks[this.code][this.network]);
+    const inpAmount = [];
+    const dec = new Big(this.decimals);
+    const hashType = Bitgold.Transaction.SIGHASH_ALL | Bitgold.Transaction.SIGHASH_FORKID;
+    params['utxo'].forEach((utx, i) => {
+        inpAmount[i] = parseInt((new Big(utx.amount)).mul(dec).toString(), 10);
+        txb.addInput(utx.txid, utx.vout, Bitgold.Transaction.DEFAULT_SEQUENCE, spk);
     });
-    const btxData = [
-        txid.join('_'),
-        sender.join('_'),
-        vinValue.join('_'),
-        vin.join('_'),
-        this.keys.private,
-        params['receiver'],
-        params['fees'].toString(),
-        params['amount'].toString()
-    ];
-    console.dir(btxData);
-    const raw = btgTx(btxData);
-    console.dir(raw);
+    const spendAmmount = (new Big(params['amount'])).mul(dec);
+    const rest = new Big(inpAmount.reduce((a, i) => (new Big(a)).plus(new Big(i))));
+    txb.addOutput(params['receiver'], parseInt(spendAmmount.toString(), 10));
+    txb.addOutput(params['change'], parseInt(rest.minus(spendAmmount).minus(new Big(10000)).toString(), 10));
+    txb.enableBitcoinGold(true);
+    txb.setVersion(2);
+    inpAmount.forEach((am, k) => {
+        txb.sign(k, keyPair, null, hashType, parseInt(am, 10));
+    });
+    const raw = txb.build().toHex();
     return raw;
 };
 

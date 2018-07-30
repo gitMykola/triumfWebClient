@@ -3,6 +3,7 @@ import { config } from '../config';
 import { FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {TranslatorService} from '../translator';
 import {AccountsService} from '../_services/accounts.service';
+import Bitcore from '../lib/bitcore';
 
 @Component({
     selector: 'app-t-start',
@@ -21,6 +22,7 @@ export class StartComponent implements OnInit {
     aForm: any;
     wait: boolean;
     error: string;
+    net: string;
     public addForm: FormGroup;
     constructor(
         public trans: TranslatorService,
@@ -28,6 +30,9 @@ export class StartComponent implements OnInit {
         private fBuilder: FormBuilder) {
         this.currencies = config().currencies;
         this.langs = config().app.lang;
+    }
+    testBitcore() {
+        const account = Bitcore.create(this.net);console.dir(account);
     }
     ngOnInit() {
         this.trans.set('EN');

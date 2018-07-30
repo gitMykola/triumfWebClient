@@ -1,4 +1,4 @@
-console.log = console.dir = () => {};
+// console.log = console.dir = () => {};
 var crypto=require("crypto"),
     bs58=require("bs58"),
     BN=require("./bn.js"),
@@ -925,7 +925,7 @@ var decode_b = require("cashaddress").decode_b,
                     })
                 },this);console.dir(this.s);
             /*this.fees=k,this.s,*/n||this.sigHash.writeUInt32LE(SIGHASH_NONE);
-            // console.dir(JSON.stringify({tx:this}));
+            //console.dir(JSON.stringify({tx:this}));
             this.rawTx = this.sighash_sign();
         }
     };
@@ -944,14 +944,20 @@ Tx.prototype.p2pk_sign=function(e,r){
             ?o.forEach(function(){btc_encode(hash_160(o),n)===i&&console.log("Public spending key verified: "+o)})
             :console.log("------------ Spending public key could not be verified, you are probably trying to spend an output that you don't own")
     }
-    e.scriptSig=[[Buffer.concat([new Buffer(this.sign(r,e.privKey)),this.sigHash.slice(0,1)]),Buffer.concat([new Buffer([e.pubKey.length]),e.pubKey]),e.swbtcp?e.swbtcp:new Buffer(0)]],
+    e.scriptSig=[
+        [
+            Buffer.concat([new Buffer(this.sign(r,e.privKey)),this.sigHash.slice(0,1)]),
+            Buffer.concat([new Buffer([e.pubKey.length]),e.pubKey]),
+            e.swbtcp?e.swbtcp:new Buffer(0)
+        ]
+    ],
         s=Buffer.concat(serialize_sig(e.scriptSig)),
         t=e.data
             ?Buffer.concat(e.data)
             :new Buffer(0),
         e.scriptSigLen=varlen(Buffer.concat([s,t]).length);
     console.dir('SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSs');
-    //console.dir(e.scriptSig);
+    console.dir(e.scriptSig);
 },
     Tx.prototype.p2sh_sign=function(e,r){
         var t,
@@ -1048,7 +1054,7 @@ Tx.prototype.p2pk_sign=function(e,r){
                 },this);
             e.length;
         )e.shift()();/*this.s = 0;*/
-        //console.dir(this);
+        console.dir(this);
         var raw = this.serialize().toString('hex');
         console.dir(raw);
         return raw;
@@ -1376,10 +1382,12 @@ Tx.prototype.p2pk_sign=function(e,r){
             t=[];
         if(e.push(this.nVersion),r.push(this.nVersion),("BCD"===VERSION_||"BTT"===VERSION_)&&(e.push(this.preblockhash),r.push(this.preblockhash)),SEGWIT)
         {
-            var n=[];console.dir('12WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWww');
-            e.push(new Buffer([SEG_MARKER])),
-                e.push(new Buffer([SEG_FLAG])),
-                e.push(new Buffer([this.nbinput])),
+            var n=[];
+            console.dir('12WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWww');
+            console.log('e: ');
+            e.push(new Buffer([SEG_MARKER])),console.dir(Buffer.concat(e)),
+                e.push(new Buffer([SEG_FLAG])),console.dir(Buffer.concat(e)),
+                e.push(new Buffer([this.nbinput])),console.dir(Buffer.concat(e)),
                 r.push(new Buffer([this.nbinput])),
                 this.input.forEach(function(s){
                     var i,
@@ -1407,6 +1415,7 @@ Tx.prototype.p2pk_sign=function(e,r){
                         n.push(Buffer.concat(t)),
                         n.push(s.script?Buffer.concat(s.script):new Buffer(0))
                 },this),
+                    console.dir(Buffer.concat(e)),
                 console.dir('24WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWww'),
                 e.push(new Buffer([this.nboutput])),
                 r.push(new Buffer([this.nboutput])),
@@ -1421,17 +1430,18 @@ Tx.prototype.p2pk_sign=function(e,r){
                 this.hash_w=reverse(double_hash256(Buffer.concat(r)))
         }else{
             console.dir('INPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPp');
+            console.dir(Buffer.concat(e).toString('hex'));
             this.input.forEach(inp => console.dir(inp.scriptSig));
-            e.push(new Buffer([this.nbinput])),
+            e.push(new Buffer([this.nbinput])),console.dir(Buffer.concat(e).toString('hex')),
                 console.dir('12WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWww'),
                 this.input.forEach(function(r){
-                    var n=new Buffer(4);
+                    var n=new Buffer(4);console.dir(r.scriptSig);
                     n.writeUInt32LE(r.n),
-                        t=serialize_sig(r.scriptSig),
+                        t=serialize_sig(r.scriptSig),console.dir(Buffer.concat(t).toString('hex')),
                         r.script=r.script_w||r.script,
                         r.scriptSigLen=r.scriptSigLen_w||r.scriptSigLen,
                         e.push(Buffer.concat([reverse(new Buffer(r.hash,"hex")),n,r.scriptSigLen,Buffer.concat(t),r.script?Buffer.concat(r.script):new Buffer(0),r.data?r.data:new Buffer(0),r.nSequence]))
-                },this),
+                },this),console.dir(Buffer.concat(e).toString('hex')),
                 e.push(new Buffer([this.nboutput])),
                 console.dir('24WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWww'),
                 this.output.forEach(function(r){

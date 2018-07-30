@@ -1,5 +1,7 @@
 import {TransactionBTC} from './transaction';
 import * as Litecore from 'litecore-lib';
+import {Networks} from './networks';
+import * as Bitgold from 'bgoldjs-lib';
 import {Buffer} from 'buffer';
 import * as crypto from 'crypto-browserify';
 import * as Big from 'bignumber.js';
@@ -7,7 +9,6 @@ import * as Big from 'bignumber.js';
 const AccountLTC = function(currencyCode: string, network: string) {
     this.code = currencyCode;
     this.network = network;
-    this.chainId = network === 'livenet' ? 1 : 2;
     this.address = '';
     this.keys = {
         private: '',
@@ -31,11 +32,23 @@ const AccountLTC = function(currencyCode: string, network: string) {
  *                       )
  * */
 AccountLTC.prototype.generateKeys = async function(passphrase: string) {
-    const pKey = new Litecore.PrivateKey(this.network);
-    this.keys.private = pKey.toWIF();
-    this.address = pKey.toAddress().toString();
-    this.keyObject = this.saveToKeyObject(passphrase);
-    return true;
+    // const pKey = new Litecore.PrivateKey(this.network);
+    // this.keys.private = pKey.toWIF();
+    // this.address = pKey.toAddress().toString();
+    // this.keyObject = this.saveToKeyObject(passphrase);
+    // return true;
+    try {
+        const pKey = Bitgold.ECPair.makeRandom({
+            network: Networks[this.code][this.network]
+        });
+        this.keys.private = pKey.toWIF();
+        this.address = pKey.getAddress(Networks[this.code][this.network]);
+        this.keyObject = this.saveToKeyObject(passphrase);
+        return true;
+    } catch (error) {
+        console.dir(error);
+        throw new Error(error.message);
+    }
 };
 /****************************************************************************************
  * @summary Recover account private key, create public address & etc... from keyObject
@@ -66,13 +79,22 @@ AccountLTC.prototype.recoveryFromKeyObject = async function(passphrase: string, 
  *                       )
  * */
 AccountLTC.prototype.saveToKeyObject = function(passphrase: string) {
+    // const cifer = crypto.createCipher('aes256', passphrase);
+    // let cifertext = cifer.update(Buffer.from(this.keys.private),
+    //     'utf8', 'hex');
+    // cifertext += cifer.final('hex');
+    // const pKey = Bitgold.PrivateKey.fromWIF(this.keys.private);
+    // return {
+    //     address: pKey.toAddress().toString(),
+    //     calg: 'aes256',
+    //     cifertext: cifertext
+    // };
     const cifer = crypto.createCipher('aes256', passphrase);
     let cifertext = cifer.update(Buffer.from(this.keys.private),
         'utf8', 'hex');
     cifertext += cifer.final('hex');
-    const pKey = Litecore.PrivateKey.fromWIF(this.keys.private);
     return {
-        address: pKey.toAddress().toString(),
+        address: this.address,
         calg: 'aes256',
         cifertext: cifertext
     };
@@ -92,26 +114,50 @@ AccountLTC.prototype.saveToKeyObject = function(passphrase: string) {
  *                       )
  * */
 AccountLTC.prototype.createSendMoneyTransaction = async function(params) {// console.dir(params);
-    const tx = Litecore.Transaction();
+    // const tx = Litecore.Transaction();
+    // const dec = new Big(this.decimals);
+    // const utxos = [];
+    // params['utxo'].forEach(utxo => {
+    //     const uAmount = new Big(utxo.amount);
+    //     utxos.push({
+    //         txId : utxo.txid,
+    //         outputIndex : utxo.vout,
+    //         address : utxo.address,
+    //         script : utxo.scriptPubKey,
+    //         satoshis : parseInt(uAmount.mul(dec).toString(), 10)
+    //     });
+    // });
+    // const amount = new Big(params['amount']);
+    // tx.from(utxos);
+    // tx.to(params['receiver'], parseInt(amount.mul(dec).toString(), 10));
+    // tx.change(params['change']);
+    // const pKey = Litecore.PrivateKey.fromWIF(this.keys.private);
+    // tx.sign(pKey);
+    // console.dir(tx);
+    // return tx.serialize();
+    const keyPair = Bitgold.ECPair.fromWIF(this.keys.private, Networks[this.code][this.network]);
+
+    // const pk = Bitgold.crypto.hash160(keyPair.getPublicKeyBuffer());
+    // const spk = Bitgold.script.pubKeyHash.output.encode(pk);
+
+    const txb = new Bitgold.TransactionBuilder(Networks[this.code][this.network]);
+    const inpAmount = [];
     const dec = new Big(this.decimals);
-    const utxos = [];
-    params['utxo'].forEach(utxo => {
-        const uAmount = new Big(utxo.amount);
-        utxos.push({
-            txId : utxo.txid,
-            outputIndex : utxo.vout,
-            address : utxo.address,
-            script : utxo.scriptPubKey,
-            satoshis : parseInt(uAmount.mul(dec).toString(), 10)
-        });
+    // const hashType = Bitgold.Transaction.SIGHASH_ALL | Bitgold.Transaction.SIGHASH_FORKID;
+    params['utxo'].forEach((utx, i) => {
+        inpAmount[i] = parseInt((new Big(utx.amount)).mul(dec).toString(), 10);
+        txb.addInput(utx.txid, utx.vout/*, Bitgold.Transaction.DEFAULT_SEQUENCE, spk*/);
     });
-    const amount = new Big(params['amount']);
-    tx.from(utxos);
-    tx.to(params['receiver'], parseInt(amount.mul(dec).toString(), 10));
-    tx.change(params['change']);
-    const pKey = Litecore.PrivateKey.fromWIF(this.keys.private);
-    tx.sign(pKey);
-    return tx.serialize();
+    const spendAmmount = (new Big(params['amount'])).mul(dec);
+    const rest = new Big(inpAmount.reduce((a, i) => (new Big(a)).plus(new Big(i))));
+    txb.addOutput(params['receiver'], parseInt(spendAmmount.toString(), 10));
+    txb.addOutput(params['change'], parseInt(rest.minus(spendAmmount).minus(new Big(10000)).toString(), 10));
+    // txb.setVersion(2);
+    inpAmount.forEach((am, k) => {
+        txb.sign(k, keyPair/*, null, hashType, parseInt(am, 10)*/);
+    });
+    const raw = txb.build().toHex();
+    return raw;
 };
 
 export default AccountLTC;

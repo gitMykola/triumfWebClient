@@ -5,7 +5,7 @@ export function config () { return {
             {symbol: 'EN', name: 'English'},
             {symbol: 'RU', name: 'Русский'}
             ],
-        apiURL: 'http://localhost:2345/api/v4.2/', // 'http://193.200.173.204:2345/api/v4.2/'
+        apiURL: 'http://193.200.173.204/api/v4.2/', // 'http://193.200.173.204:2345/api/v4.2/'
         // 'http://158.255.211.2:2345/api/v4.0/' // 'http://localhost:2345/api/v4.0/'
     },
     dev: {
@@ -26,7 +26,7 @@ export function config () { return {
         },
         {
             symbol: 'BTG',
-            networks: ['testnet', 'btgnet']
+            networks: ['testnet', 'livenet']
         },
         {
             symbol: 'BCH',
@@ -42,6 +42,6 @@ export function config () { return {
         }
     ],
     symbols: ['ETH', 'BTC', 'LTC', 'BTG', 'BCH', 'ZEC', 'XMR'],
-    networks: ['livenet', 'testnet', 'ropsten', 'btgnet']
+    networks: ['livenet', 'testnet', 'ropsten']
 };
 }
